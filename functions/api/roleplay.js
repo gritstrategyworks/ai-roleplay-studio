@@ -123,7 +123,7 @@ function sanitizePayload(body) {
 
 async function createReply(ai, data) {
   const userRoles = {
-    sales: '研修・サービスを提案する営業担当者',
+    sales: '任意の商品・サービスを提案する営業担当者',
     manager: '面談を行う上司・管理職',
     interview: '採用面接を行う面接官',
     support: '問い合わせ・苦情へ対応する担当者',
@@ -224,7 +224,7 @@ async function createEvaluation(ai, data) {
   const transcript = data.conversation.map((m) => `${m.role === 'user' ? '利用者' : data.avatar.name || '相手'}: ${m.text}`).join('\n');
   const averageChars = data.audioStats.speechTurns ? Math.round(data.audioStats.totalChars / data.audioStats.speechTurns) : 0;
 
-  const prompt = `以下の日本語ロールプレイを、企業研修の対話スキルコーチとして評価してください。
+  const prompt = `以下の日本語ロールプレイを、企業向けロールプレイの対話スキルコーチとして評価してください。
 
 場面: ${data.scenario.title}
 対話相手: ${data.avatar.name}（${data.avatar.traits}）
@@ -260,7 +260,7 @@ ${transcript}
 
   const output = await ai.run(MODEL, {
     messages: [
-      { role: 'system', content: 'あなたは企業研修の対話スキルコーチです。具体的で実行可能な日本語フィードバックを返します。' },
+      { role: 'system', content: 'あなたは企業向けロールプレイの対話スキルコーチです。具体的で実行可能な日本語フィードバックを返します。' },
       { role: 'user', content: prompt },
     ],
     temperature: 0.28,
@@ -293,4 +293,6 @@ function clampDelta(value) {
   const n = Number(value);
   return Number.isFinite(n) ? Math.max(-7, Math.min(7, Math.round(n))) : 0;
 }
+
+
 
