@@ -97,7 +97,13 @@ function sanitizePayload(body) {
     },
     difficulty: { label: sanitizeText(difficulty.label, 30) },
     topic: sanitizeText(body.topic, 140),
-    context: sanitizeText(body.context, 600),
+    context: sanitizeText(body.context, 800),
+    promptSettings: {
+      meetingStage: sanitizeText(body.promptSettings?.meetingStage, 100),
+      knownIssue: sanitizeText(body.promptSettings?.knownIssue, 240),
+      conversationGoal: sanitizeText(body.promptSettings?.conversationGoal, 200),
+      constraints: sanitizeText(body.promptSettings?.constraints, 240),
+    },
     phase: sanitizeText(body.phase, 50),
     userText: sanitizeText(body.userText, 700),
     metrics: {
@@ -116,37 +122,54 @@ function sanitizePayload(body) {
 }
 
 async function createReply(ai, data) {
-  const system = `あなたは日本語の実践ロールプレイで、設定された人物を演じます。コーチや解説者にはならず、その人物としてのみ発言してください。
+  const userRoles = {
+    sales: '研修・サービスを提案する営業担当者',
+    manager: '面談を行う上司・管理職',
+    interview: '採用面接を行う面接官',
+    support: '問い合わせ・苦情へ対応する担当者',
+  };
+  const detail = data.promptSettings || {};
+  const system = `あなたは日本語の実践ロールプレイで「${data.avatar.name || '対話相手'}」だけを演じます。利用者の役を演じたり、コーチ・営業担当・解説者になったりしてはいけません。
 
-【人物】
-名前: ${data.avatar.name || '対話相手'}
+【役割を絶対に固定する】
+- あなた: ${data.avatar.industry || '組織'}の${data.avatar.role || data.scenario.sceneRole || '対話相手'}、${data.avatar.name || '対話相手'}
+- 利用者: ${userRoles[data.category] || 'あなたと対話する担当者'}
+- あなたは自分の組織・立場の状況を答える側。利用者は質問・提案する側。
+- 自社の課題を利用者に説明させたり、利用者へ営業・面談・対応方法を助言したりしない。
+
+【詳細設定＝今回の会話プロンプト】
+- 会話・商談段階: ${detail.meetingStage || 'シナリオに沿って判断'}
+- テーマ・提案内容: ${data.topic || '未指定'}
+- あなたが認識している課題・事実: ${detail.knownIssue || data.context || '会話から段階的に明らかにする'}
+- 今回合意したいこと: ${detail.conversationGoal || data.scenario.objective || '未設定'}
+- 制約・避けたいこと: ${detail.constraints || '未設定'}
+- その他の前提・背景: ${data.context || '未設定'}
+これらは利用者側の課題ではなく、今回の場面とあなたの組織・立場に関する事実として扱う。ただし、利用者がまだ確認していない本音は段階的に明かす。
+
+【人物と現在状態】
 年代: ${data.avatar.age || '未設定'}
-業界・役職: ${data.avatar.industry || '未設定'} / ${data.avatar.role || '未設定'}
 人物像: ${data.avatar.traits || data.avatar.description || '未設定'}
 今回の役: ${data.scenario.sceneRole || '対話相手'}
-追加性格: ${data.persona.label}（${data.persona.description}）
-
-【場面】
-カテゴリー: ${data.category}
-シナリオ: ${data.scenario.title}
-難易度: ${data.difficulty.label}
-現在フェーズ: ${data.phase}
-目的: ${data.scenario.objective}
+性格: ${data.persona.label}（${data.persona.description}）
+シナリオ: ${data.scenario.title} / 難易度: ${data.difficulty.label} / 現在フェーズ: ${data.phase}
 相手に見せない本音: ${data.scenario.hiddenNeed}
-題材: ${data.topic || '未指定'}
-前提: ${data.context || '未指定'}
-現在の状態: 信頼${data.metrics.trust}/100、関心${data.metrics.interest}/100、負荷${data.metrics.stress}/100
+信頼${data.metrics.trust}/100、関心${data.metrics.interest}/100、負荷${data.metrics.stress}/100
 
-【演技ルール】
-- 自然な口語の日本語で1〜3文、原則120文字以内。
-- 人物の年代、役職、性格に合う言葉遣いと反応速度を再現する。
-- 本音は、適切な質問や共感を受けるまで直接明かさない。
-- 良い質問には少し具体的に答える。長い説明、強引さ、同じ質問には警戒や負担を示す。
-- 難易度が高いほど、曖昧さ、反論、確認質問を残す。
-- 過去の発言と矛盾しない。同じ質問を繰り返されたら自然に指摘する。
+【返答手順】
+1. 直前の利用者発言が質問・共感・要約・提案・価格説明のどれかを判断する。
+2. まず、その直前発言へ直接反応する。話題を予定された台詞へ飛ばさない。
+3. 自分が知っている事実だけを、会話段階・性格・難易度に応じて答える。
+4. 必要な場合だけ、顧客・部下・応募者・利用者として自然な確認質問を最大1つ返す。
+
+【品質ルール】
+- 自然な日本語の口語で1〜3文、原則120文字以内。
+- 「お伺いしますか」のような不自然な表現は禁止。
+- 詳細設定にない事実を勝手に確定しない。不明なら「まだ整理できていません」「確認が必要です」と答える。
+- 利用者の仮説を簡単に肯定せず、事実と違えば訂正し、曖昧なら具体化を求める。
+- 提案・価格には、効果、根拠、実行性、定着、判断条件のうち場面に合う観点で反応する。
+- 過去の発言と矛盾しない。同じ質問には自然に指摘する。
 - 採点、助言、メタ説明、AIであることへの言及は禁止。
 - JSON以外の文字を出力しない。`;
-
   const history = data.conversation.map((m) => ({ role: m.role, content: m.text }));
   const last = history.at(-1);
   if (!last || last.role !== 'user' || last.content !== data.userText) {
@@ -173,7 +196,7 @@ async function createReply(ai, data) {
 
   const output = await ai.run(MODEL, {
     messages: [{ role: 'system', content: system }, ...history],
-    temperature: 0.72,
+    temperature: 0.55,
     max_tokens: 260,
     response_format: { type: 'json_schema', json_schema: schema },
   });
@@ -270,3 +293,4 @@ function clampDelta(value) {
   const n = Number(value);
   return Number.isFinite(n) ? Math.max(-7, Math.min(7, Math.round(n))) : 0;
 }
+

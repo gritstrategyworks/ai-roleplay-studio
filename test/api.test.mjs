@@ -1,2 +1,25 @@
 import assert from 'node:assert/strict';import test from 'node:test';import {onRequestGet,onRequestPost} from '../functions/api/roleplay.js';test('status reports missing AI binding',async()=>{const r=await onRequestGet({env:{}});assert.equal(r.status,200);assert.equal((await r.json()).aiConfigured,false)});test('rejects invalid actions',async()=>{const request=new Request('https://x/api/roleplay',{method:'POST',headers:{'content-type':'application/json'},body:'{"action":"invalid"}'});assert.equal((await onRequestPost({request,env:{AI:{}}})).status,400)});test('returns AI reply',async()=>{const AI={run:async()=>({response:{reply:'承知しました。',emotion:'positive',deltas:{trust:3,interest:2,stress:-1}}})};const request=new Request('https://x/api/roleplay',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'reply',userText:'状況を教えてください。',conversation:[]})});assert.equal((await(await onRequestPost({request,env:{AI}})).json()).reply,'承知しました。')});
 
+
+test('detail settings become role-locked system instructions', async () => {
+  let captured;
+  const AI = { run: async (_model, input) => { captured = input; return { response: { reply: '費用対効果を確認したいです。', emotion: 'skeptical', deltas: { trust: 0, interest: 1, stress: 0 } } }; } };
+  const request = new Request('https://x/api/roleplay', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'reply', category: 'sales', avatar: { name: '鈴木社長', role: '代表取締役', industry: '建設業' }, scenario: { title: '課題ヒアリング', sceneRole: '見込み顧客', objective: '次回提案の合意' }, promptSettings: { meetingStage: '前回ヒアリング後', knownIssue: '若手社員が指示待ち', conversationGoal: '課題を具体化', constraints: '費用対効果を重視' }, userText: '研修は180万円です', conversation: [] }) });
+  const response = await onRequestPost({ request, env: { AI } });
+  assert.equal(response.status, 200);
+  const system = captured.messages[0].content;
+  assert.match(system, /詳細設定＝今回の会話プロンプト/);
+  assert.match(system, /若手社員が指示待ち/);
+  assert.match(system, /利用者: 研修・サービスを提案する営業担当者/);
+  assert.match(system, /自社の課題を利用者に説明させたり/);
+});
+
+test('setup supports selectable free-form prompt fields and contextual fallback', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const html = await readFile('index.html', 'utf8');
+  const app = await readFile('app.js', 'utf8');
+  for (const id of ['meetingStageInput', 'knownIssueInput', 'conversationGoalInput', 'constraintsInput']) assert.match(html, new RegExp(`id="${id}"`));
+  assert.match(html, /<datalist/);
+  assert.match(app, /function localReply\(text,a\)/);
+  assert.match(app, /費用対効果と現場への定着/);
+});

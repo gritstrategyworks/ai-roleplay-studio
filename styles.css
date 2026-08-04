@@ -38,3 +38,6 @@
 .free-plan-preview .premium-only::after{content:'プレミアム分析';position:absolute;inset:0;display:grid;place-items:center;font-size:22px;font-weight:900;color:#1a2638;filter:blur(0);opacity:1}
 code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.92em;background:#f3f5f8;padding:2px 5px;border-radius:5px}
 @media(max-width:680px){.endpoint-controls{grid-template-columns:1fr}.result-actions{align-items:stretch}.result-actions>*{width:100%;justify-content:center}}
+
+.field-help{margin:-4px 0 16px;color:var(--muted);font-size:12px;line-height:1.7}
+
