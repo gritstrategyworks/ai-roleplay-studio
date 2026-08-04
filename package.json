@@ -1,0 +1,13 @@
+{
+  "name": "ai-roleplay-studio",
+  "version": "3.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler pages dev . --ai AI",
+    "deploy": "wrangler pages deploy . --project-name ai-roleplay-studio",
+    "check": "node --check app.js && node --check kokoro-worker.js && node --check functions/api/roleplay.js"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
