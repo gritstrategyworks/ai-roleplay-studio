@@ -1,73 +1,57 @@
-# AI ROLEPLAY STUDIO — GitHub Test Edition v3.1
+# AI ROLEPLAY STUDIO Ver.1.0
 
-GitHub Pagesへそのまま公開してテストプレイできる、AI音声ロールプレイWebアプリです。
+Cloudflare Workers AIを使い、営業・マネジメント・採用・顧客対応を音声またはテキストで練習できるWebアプリです。AIが利用できない場合もローカル会話へ自動で切り替わります。
 
-## 実装済み
+## 主な機能
 
-- 営業・商談、管理職面談、採用面接、クレーム対応
-- 14シナリオ、10人のアバター、各5表情
-- 相手の性格8種類、難易度3段階、練習／実践モード
-- 信頼・関心・負荷とアバター表情の連動
-- 音声認識、ハンズフリー会話、端末標準音声
-- Kokoro-82Mの日本語5音声（ブラウザ内生成）
-- AI未接続時のローカル会話
-- AI採点またはローカル採点、会話履歴、成績保存
-- 結果テキスト保存、全履歴JSON書き出し
-- 無料／プレミアム表示の課金UIテスト
-- スマートフォン対応、PWAキャッシュ
-- 外部Cloudflare WorkerのAIエンドポイント設定
+- 4カテゴリー・14シナリオ、10人の対話相手、8性格、3難易度
+- 音声認識、Kokoro音声、ブラウザ標準音声、ハンズフリー会話
+- Workers AIによる自由会話と採点（`/api/roleplay`、`/api/analyze`）
+- ローカル会話・ローカル採点、履歴保存、結果エクスポート
+- PWA、スマートフォン対応、Cloudflare Workers Static Assets
 
-## GitHub Pagesで公開
-
-1. このフォルダの中身をGitHubの新しいリポジトリ直下へアップロードします。
-2. GitHubの `Settings → Pages` を開きます。
-3. `Deploy from a branch`、ブランチ `main`、フォルダ `/(root)` を選択します。
-4. 表示された `https://ユーザー名.github.io/リポジトリ名/` をChromeまたはEdgeで開きます。
-
-GitHub Pagesだけで公開した場合、会話はローカル会話モードです。音声認識、端末音声、Kokoro、アバター、採点、履歴は利用できます。
-
-## 本物のAI自由会話へ接続
-
-Cloudflare WorkerまたはPages Functionsで `functions/api/roleplay.js` を公開し、アプリの
-`設定 → AI APIエンドポイント` に次の形式で入力します。
-
-```text
-https://あなたのWorker名.workers.dev/api/roleplay
-```
-
-このプロジェクトのAPIはCORSを許可する設定です。Workers AIバインディング名は `AI` にしてください。
-
-## Kokoro音声
-
-- 初回に約90MBのモデルを取得します。
-- HTTPSまたはlocalhostで動作します。
-- 端末やブラウザで利用できない場合は標準音声へ自動切替します。
-- KokoroライブラリはjsDelivr、モデルはHugging Faceから取得します。
-
-## ローカル確認
-
-静的機能だけ試す場合：
+## ローカル検証
 
 ```bash
-python -m http.server 8000
-```
-
-Cloudflare Workers AIを含めて試す場合：
-
-```bash
-npm install
-npx wrangler login
+npm ci
+npm run typecheck
+npm run test
+npm run build
 npm run dev
 ```
 
-## 注意
+`npm run build`は公開用静的アセットを`dist/`へ出力します。`npm run dev`にはCloudflareへのログインとWorkers AI利用権限が必要です。
 
-- GitHub Pagesは静的ホスティングなので、Workers AIそのものは実行しません。
-- APIキーをHTMLやJavaScriptへ直接書かないでください。
-- 音声認識はブラウザ依存です。ChromeまたはEdgeを推奨します。
-- 成績と設定は利用者のブラウザのLocalStorageへ保存されます。
+## Cloudflare Git連携設定
 
-## 外部ライセンス
+Cloudflare Workers & Pagesで本GitHubリポジトリを接続し、次を設定してください。
 
-- Kokoro-82M / kokoro-js: Apache License 2.0
-- 詳細は `THIRD_PARTY_NOTICES.md` を確認してください。
+- Build command: `npm run build`
+- Deploy command: `npx wrangler deploy`
+- Production branch: `main`
+- Workers AI binding: `AI`
+- Static assets directory: `dist`（`wrangler.jsonc`で設定済み）
+
+`wrangler.jsonc`はWorker entrypoint、Static Assets、SPA fallback、`AI` bindingを定義しています。mainへのpushをProduction branchのトリガーに設定すると、PRマージ後に自動ビルド・デプロイされます。APIキーや秘密鍵は不要で、Cloudflareのbindingを使用します。必要なCloudflareアカウント権限・デプロイトークンは管理画面側のGit連携にだけ設定し、GitHubへコミットしないでください。
+
+## API
+
+- `GET /api/health`: 稼働状態とAI binding状態
+- `GET /api/roleplay`: AI接続状態
+- `POST /api/roleplay`: `reply`（会話）または`evaluate`（採点）
+- `POST /api/analyze`: 会話終了後の採点専用endpoint
+
+## 既知の制約
+
+- Workers AI未設定・障害時はローカルモードになります。
+- 音声認識はブラウザ依存で、ChromeまたはEdgeを推奨します。
+- Kokoroは初回に約90MBのモデルを外部配信元から取得します。
+- 履歴と設定はブラウザのLocalStorageに保存され、端末間同期はありません。
+
+## セキュリティ
+
+会話本文はAI接続時にWorkers AIへ送信されます。秘密鍵、APIトークン、`.env`、`.dev.vars`はリポジトリへ含めないでください。
+
+## ライセンス
+
+外部ライブラリ・モデルの詳細は`THIRD_PARTY_NOTICES.md`を参照してください。

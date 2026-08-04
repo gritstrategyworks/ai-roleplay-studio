@@ -1,7 +1,1 @@
-{
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "ai-roleplay-studio",
-  "compatibility_date": "2026-07-31",
-  "pages_build_output_dir": ".",
-  "ai": { "binding": "AI" }
-}
+{"$schema":"node_modules/wrangler/config-schema.json","name":"ai-roleplay-studio","compatibility_date":"2026-07-31","main":"src/worker.ts","assets":{"directory":"./dist","binding":"ASSETS","not_found_handling":"single-page-application","run_worker_first":["/api/*"]},"ai":{"binding":"AI"},"observability":{"enabled":true}}
