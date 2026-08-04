@@ -130,7 +130,7 @@ function scenario(){return (SCENARIOS[state.category]||[]).find(s=>s.id===state.
 function avatar(id=state.avatarId){return AVATARS.find(a=>a.id===id)||AVATARS[0]}
 function persona(){return PERSONAS.find(p=>p.id===state.persona)||PERSONAS[1]}
 function difficulty(){return DIFFICULTIES.find(d=>d.id===state.difficulty)||DIFFICULTIES[1]}
-function avatarImage(id,emotion='neutral'){const palette={neutral:'#90a4b8',positive:'#52c788',curious:'#64a8ff',skeptical:'#f4b85a',angry:'#ef6b6b'},color=palette[emotion]||palette.neutral,name=avatar(id).name.slice(0,1),svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="36" fill="#14243a"/><circle cx="100" cy="88" r="60" fill="${color}"/><circle cx="78" cy="76" r="7"/><circle cx="122" cy="76" r="7"/><path d="M76 106q24 18 48 0" fill="none" stroke="#07111f" stroke-width="7"/><circle cx="151" cy="151" r="35" fill="#ff7a36"/><text x="151" y="164" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="38" fill="white">${name}</text></svg>`;return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`}
+function avatarImage(id,emotion='neutral',thumb=false){return `assets/avatars/${id}/${emotion}${thumb?'-thumb':''}.webp`}
 function getApiEndpoint(){const value=String(settings.apiEndpoint||'').trim();return value?value.replace(/\/$/,''):'/api/roleplay'}
 function isRoleplayActive(){return document.getElementById('screen-roleplay')?.classList.contains('active')}
 

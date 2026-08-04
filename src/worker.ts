@@ -1,5 +1,6 @@
 // @ts-ignore Plain JavaScript module shared with Node unit tests.
-import { onRequestGet, onRequestOptions, onRequestPost } from '../roleplay.js';
+import { onRequestGet, onRequestOptions, onRequestPost } from '../functions/api/roleplay.js';
 interface Env { AI?: Ai; ASSETS: Fetcher }
 const json=(value:unknown,status=200)=>Response.json(value,{status,headers:{'cache-control':'no-store','x-content-type-options':'nosniff'}});
 export default {async fetch(request:Request,env:Env):Promise<Response>{const url=new URL(request.url);if(!url.pathname.startsWith('/api/'))return env.ASSETS.fetch(request);if(url.pathname==='/api/health')return request.method==='GET'?json({ok:true,service:'AI Roleplay Studio',aiConfigured:Boolean(env.AI)}):json({error:'Method not allowed.'},405);if(url.pathname==='/api/roleplay'||url.pathname==='/api/analyze'){const context:{request:Request,env:Env}={request,env};if(request.method==='OPTIONS')return onRequestOptions(context);if(request.method==='GET')return onRequestGet(context);if(request.method==='POST'){if(url.pathname==='/api/analyze'){const payload=await request.json() as Record<string,unknown>;context.request=new Request(request,{body:JSON.stringify({...payload,action:'evaluate'})});}return onRequestPost(context);}return json({error:'Method not allowed.'},405);}return json({error:'Not found.'},404);}} satisfies ExportedHandler<Env>;
+
