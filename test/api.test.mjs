@@ -51,3 +51,8 @@ test('home and setup use exactly six neutral avatar labels', async () => {
   assert.doesNotMatch(app, /CUSTOMER_APPEARANCES=.*若手男性/);
 });
 
+test('hidden category detail blocks cannot be forced visible by grid styles', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const css = await readFile('styles.css', 'utf8');
+  assert.match(css, /\[hidden\]\{display:none!important\}/);
+});
