@@ -36,3 +36,10 @@ test('sales presets are product-agnostic', async () => {
 });
 
 
+test('non-sales categories have dedicated setup schemas', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const app = await readFile('app.js', 'utf8');
+  for (const text of ['管理職面談設定','採用面接設定','クレーム対応設定','勤続年数','採用基準','補償上限']) assert.match(app, new RegExp(text));
+  assert.match(app, /state\.category=CATEGORY_SETUP_SCHEMAS\[cat\]/);
+  assert.match(app, /scenarioIdForCategory/);
+});

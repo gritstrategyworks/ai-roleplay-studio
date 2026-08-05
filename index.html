@@ -86,7 +86,7 @@
               <div class="field"><label>購入経験</label><input id="purchaseExperienceInput" list="experienceList" oninput="updateSetupDraft()"><datalist id="experienceList"><option value="初めて"><option value="購入経験あり"><option value="他社サービスを利用中"></datalist></div>
               <div class="field"><label>購入予定時期</label><input id="purchaseTimingInput" list="timingList" oninput="updateSetupDraft()"><datalist id="timingList"><option value="すぐに"><option value="1か月以内"><option value="半年以内"><option value="未定"></datalist></div>
             </div>
-            <div class="detail-grid common-details">
+            <div id="commonSalesDetails" class="detail-grid common-details">
               <div class="field"><label>価格感</label><input id="priceSentimentInput" list="priceFeelList" oninput="updateSetupDraft()"><datalist id="priceFeelList"><option value="価格より品質を重視"><option value="費用対効果を重視"><option value="予算に厳しい"></datalist></div>
               <div class="field"><label>ペルソナ</label><input id="personaInput" list="personaList" oninput="updateSetupDraft()"><datalist id="personaList"><option value="論理的で数字を重視"><option value="直感的でスピードを重視"><option value="周囲の意見を重視"></datalist></div>
               <div class="field"><label>話し方</label><input id="speakingStyleInput" list="speakList" oninput="updateSetupDraft()"><datalist id="speakList"><option value="簡潔"><option value="丁寧"><option value="率直"><option value="ゆっくり"></datalist></div>
@@ -95,6 +95,9 @@
               <div class="field"><label>価値観</label><input id="valuesInput" oninput="updateSetupDraft()"></div>
               <div class="field"><label>警戒心</label><input id="warinessSelect" list="warinessList" oninput="updateSetupDraft()"><datalist id="warinessList"><option value="低い"><option value="普通"><option value="高い"></datalist></div>
               <div class="field"><label>情報開示レベル</label><input id="disclosureSelect" list="disclosureList" oninput="updateSetupDraft()"><datalist id="disclosureList"><option value="積極的"><option value="質問されれば答える"><option value="限定的"></datalist></div>
+            </div>
+            <div id="categoryDetails" class="detail-grid" hidden></div>
+            <div style="display:none">
             </div>
           </section>
         </div>
@@ -139,6 +142,8 @@
 <script src="app.js" defer></script>
 </body>
 </html>
+
+
 
 
 

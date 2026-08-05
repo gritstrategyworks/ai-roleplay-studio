@@ -131,7 +131,7 @@ async function createReply(ai, data) {
   };
   const detail = data.promptSettings || {};
   const q = data.roleplayConfig;
-  const quickPrompt = q ? '【商品】'+JSON.stringify(q.product)+'\n【顧客】'+JSON.stringify(q.customer)+'\n【商談】'+JSON.stringify(q.deal)+'\n重要: アバターのgenderとageGroupは見た目だけ。性格・価値観・態度・話し方を推測しない。\n【詳細設定】'+(q.advancedEnabled?JSON.stringify(q.advanced):'なし')+'\n' : '';
+  const quickPrompt = q ? '【主要設定（カテゴリーに応じた入力）】'+JSON.stringify(q.product)+'\n【顧客】'+JSON.stringify(q.customer)+'\n【商談】'+JSON.stringify(q.deal)+'\n重要: アバターのgenderとageGroupは見た目だけ。性格・価値観・態度・話し方を推測しない。\n【詳細設定】'+(q.advancedEnabled?JSON.stringify(q.advanced):'なし')+'\n' : '';
   const system = `${quickPrompt}`+`あなたは日本語の実践ロールプレイで「${data.avatar.name || '対話相手'}」だけを演じます。利用者の役を演じたり、コーチ・営業担当・解説者になったりしてはいけません。
 
 【役割を絶対に固定する】
@@ -296,6 +296,7 @@ function clampDelta(value) {
   const n = Number(value);
   return Number.isFinite(n) ? Math.max(-7, Math.min(7, Math.round(n))) : 0;
 }
+
 
 
 
