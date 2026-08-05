@@ -360,3 +360,7 @@ const renderHomeBase=renderHome;
 renderHome=function(){renderHomeBase();const strip=document.getElementById('homeAvatarStrip');if(strip)strip.innerHTML=CUSTOMER_APPEARANCES.map(a=>`<button class="avatar-chip" type="button" onclick="startSetupForAppearance('${a.gender}','${a.ageGroup}')"><img src="${avatarImage(a.assetId,'positive',true)}" alt="${a.label}"><strong>${a.label}</strong></button>`).join('')};
 renderHome();
 
+
+renderAdvancedTarget=function(){const sales=state.category==='sales',btob=inputValue('salesTargetSelect')!=='BtoC'&&inputValue('salesTargetSelect')!=='btoc';const b2b=document.getElementById('btobDetails'),b2c=document.getElementById('btocDetails'),common=document.getElementById('commonSalesDetails');b2b.hidden=!sales||!btob;b2b.style.display=sales&&btob?'':'none';b2c.hidden=!sales||btob;b2c.style.display=sales&&!btob?'':'none';common.hidden=!sales;common.style.display=sales?'':'none'};
+const applyCategorySetupBase=applyCategorySetup;
+applyCategorySetup=function(category){applyCategorySetupBase(category);const sales=category==='sales',box=document.getElementById('categoryDetails');renderAdvancedTarget();box.hidden=sales;box.style.display=sales?'none':''};

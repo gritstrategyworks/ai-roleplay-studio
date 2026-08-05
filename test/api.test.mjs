@@ -56,3 +56,11 @@ test('hidden category detail blocks cannot be forced visible by grid styles', as
   const css = await readFile('styles.css', 'utf8');
   assert.match(css, /\[hidden\]\{display:none!important\}/);
 });
+test('non-sales setup explicitly hides every sales detail group and home avatar section', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const [app, html] = await Promise.all([readFile('app.js','utf8'), readFile('index.html','utf8')]);
+  for (const id of ['btobDetails','btocDetails','commonSalesDetails']) assert.match(app, new RegExp(id));
+  assert.match(app, /style\.display=sales/);
+  assert.doesNotMatch(html, /<h2>会話相手<\/h2>/);
+  assert.match(html, /id="homeAvatarStrip" hidden/);
+});
