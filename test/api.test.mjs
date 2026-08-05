@@ -39,7 +39,15 @@ test('sales presets are product-agnostic', async () => {
 test('non-sales categories have dedicated setup schemas', async () => {
   const { readFile } = await import('node:fs/promises');
   const app = await readFile('app.js', 'utf8');
-  for (const text of ['管理職面談設定','採用面接設定','クレーム対応設定','勤続年数','採用基準','補償上限']) assert.match(app, new RegExp(text));
+  for (const text of ['管理職面談設定','採用面接設定','クレーム対応設定','具体的に観察した事実','必須経験・スキル','保証・利用規約の範囲']) assert.match(app, new RegExp(text));
   assert.match(app, /state\.category=CATEGORY_SETUP_SCHEMAS\[cat\]/);
   assert.match(app, /scenarioIdForCategory/);
 });
+test('home and setup use exactly six neutral avatar labels', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const app = await readFile('app.js', 'utf8');
+  for (const label of ['男性A','男性B','男性C','女性A','女性B','女性C']) assert.match(app, new RegExp(label));
+  assert.match(app, /homeAvatarStrip.*CUSTOMER_APPEARANCES/);
+  assert.doesNotMatch(app, /CUSTOMER_APPEARANCES=.*若手男性/);
+});
+
