@@ -101,3 +101,36 @@ test('client sanitizes legacy avatar names and exposes billing/legal information
   assert.match(html, /決済機能は有効化しません/);
   assert.match(css, /information-layout/);
 });
+
+test('AI modes separate cloud processing from on-device Qwen processing', async () => {
+  const {readFile} = await import('node:fs/promises');
+  const [app, html, localAI, build, serviceWorker] = await Promise.all([
+    readFile('app.js','utf8'), readFile('index.html','utf8'), readFile('src/local-ai.js','utf8'),
+    readFile('scripts/build.mjs','utf8'), readFile('service-worker.js','utf8')
+  ]);
+  for (const id of ['cloudModeCard','localModeCard','localAISettings','localModelSelect','companyProfileInput','localHistorySwitch']) assert.match(html, new RegExp(`id="${id}"`));
+  assert.match(app, /if\(isLocalMode\(\)\)response=await fetchLocalAIReply\(text\)/);
+  assert.match(app, /if\(isLocalMode\(\)\)result=await fetchLocalAIEvaluation\(\)/);
+  assert.match(app, /probeAPI=async function\(\)\{if\(isLocalMode\(\)\)/);
+  assert.match(app, /localSaveHistory:false/);
+  assert.match(app, /if\(isLocalMode\(\)&&!settings\.localSaveHistory\)return/);
+  assert.match(localAI, /CreateWebWorkerMLCEngine/);
+  assert.match(localAI, /cacheBackend: 'indexeddb'/);
+  assert.match(localAI, /Qwen3-1\.7B-q4f16_1-MLC/);
+  assert.match(localAI, /Qwen3-4B-q4f16_1-MLC/);
+  assert.match(localAI, /companyProfile/);
+  assert.match(build, /src\/local-ai-worker\.js/);
+  for (const file of ['local-ai.js','local-ai-worker.js']) assert.match(serviceWorker, new RegExp(file.replace('.', '\\.')));
+});
+
+test('internal information mode is text-only with no cloud fallback', async () => {
+  const {readFile} = await import('node:fs/promises');
+  const [app, html, readme] = await Promise.all([readFile('app.js','utf8'), readFile('index.html','utf8'), readFile('README.md','utf8')]);
+  assert.match(app, /if\(isLocalMode\(\)\|\|!settings\.speech\|\|!text\)return/);
+  assert.match(app, /社内情報モードでは音声認識を使用しません/);
+  assert.match(app, /社内情報モードはテキスト会話です/);
+  assert.match(html, /クラウドへ自動送信しません/);
+  assert.match(html, /音声会話は利用できません/);
+  assert.match(readme, /Cloudflare AIへ自動フォールバックしません/);
+  assert.doesNotMatch(readme, /Kokoro/);
+});

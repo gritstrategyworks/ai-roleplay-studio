@@ -1,6 +1,6 @@
-const CACHE='ai-roleplay-studio-v1-11-billing-legal';
+const CACHE='ai-roleplay-studio-v1-12-local-qwen';
 const BASE=new URL('./',self.location.href);
-const CORE=['index.html','styles.css','app.js','kokoro-worker.js','manifest.webmanifest','assets/icon.svg'].map(path=>new URL(path,BASE).href);
+const CORE=['index.html','styles.css','app.js','local-ai.js','local-ai-worker.js','manifest.webmanifest','assets/icon.svg'].map(path=>new URL(path,BASE).href);
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',event=>{
