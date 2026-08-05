@@ -305,7 +305,7 @@ async function probeAPI(){const endpoint=getApiEndpoint();if(!settings.preferAI|
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._timer);el._timer=setTimeout(()=>el.classList.remove('show'),2500)}
 function wait(ms){return new Promise(r=>setTimeout(r,ms))}
 
-function init(){setupSpeechRecognition();loadVoices();refreshKokoroVoiceSelects();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();renderKokoroStatus();probeAPI();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js').catch(()=>{})}
+function init(){setupSpeechRecognition();loadVoices();refreshKokoroVoiceSelects();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();renderKokoroStatus();probeAPI();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).catch(()=>{})}
 
 
 
@@ -406,5 +406,5 @@ const beginRoleplayModeBase=beginRoleplay;
 beginRoleplay=async function(){if(isLocalMode()){const required=['productNameInput','priceInput','productDescriptionInput','productBenefitsInput','customerNeedsInput'];if(required.every(id=>inputValue(id))){try{await ensureLocalAIReady()}catch(error){toast(error.message||'端末内AIを準備できませんでした');return}}state.interaction='text'}else state.interaction='voice';return beginRoleplayModeBase()};
 const renderSetupModeBase=renderSetup;
 renderSetup=function(){renderSetupModeBase();renderAIModeSettings()};
-init=function(){setupSpeechRecognition();loadVoices();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();probeAPI();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js').catch(()=>{})};
+init=function(){setupSpeechRecognition();loadVoices();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();probeAPI();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).catch(()=>{})};
 init();

@@ -137,3 +137,19 @@ test('internal information mode is text-only with no cloud fallback', async () =
   assert.match(readme, /Cloudflare AIへ自動フォールバックしません/);
   assert.doesNotMatch(readme, /Kokoro/);
 });
+test('Cloudflare relays only allowlisted public Qwen model files', async () => {
+  const {readFile} = await import('node:fs/promises');
+  const [worker, localAI, html, serviceWorker] = await Promise.all([
+    readFile('src/worker.ts','utf8'), readFile('src/local-ai.js','utf8'), readFile('index.html','utf8'), readFile('service-worker.js','utf8')
+  ]);
+  assert.match(worker, /MODEL_LIBS/);
+  assert.match(worker, /Model not allowed/);
+  assert.match(worker, /resolve\/main\//);
+  assert.match(worker, /\['GET','HEAD'\]/);
+  assert.match(localAI, /\/api\/local-model/);
+  assert.match(localAI, /proxiedModelRecord/);
+  assert.match(localAI, /const record = proxiedModelRecord\(sourceRecord\)/);
+  assert.match(html, /local-ai\.js\?v=1\.14/);
+  assert.match(html, /app\.js\?v=1\.14/);
+  assert.match(serviceWorker, /v1-14-model-relay/);
+});

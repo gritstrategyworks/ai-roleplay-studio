@@ -16,6 +16,10 @@ let lastDiagnostics = null;
 
 function normalizeModelId(modelId) { return LEGACY_MODELS[modelId] || modelId || MODELS.compatible.id; }
 function modelRecord(modelId) { return prebuiltAppConfig.model_list.find((item) => item.model_id === normalizeModelId(modelId)); }
+function proxiedModelRecord(record) {
+  const base = `${globalThis.location.origin}/api/local-model`;
+  return { ...record, model: `${base}/model/${encodeURIComponent(record.model_id)}`, model_lib: `${base}/lib/${encodeURIComponent(record.model_id)}` };
+}
 function support() { return { webgpu: Boolean(globalThis.navigator?.gpu), secureContext: globalThis.isSecureContext, deviceMemoryGB: Number(globalThis.navigator?.deviceMemory || 0) }; }
 function describeError(error) {
   const parts = [error?.name, error?.message, error?.cause?.message, typeof error === 'string' ? error : ''].filter(Boolean);
@@ -56,15 +60,16 @@ async function prepare({ modelId, onProgress } = {}) {
   loadingPromise = (async () => {
     onProgress?.({ progress: 0.01, text: 'GPUの互換性を確認しています' });
     const gpu = await inspectGPU();
-    const record = modelRecord(selected);
-    if (!record) throw new Error(`モデル設定が見つかりません：${selected}`);
+    const sourceRecord = modelRecord(selected);
+    if (!sourceRecord) throw new Error(`モデル設定が見つかりません：${selected}`);
+    const record = proxiedModelRecord(sourceRecord);
     if (engine) await engine.unload();
     let workerIssue = '';
-    const worker = new Worker(new URL('local-ai-worker.js', document.baseURI), { type: 'module' });
+    const worker = new Worker(new URL('local-ai-worker.js?v=1.14', document.baseURI), { type: 'module' });
     worker.addEventListener('error', (event) => { workerIssue = event.message || 'Web Workerを開始できませんでした'; });
     try {
       engine = await CreateWebWorkerMLCEngine(worker, selected, {
-        appConfig: { ...prebuiltAppConfig, cacheBackend: 'indexeddb' },
+        appConfig: { ...prebuiltAppConfig, cacheBackend: 'indexeddb', model_list: prebuiltAppConfig.model_list.map((item) => item.model_id === selected ? record : item) },
         initProgressCallback: (progress) => onProgress?.({ progress: Math.max(0, Math.min(1, Number(progress.progress || 0))), text: progress.text || 'モデルを準備しています' }),
       });
     } catch (error) {
