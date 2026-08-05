@@ -1,15 +1,16 @@
 # Third-party notices
 
-## Kokoro-82M
+## WebLLM
 
-- Project: hexgrad/Kokoro-82M
-- License: Apache License 2.0
-- Model used: onnx-community/Kokoro-82M-v1.0-ONNX
+- Project: mlc-ai/web-llm
+- Package: `@mlc-ai/web-llm`
+- License: Apache-2.0
+- Purpose: WebGPUを使用したブラウザ内LLM実行
 
-## kokoro-js
+## Qwen3 WebLLM models
 
-- Package: kokoro-js 1.2.1
-- License: Apache License 2.0
-- Browser bundle loaded from jsDelivr at runtime.
+- Models: `Qwen3-1.7B-q4f16_1-MLC`, `Qwen3-4B-q4f16_1-MLC`
+- Model family: Qwen3
+- Model files are not committed to this repository. The selected model is downloaded by the user's browser and cached locally only after the user starts preparation.
 
-The Kokoro model and library are not bundled into this archive. They are downloaded by the user's browser only when Kokoro speech is enabled.
+各ライブラリ・モデルの利用条件は配布元のライセンスと利用規約を確認してください。

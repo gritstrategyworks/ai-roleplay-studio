@@ -1,73 +1,81 @@
-# AI ROLEPLAY STUDIO — GitHub Test Edition v3.1
+# AI ROLEPLAY STUDIO Ver.1.0
 
-GitHub Pagesへそのまま公開してテストプレイできる、AI音声ロールプレイWebアプリです。
+Cloudflare Workers AIを利用する「通常モード」と、ブラウザ内Qwenを利用する「社内情報モード」を選べるロールプレイWebアプリです。営業・管理職面談・採用面接・クレーム対応を練習できます。
 
-## 実装済み
+## 主な機能
 
-- 営業・商談、管理職面談、採用面接、クレーム対応
-- 14シナリオ、10人のアバター、各5表情
-- 相手の性格8種類、難易度3段階、練習／実践モード
-- 信頼・関心・負荷とアバター表情の連動
-- 音声認識、ハンズフリー会話、端末標準音声
-- Kokoro-82Mの日本語5音声（ブラウザ内生成）
-- AI未接続時のローカル会話
-- AI採点またはローカル採点、会話履歴、成績保存
-- 結果テキスト保存、全履歴JSON書き出し
-- 無料／プレミアム表示の課金UIテスト
-- スマートフォン対応、PWAキャッシュ
-- 外部Cloudflare WorkerのAIエンドポイント設定
+- 4カテゴリー、6種類の外見アバター、3難易度
+- カテゴリー別の通常設定と「詳細設定（会話のプロンプト）」
+- 通常モード：Workers AIによる会話・採点、音声認識、ブラウザ標準音声
+- 社内情報モード：WebLLMとQwenによる端末内会話・採点
+- PWA、レスポンシブUI、履歴・結果エクスポート
+- Cloudflare Workers Static Assets対応
 
-## GitHub Pagesで公開
+## AI実行モード
 
-1. このフォルダの中身をGitHubの新しいリポジトリ直下へアップロードします。
-2. GitHubの `Settings → Pages` を開きます。
-3. `Deploy from a branch`、ブランチ `main`、フォルダ `/(root)` を選択します。
-4. 表示された `https://ユーザー名.github.io/リポジトリ名/` をChromeまたはEdgeで開きます。
+### 通常モード
 
-GitHub Pagesだけで公開した場合、会話はローカル会話モードです。音声認識、端末音声、Kokoro、アバター、採点、履歴は利用できます。
+会話と採点をCloudflare Workers AIで処理します。音声会話を利用できます。入力した会話・設定はAPIへ送信されるため、機密情報を入力しないでください。Workers AIが利用できない場合は機密情報を含まない基本会話へ切り替わります。
 
-## 本物のAI自由会話へ接続
+### 社内情報モード
 
-Cloudflare WorkerまたはPages Functionsで `functions/api/roleplay.js` を公開し、アプリの
-`設定 → AI APIエンドポイント` に次の形式で入力します。
+設定画面でQwen 0.6B（互換性優先）、Qwen 1.7B（標準）、Qwen 4B（高品質）を選び、初回だけモデルを端末へダウンロードします。モデルはブラウザのIndexedDBへ保存され、会話・社内情報・採点はWeb Worker内で処理されます。
 
-```text
-https://あなたのWorker名.workers.dev/api/roleplay
-```
+- 社内情報モードからCloudflare AIへ自動フォールバックしません。
+- 音声認識・読み上げは無効となり、テキスト会話だけを使用します。
+- 履歴保存は初期状態で無効です。
+- 設定画面から保存済みモデルを削除できます。
+- 最新版ChromeまたはEdge、HTTPS、WebGPU対応GPUが必要です。
+- 互換性優先版は約1.9GB、1.7Bは約2.6GB、4Bは約4.3GBのGPUメモリが目安です。すべて16ビットシェーダー不要のq4f32版です。
+- 初回のモデル取得は、会社ネットワークでHugging Faceが遮断される場合に備え、Cloudflare Workerが許可済み公開モデルファイルだけを中継します。会話・自社情報はこの中継へ送信しません。
+- 社内情報はブラウザのLocalStorageに平文保存されます。パスワード、秘密鍵、個人情報などは入力しないでください。
 
-このプロジェクトのAPIはCORSを許可する設定です。Workers AIバインディング名は `AI` にしてください。
-
-## Kokoro音声
-
-- 初回に約90MBのモデルを取得します。
-- HTTPSまたはlocalhostで動作します。
-- 端末やブラウザで利用できない場合は標準音声へ自動切替します。
-- KokoroライブラリはjsDelivr、モデルはHugging Faceから取得します。
-
-## ローカル確認
-
-静的機能だけ試す場合：
+## ローカル検証
 
 ```bash
-python -m http.server 8000
-```
-
-Cloudflare Workers AIを含めて試す場合：
-
-```bash
-npm install
-npx wrangler login
+npm ci
+npm run typecheck
+npm run test
+npm run build
 npm run dev
 ```
 
-## 注意
+`npm run build`は公開用静的アセットを`dist/`へ出力し、WebLLM本体とローカルAI用Web Workerもバンドルします。
 
-- GitHub Pagesは静的ホスティングなので、Workers AIそのものは実行しません。
-- APIキーをHTMLやJavaScriptへ直接書かないでください。
-- 音声認識はブラウザ依存です。ChromeまたはEdgeを推奨します。
-- 成績と設定は利用者のブラウザのLocalStorageへ保存されます。
+## Cloudflare Git連携設定
 
-## 外部ライセンス
+Cloudflare Workers & Pagesで本GitHubリポジトリを接続し、次を設定してください。
 
-- Kokoro-82M / kokoro-js: Apache License 2.0
-- 詳細は `THIRD_PARTY_NOTICES.md` を確認してください。
+- Build command: `npm run build`
+- Deploy command: `npx wrangler deploy`
+- Production branch: `main`
+- Workers AI binding: `AI`
+- Static assets directory: `dist`（`wrangler.jsonc`で設定済み）
+
+`wrangler.jsonc`はWorker entrypoint、Static Assets、SPA fallback、`AI` bindingを定義しています。mainへのpushをProduction branchのトリガーに設定すると、PRマージ後に自動ビルド・デプロイされます。Cloudflareの権限・デプロイトークンは管理画面側のGit連携だけに設定し、GitHubへコミットしないでください。
+
+## API
+
+- `GET /api/health`: 稼働状態とAI binding状態
+- `GET /api/roleplay`: AI接続状態
+- `POST /api/roleplay`: 通常モードの会話または採点
+- `POST /api/analyze`: 通常モードの採点専用endpoint
+
+社内情報モードはこれらのAPIを呼び出しません。
+
+## 既知の制約
+
+- WebGPU非対応端末では社内情報モードを利用できません。
+- モバイル端末やGPUメモリの少ない端末ではモデルを読み込めない場合があります。
+- ブラウザがストレージを自動整理すると、モデルの再ダウンロードが必要です。
+- 端末内Qwenの応答品質・速度は端末性能と選択モデルに依存します。会話は最初の自然な一文で生成を止め、20秒を超える場合はクラウドへ送信せず端末内の高速応答へ切り替えます。
+- 音声認識はブラウザ依存で、通常モードではChromeまたはEdgeを推奨します。
+- 履歴と設定は端末間同期されません。
+
+## セキュリティ
+
+秘密鍵、APIトークン、`.env`、`.dev.vars`はリポジトリへ含めません。社内情報モードでも、端末の共有、ブラウザ拡張機能、マルウェア、LocalStorageの平文保存に対する防御を保証するものではありません。
+
+## ライセンス
+
+外部ライブラリ・モデルの詳細は`THIRD_PARTY_NOTICES.md`を参照してください。
