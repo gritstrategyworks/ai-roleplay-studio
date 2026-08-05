@@ -364,3 +364,13 @@ renderHome();
 renderAdvancedTarget=function(){const sales=state.category==='sales',btob=inputValue('salesTargetSelect')!=='BtoC'&&inputValue('salesTargetSelect')!=='btoc';const b2b=document.getElementById('btobDetails'),b2c=document.getElementById('btocDetails'),common=document.getElementById('commonSalesDetails');b2b.hidden=!sales||!btob;b2b.style.display=sales&&btob?'':'none';b2c.hidden=!sales||btob;b2c.style.display=sales&&!btob?'':'none';common.hidden=!sales;common.style.display=sales?'':'none'};
 const applyCategorySetupBase=applyCategorySetup;
 applyCategorySetup=function(category){applyCategorySetupBase(category);const sales=category==='sales',box=document.getElementById('categoryDetails');renderAdvancedTarget();box.hidden=sales;box.style.display=sales?'none':''};
+
+const CATEGORY_EXAMPLES={
+sales:{basic:['例：営業研修','例：月額3万円 / 見積制','例：若手営業向けの実践研修','例：商談力向上と受注率改善','例：営業力を高めたい'],details:['例：営業部長','例：一部あり','例：担当者→部長→役員','例：年間300万円以内','例：複数社を比較中','例：本人と配偶者','例：夫婦と子ども2人','例：初めて','例：半年以内','例：費用対効果を重視','例：論理的で数字を重視','例：簡潔で率直','例：製造業','例：従業員300名','例：実績と安心を重視','例：高い','例：質問されれば答える']},
+manager:{basic:['例：今期の評価と今後の成長','例：30分','例：目標未達が2期続いている','例：本人が課題を整理し次の行動を決める','例：業務量が多く優先順位に迷っている'],details:['例：営業部 主任','例：入社5年目','例：目標達成率85％、評価B','例：報告期限の遅延が3回発生','例：業務量が多く優先順位が不明確','例：上司へ相談しづらいと感じている','例：専門性を高めたい','例：質問されれば話す']},
+interview:{basic:['例：法人営業','例：年収500〜700万円','例：新規法人営業と既存顧客の深耕','例：顧客課題を整理し提案できる人','例：SaaS営業3年、チームリーダー経験あり'],details:['例：法人営業3年以上、提案書作成','例：課題把握・実績・再現性','例：顧客の事業成長に関わりたい','例：専門性を高められないため','例：他社2社の一次面接中','例：内定後2か月','例：目標達成までの本人の工夫','例：実績における本人の役割が不明確']},
+support:{basic:['例：法人向け保守サービス','例：契約額10万円','例：訪問予定日に担当者が来なかった','例：再訪問・代替品・規定内返金','例：本日中の復旧と経緯説明を求めている'],details:['例：2026年7月1日','例：契約後30日以内は無償交換','例：2026年8月4日 14時','例：業務が3時間停止した','例：電話2回、折り返し未実施','例：本日中の復旧と原因説明','例：利用料金1か月分まで','例：責任者判断または安全上の懸念']}}
+;
+const applyCategorySetupExamplesBase=applyCategorySetup;
+applyCategorySetup=function(category){applyCategorySetupExamplesBase(category);const e=CATEGORY_EXAMPLES[category],basicIds=['productNameInput','priceInput','productDescriptionInput','productBenefitsInput','customerNeedsInput'];basicIds.forEach((id,i)=>document.getElementById(id).placeholder=e.basic[i]);if(category==='sales')DETAIL_IDS.forEach((id,i)=>{const el=document.getElementById(id);if(el)el.placeholder=e.details[i]||'選択または自由入力'});else [...document.querySelectorAll('#categoryDetails input')].forEach((el,i)=>el.placeholder=e.details[i]||'選択または自由入力')};
+categoryDraftKey=function(){return ROLEPLAY_DRAFT_KEY+'_'+state.category+'_v2'};

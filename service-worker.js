@@ -1,4 +1,4 @@
-const CACHE='ai-roleplay-studio-v1-8-category-isolation';
+const CACHE='ai-roleplay-studio-v1-9-category-examples';
 const BASE=new URL('./',self.location.href);
 const CORE=['index.html','styles.css','app.js','kokoro-worker.js','manifest.webmanifest','assets/icon.svg'].map(path=>new URL(path,BASE).href);
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
@@ -17,6 +17,7 @@ self.addEventListener('fetch',event=>{
     return response;
   })));
 });
+
 
 
 

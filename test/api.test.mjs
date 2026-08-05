@@ -64,3 +64,11 @@ test('non-sales setup explicitly hides every sales detail group and home avatar 
   assert.doesNotMatch(html, /<h2>会話相手<\/h2>/);
   assert.match(html, /id="homeAvatarStrip" hidden/);
 });
+test('copy and examples match the six-avatar category-specific specification', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const [app, html, readme] = await Promise.all([readFile('app.js','utf8'),readFile('index.html','utf8'),readFile('README.md','utf8')]);
+  assert.doesNotMatch(html + readme, /10人の/);
+  assert.match(html, /6種類のアバター/);
+  for (const example of ['今期の評価と今後の成長','法人営業3年以上','訪問予定日に担当者が来なかった']) assert.match(app, new RegExp(example));
+  assert.match(app, /categoryDraftKey=function\(\).*_v2/);
+});
