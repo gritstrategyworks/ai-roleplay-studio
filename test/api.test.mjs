@@ -72,3 +72,32 @@ test('copy and examples match the six-avatar category-specific specification', a
   for (const example of ['今期の評価と今後の成長','法人営業3年以上','訪問予定日に担当者が来なかった']) assert.match(app, new RegExp(example));
   assert.match(app, /categoryDraftKey=function\(\).*_v2/);
 });
+
+test('evaluation uses neutral six-avatar labels and category settings', async () => {
+  let captured;
+  const AI = { run: async (_model, input) => {
+    captured = input;
+    return { response: { scores: Array.from({length: 6}, () => ({score: 70})), headline: '適切な面接でした', summary: '応募者の経験を確認しました', good: '質問が明確でした', improve: 'さらに深掘りしましょう', nextPhrase: '具体的な役割を教えてください', hiddenNeed: '経験を正しく伝えたい' } };
+  } };
+  const body = { action: 'evaluate', category: 'interview', avatar: {name: '伊藤部長', traits: '成果重視'}, roleplayConfig: {customer: {gender: 'female', ageGroup: 'middle'}, product: {name: '法人営業'}, deal: {scene: '一次面接'}}, scenario: {title: '一次面接', objective: '経験を深掘りする'}, conversation: [{role: 'assistant', text: 'よろしくお願いします。'}, {role: 'user', text: 'これまでの経験を教えてください。'}] };
+  const request = new Request('https://x/api/roleplay', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(body)});
+  const response = await onRequestPost({request, env: {AI}});
+  assert.equal(response.status, 200);
+  const prompt = captured.messages[1].content;
+  assert.match(prompt, /対話相手: 女性B/);
+  assert.match(prompt, /入力されたロープレ設定/);
+  assert.match(prompt, /interviewの場面/);
+  assert.doesNotMatch(prompt, /伊藤部長/);
+});
+
+test('client sanitizes legacy avatar names and exposes billing/legal information', async () => {
+  const {readFile} = await import('node:fs/promises');
+  const [app, html, css] = await Promise.all([readFile('app.js','utf8'), readFile('index.html','utf8'), readFile('styles.css','utf8')]);
+  assert.match(app, /function roleplayAvatarPayload/);
+  assert.match(app, /function sanitizeAvatarReferences/);
+  assert.match(app, /avatar:roleplayAvatarPayload\(\)/);
+  for (const label of ['料金','運営者：Grit Strategy Works','特定商取引法に基づく表記','利用規約','プライバシーポリシー','解約方法','返金方針','問い合わせ先']) assert.match(html, new RegExp(label));
+  assert.match(html, /現在は無料ベータ版です/);
+  assert.match(html, /決済機能は有効化しません/);
+  assert.match(css, /information-layout/);
+});

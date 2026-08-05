@@ -122,6 +122,14 @@ function sanitizePayload(body) {
   };
 }
 
+function roleplayAvatarName(data) {
+  const customer = data.roleplayConfig?.customer || {};
+  const labels = {
+    'male:young': '男性A', 'male:middle': '男性B', 'male:older': '男性C',
+    'female:young': '女性A', 'female:middle': '女性B', 'female:older': '女性C',
+  };
+  return labels[`${customer.gender}:${customer.ageGroup}`] || data.avatar.name || '会話相手';
+}
 async function createReply(ai, data) {
   const userRoles = {
     sales: '任意の商品・サービスを提案する営業担当者',
@@ -131,11 +139,12 @@ async function createReply(ai, data) {
   };
   const detail = data.promptSettings || {};
   const q = data.roleplayConfig;
+  const displayName = roleplayAvatarName(data);
   const quickPrompt = q ? '【主要設定（カテゴリーに応じた入力）】'+JSON.stringify(q.product)+'\n【顧客】'+JSON.stringify(q.customer)+'\n【商談】'+JSON.stringify(q.deal)+'\n重要: アバターのgenderとageGroupは見た目だけ。性格・価値観・態度・話し方を推測しない。\n【詳細設定】'+(q.advancedEnabled?JSON.stringify(q.advanced):'なし')+'\n' : '';
-  const system = `${quickPrompt}`+`あなたは日本語の実践ロールプレイで「${data.avatar.name || '対話相手'}」だけを演じます。利用者の役を演じたり、コーチ・営業担当・解説者になったりしてはいけません。
+  const system = `${quickPrompt}`+`あなたは日本語の実践ロールプレイで「${displayName || '対話相手'}」だけを演じます。利用者の役を演じたり、コーチ・営業担当・解説者になったりしてはいけません。
 
 【役割を絶対に固定する】
-- あなた: ${data.avatar.industry || '組織'}の${data.avatar.role || data.scenario.sceneRole || '対話相手'}、${data.avatar.name || '対話相手'}
+- あなた: ${data.avatar.industry || '組織'}の${data.avatar.role || data.scenario.sceneRole || '対話相手'}、${displayName || '対話相手'}
 - 利用者: ${userRoles[data.category] || 'あなたと対話する担当者'}
 - あなたは自分の組織・立場の状況を答える側。利用者は質問・提案する側。
 - 自社の課題を利用者に説明させたり、利用者へ営業・面談・対応方法を助言したりしない。
@@ -217,6 +226,7 @@ async function createReply(ai, data) {
 }
 
 async function createEvaluation(ai, data) {
+  const displayName = roleplayAvatarName(data);
   const rubricMap = {
     sales: ['関係構築', '質問力', '傾聴・共感', '課題の深掘り', '提案・価値訴求', '次の行動'],
     manager: ['安心感', '質問力', '傾聴・共感', '事実整理', '本人の気づき', '行動合意'],
@@ -224,18 +234,19 @@ async function createEvaluation(ai, data) {
     support: ['感情受容', '事実確認', '影響把握', '説明の明確さ', '解決策', '適切な境界'],
   };
   const rubric = rubricMap[data.category] || rubricMap.sales;
-  const transcript = data.conversation.map((m) => `${m.role === 'user' ? '利用者' : data.avatar.name || '相手'}: ${m.text}`).join('\n');
+  const transcript = data.conversation.map((m) => `${m.role === 'user' ? '利用者' : displayName || '相手'}: ${m.text}`).join('\n');
   const averageChars = data.audioStats.speechTurns ? Math.round(data.audioStats.totalChars / data.audioStats.speechTurns) : 0;
 
   const prompt = `以下の日本語ロールプレイを、企業向けロールプレイの対話スキルコーチとして評価してください。
 
 場面: ${data.scenario.title}
-対話相手: ${data.avatar.name}（${data.avatar.traits}）
+対話相手: ${displayName}（${data.avatar.traits}）
 目的: ${data.scenario.objective}
 評価項目: ${rubric.join('、')}
 相手の隠れた本音: ${data.scenario.hiddenNeed}
 難易度: ${data.difficulty.label}
 最終状態: 信頼${data.metrics.trust}/100、関心${data.metrics.interest}/100、負荷${data.metrics.stress}/100
+入力されたロープレ設定: ${data.roleplayConfig ? JSON.stringify(data.roleplayConfig) : 'なし'}
 音声指標: 音声発話${data.audioStats.speechTurns}回、フィラー語${data.audioStats.fillerCount}回、平均${averageChars}文字
 
 会話:
@@ -246,7 +257,9 @@ ${transcript}
 - 良かった点と改善点は、会話中の具体的な発言・行動に基づく。
 - 根拠なく高得点にしないが、学習意欲を損なう表現は避ける。
 - 音声指標がある場合、フィラー語や一発言の長さも必要に応じて改善点へ反映する。
-- 「次に使う一言」は、そのまま使える自然な日本語にする。
+- 「次に使う一言」は、${data.category}の場面と入力設定に沿い、そのまま使える自然な日本語にする。
+- 評価文では会話に存在しない個人名・役職・商品・業界を新しく作らない。対話相手を指すときは「${displayName}」または「相手」と表現する。
+- 営業・管理職面談・採用面接・クレーム対応を混同しない。
 - JSON以外は出力しない。`;
 
   const schema = {
