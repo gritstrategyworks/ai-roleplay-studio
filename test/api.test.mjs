@@ -117,8 +117,11 @@ test('AI modes separate cloud processing from on-device Qwen processing', async 
   assert.match(localAI, /CreateWebWorkerMLCEngine/);
   assert.match(localAI, /cacheBackend: 'indexeddb'/);
   assert.match(localAI, /Qwen3-1\.7B-q4f16_1-MLC/);
-  assert.match(localAI, /Qwen3-4B-q4f16_1-MLC/);
+  assert.match(localAI, /Qwen3-4B-q4f32_1-MLC/);
   assert.match(localAI, /companyProfile/);
+  assert.match(localAI, /inspectGPU/);
+  assert.match(localAI, /diagnoseFailure/);
+  assert.match(localAI, /q4f32_1-MLC/);
   assert.match(build, /src\/local-ai-worker\.js/);
   for (const file of ['local-ai.js','local-ai-worker.js']) assert.match(serviceWorker, new RegExp(file.replace('.', '\\.')));
 });

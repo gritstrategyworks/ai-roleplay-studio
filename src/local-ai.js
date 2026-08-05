@@ -1,33 +1,80 @@
 import { CreateWebWorkerMLCEngine, deleteModelAllInfoInCache, hasModelInCache, prebuiltAppConfig } from '@mlc-ai/web-llm';
 
 const MODELS = {
-  light: { id: 'Qwen3-1.7B-q4f16_1-MLC', label: '軽量 Qwen 1.7B', requiredMemoryGB: 3 },
-  standard: { id: 'Qwen3-4B-q4f16_1-MLC', label: '標準 Qwen 4B', requiredMemoryGB: 6 },
+  compatible: { id: 'Qwen3-0.6B-q4f32_1-MLC', label: '互換性優先 Qwen 0.6B', requiredVRAMMB: 1925 },
+  standard: { id: 'Qwen3-1.7B-q4f32_1-MLC', label: '標準 Qwen 1.7B', requiredVRAMMB: 2636 },
+  quality: { id: 'Qwen3-4B-q4f32_1-MLC', label: '高品質 Qwen 4B', requiredVRAMMB: 4328 },
+};
+const LEGACY_MODELS = {
+  'Qwen3-1.7B-q4f16_1-MLC': MODELS.compatible.id,
+  'Qwen3-4B-q4f16_1-MLC': MODELS.compatible.id,
 };
 let engine = null;
 let currentModelId = '';
 let loadingPromise = null;
+let lastDiagnostics = null;
 
-function modelRecord(modelId) { return prebuiltAppConfig.model_list.find((item) => item.model_id === modelId); }
+function normalizeModelId(modelId) { return LEGACY_MODELS[modelId] || modelId || MODELS.compatible.id; }
+function modelRecord(modelId) { return prebuiltAppConfig.model_list.find((item) => item.model_id === normalizeModelId(modelId)); }
 function support() { return { webgpu: Boolean(globalThis.navigator?.gpu), secureContext: globalThis.isSecureContext, deviceMemoryGB: Number(globalThis.navigator?.deviceMemory || 0) }; }
+function describeError(error) {
+  const parts = [error?.name, error?.message, error?.cause?.message, typeof error === 'string' ? error : ''].filter(Boolean);
+  return [...new Set(parts)].join(': ') || '詳細不明のエラー';
+}
+async function inspectGPU() {
+  if (!globalThis.navigator?.gpu) throw new Error('WebGPUを利用できません。ChromeまたはEdgeのハードウェアアクセラレーションを有効にしてください。');
+  const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' }) || await navigator.gpu.requestAdapter();
+  if (!adapter) throw new Error('WebGPU対応GPUを初期化できません。ブラウザのハードウェアアクセラレーションまたは組織のブラウザポリシーを確認してください。');
+  const info = adapter.info || {};
+  return { shaderF16: adapter.features.has('shader-f16'), vendor: info.vendor || '', architecture: info.architecture || '', device: info.device || '', description: info.description || '' };
+}
+async function endpointStatus(url) {
+  try {
+    const response = await fetch(url, { method: 'HEAD', mode: 'cors', cache: 'no-store' });
+    return { ok: response.ok || response.status === 405, status: response.status, host: new URL(url).host };
+  } catch (error) { return { ok: false, status: 0, host: new URL(url).host, error: describeError(error) }; }
+}
+async function diagnoseFailure(record, gpu, error, workerIssue) {
+  const modelConfig = await endpointStatus(`${record.model}/resolve/main/mlc-chat-config.json`);
+  const modelLib = await endpointStatus(record.model_lib);
+  lastDiagnostics = { modelId: record.model_id, gpu, modelConfig, modelLib, error: describeError(error), workerIssue };
+  if (!modelConfig.ok) return `モデル配信元（${modelConfig.host}）へ接続できません。会社のプロキシ、Webフィルター、広告ブロッカーを確認してください。`;
+  if (!modelLib.ok) return `実行ライブラリ配信元（${modelLib.host}）へ接続できません。会社のWebフィルターを確認してください。`;
+  const detail = workerIssue || describeError(error);
+  if (/memory|out of memory|device lost|allocation/i.test(detail)) return 'GPUメモリが不足したかGPU接続が失われました。互換性優先 Qwen 0.6Bを選び、他のタブを閉じて再実行してください。';
+  if (/shader-f16/i.test(detail)) return 'このGPUは16ビットシェーダー非対応です。互換性優先モデルへ変更して再実行してください。';
+  return `端末内AIの初期化に失敗しました：${detail}`;
+}
 function parseJSON(value) {
   if (value && typeof value === 'object') return value;
   return JSON.parse(String(value || '').replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim());
 }
 async function prepare({ modelId, onProgress } = {}) {
-  const selected = modelId || MODELS.light.id;
-  if (!support().webgpu) throw new Error('この端末またはブラウザはWebGPUに対応していません。');
-  if (engine && currentModelId === selected) return true;
+  const selected = normalizeModelId(modelId);
+  if (engine && currentModelId === selected) return { modelId: selected, diagnostics: lastDiagnostics };
   if (loadingPromise) return loadingPromise;
   loadingPromise = (async () => {
+    onProgress?.({ progress: 0.01, text: 'GPUの互換性を確認しています' });
+    const gpu = await inspectGPU();
+    const record = modelRecord(selected);
+    if (!record) throw new Error(`モデル設定が見つかりません：${selected}`);
     if (engine) await engine.unload();
+    let workerIssue = '';
     const worker = new Worker(new URL('local-ai-worker.js', document.baseURI), { type: 'module' });
-    engine = await CreateWebWorkerMLCEngine(worker, selected, {
-      appConfig: { ...prebuiltAppConfig, cacheBackend: 'indexeddb' },
-      initProgressCallback: (progress) => onProgress?.({ progress: Math.max(0, Math.min(1, Number(progress.progress || 0))), text: progress.text || 'モデルを準備しています' }),
-    });
+    worker.addEventListener('error', (event) => { workerIssue = event.message || 'Web Workerを開始できませんでした'; });
+    try {
+      engine = await CreateWebWorkerMLCEngine(worker, selected, {
+        appConfig: { ...prebuiltAppConfig, cacheBackend: 'indexeddb' },
+        initProgressCallback: (progress) => onProgress?.({ progress: Math.max(0, Math.min(1, Number(progress.progress || 0))), text: progress.text || 'モデルを準備しています' }),
+      });
+    } catch (error) {
+      worker.terminate();
+      engine = null;
+      throw new Error(await diagnoseFailure(record, gpu, error, workerIssue));
+    }
     currentModelId = selected;
-    return true;
+    lastDiagnostics = { modelId: selected, gpu, ready: true };
+    return { modelId: selected, diagnostics: lastDiagnostics };
   })();
   try { return await loadingPromise; }
   catch (error) { engine = null; currentModelId = ''; throw error; }
@@ -56,11 +103,12 @@ async function evaluate(payload) {
   const prompt = `次の日本語ロールプレイを評価してください。カテゴリーを混同せず、会話にない個人名・役職・商品を創作しません。\n設定:${compactConfig(payload)}\n評価項目:${rubric.join('、')}\n会話:\n${transcript}\nJSONのみを返してください。形式:{"scores":[{"name":"評価項目","score":70}],"headline":"見出し","summary":"要約","good":"良かった点","improve":"改善点","nextPhrase":"次に使う一言","hiddenNeed":"相手の本音"}`;
   return complete([{ role: 'system', content: 'あなたは企業向けロールプレイの対話スキルコーチです。具体的で実行可能な日本語フィードバックをJSONで返します。' }, { role: 'user', content: prompt }], 820, 0.28);
 }
-async function cached(modelId) { return hasModelInCache(modelId || MODELS.light.id, { ...prebuiltAppConfig, cacheBackend: 'indexeddb' }); }
+async function cached(modelId) { return hasModelInCache(normalizeModelId(modelId), { ...prebuiltAppConfig, cacheBackend: 'indexeddb' }); }
 async function remove(modelId) {
-  const selected = modelId || currentModelId || MODELS.light.id;
+  const selected = normalizeModelId(modelId || currentModelId);
   if (engine) await engine.unload();
   engine = null; currentModelId = '';
   await deleteModelAllInfoInCache(selected, { ...prebuiltAppConfig, cacheBackend: 'indexeddb' });
 }
-globalThis.LocalAI = { MODELS, support, prepare, reply, evaluate, cached, remove, modelRecord };
+function diagnostics() { return lastDiagnostics; }
+globalThis.LocalAI = { MODELS, support, prepare, reply, evaluate, cached, remove, modelRecord, normalizeModelId, diagnostics };
