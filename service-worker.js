@@ -1,6 +1,6 @@
-const CACHE='ai-roleplay-studio-v1-14-model-relay';
+const CACHE='ai-roleplay-studio-v1-15-fast-local-ai';
 const BASE=new URL('./',self.location.href);
-const CORE=['index.html','styles.css','app.js?v=1.14','local-ai.js?v=1.14','local-ai-worker.js?v=1.14','manifest.webmanifest','assets/icon.svg'].map(path=>new URL(path,BASE).href);
+const CORE=['index.html','styles.css','app.js?v=1.15','local-ai.js?v=1.15','local-ai-worker.js?v=1.15','manifest.webmanifest','assets/icon.svg'].map(path=>new URL(path,BASE).href);
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',event=>{

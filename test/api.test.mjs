@@ -149,7 +149,20 @@ test('Cloudflare relays only allowlisted public Qwen model files', async () => {
   assert.match(localAI, /\/api\/local-model/);
   assert.match(localAI, /proxiedModelRecord/);
   assert.match(localAI, /const record = proxiedModelRecord\(sourceRecord\)/);
-  assert.match(html, /local-ai\.js\?v=1\.14/);
-  assert.match(html, /app\.js\?v=1\.14/);
-  assert.match(serviceWorker, /v1-14-model-relay/);
+  assert.match(html, /local-ai\.js\?v=1\.15/);
+  assert.match(html, /app\.js\?v=1\.15/);
+  assert.match(serviceWorker, /v1-15-fast-local-ai/);
+});
+test('on-device replies use bounded streaming generation and preserve composer width', async () => {
+  const {readFile} = await import('node:fs/promises');
+  const [localAI, app, css, html] = await Promise.all([readFile('src/local-ai.js','utf8'), readFile('app.js','utf8'), readFile('styles.css','utf8'), readFile('index.html','utf8')]);
+  assert.match(localAI, /generateFastReply/);
+  assert.match(localAI, /max_tokens: 72/);
+  assert.match(localAI, /stream: true/);
+  assert.match(localAI, /slice\(-6\)/);
+  assert.match(localAI, /20000/);
+  assert.match(localAI, /初回応答を高速化しています/);
+  assert.match(app, /高速応答へ切り替えました/);
+  assert.match(css, /\.local-ai-mode \.composer-row\{grid-template-columns:minmax\(0,1fr\) 48px\}/);
+  assert.match(html, /local-ai\.js\?v=1\.15/);
 });

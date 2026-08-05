@@ -65,7 +65,7 @@ async function prepare({ modelId, onProgress } = {}) {
     const record = proxiedModelRecord(sourceRecord);
     if (engine) await engine.unload();
     let workerIssue = '';
-    const worker = new Worker(new URL('local-ai-worker.js?v=1.14', document.baseURI), { type: 'module' });
+    const worker = new Worker(new URL('local-ai-worker.js?v=1.15', document.baseURI), { type: 'module' });
     worker.addEventListener('error', (event) => { workerIssue = event.message || 'Web Workerを開始できませんでした'; });
     try {
       engine = await CreateWebWorkerMLCEngine(worker, selected, {
@@ -77,6 +77,10 @@ async function prepare({ modelId, onProgress } = {}) {
       engine = null;
       throw new Error(await diagnoseFailure(record, gpu, error, workerIssue));
     }
+    onProgress?.({ progress: 0.99, text: '初回応答を高速化しています' });
+    try {
+      await engine.chat.completions.create({ messages: [{ role: 'user', content: 'はい' }], max_tokens: 1, temperature: 0, extra_body: { enable_thinking: false } });
+    } catch (error) { console.warn('Local model warmup skipped', error); }
     currentModelId = selected;
     lastDiagnostics = { modelId: selected, gpu, ready: true };
     return { modelId: selected, diagnostics: lastDiagnostics };
@@ -85,28 +89,69 @@ async function prepare({ modelId, onProgress } = {}) {
   catch (error) { engine = null; currentModelId = ''; throw error; }
   finally { loadingPromise = null; }
 }
-async function complete(messages, maxTokens = 360, temperature = 0.55) {
-  if (!engine) throw new Error('端末内AIモデルが準備されていません。');
-  const output = await engine.chat.completions.create({ messages, temperature, max_tokens: maxTokens, response_format: { type: 'json_object' }, extra_body: { enable_thinking: false } });
-  return parseJSON(output.choices?.[0]?.message?.content);
+function interruptGeneration() {
+  try {
+    const result = engine?.interruptGenerate();
+    if (result && typeof result.catch === 'function') result.catch(() => {});
+    return result;
+  } catch { return undefined; }
 }
-function compactConfig(payload) {
-  return JSON.stringify({ category: payload.category, product: payload.roleplayConfig?.product, customer: payload.roleplayConfig?.customer, deal: payload.roleplayConfig?.deal, advanced: payload.roleplayConfig?.advancedEnabled ? payload.roleplayConfig?.advanced : undefined, companyProfile: payload.companyProfile || undefined });
+async function complete(messages, maxTokens = 520, temperature = 0.28) {
+  if (!engine) throw new Error('端末内AIモデルが準備されていません。');
+  let timedOut = false;
+  const timer = setTimeout(() => { timedOut = true; interruptGeneration(); }, 45000);
+  try {
+    const output = await engine.chat.completions.create({ messages, temperature, max_tokens: maxTokens, response_format: { type: 'json_object' }, extra_body: { enable_thinking: false } });
+    if (timedOut) throw new Error('端末内AIの採点がタイムアウトしました。');
+    return parseJSON(output.choices?.[0]?.message?.content);
+  } finally { clearTimeout(timer); }
+}
+function clippedConfig(payload) {
+  return JSON.stringify({ category: payload.category, product: payload.roleplayConfig?.product, customer: payload.roleplayConfig?.customer, deal: payload.roleplayConfig?.deal, advanced: payload.roleplayConfig?.advancedEnabled ? payload.roleplayConfig?.advanced : undefined, companyProfile: String(payload.companyProfile || '').slice(0, 2500) }, (key, value) => typeof value === 'string' ? value.slice(0, key === 'companyProfile' ? 2500 : 500) : value);
+}
+function cleanGeneratedText(value) {
+  return String(value || '').replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/^```(?:text)?\s*/i, '').replace(/\s*```$/, '').trim();
+}
+async function generateFastReply(messages) {
+  if (!engine) throw new Error('端末内AIモデルが準備されていません。');
+  let text = '';
+  let timedOut = false;
+  const timer = setTimeout(() => { timedOut = true; interruptGeneration(); }, 20000);
+  try {
+    const chunks = await engine.chat.completions.create({ messages, temperature: 0.42, top_p: 0.82, max_tokens: 72, stream: true, extra_body: { enable_thinking: false } });
+    for await (const chunk of chunks) {
+      text += chunk.choices?.[0]?.delta?.content || '';
+      const cleaned = cleanGeneratedText(text);
+      if (cleaned.length >= 24 && /[。！？!?]$/.test(cleaned)) {
+        await interruptGeneration();
+        break;
+      }
+      if (cleaned.length >= 100) {
+        await interruptGeneration();
+        break;
+      }
+    }
+  } catch (error) {
+    if (!cleanGeneratedText(text)) throw error;
+  } finally { clearTimeout(timer); }
+  const cleaned = cleanGeneratedText(text).slice(0, 140);
+  if (!cleaned || timedOut) throw new Error('端末内AIの応答が20秒を超えました。');
+  return cleaned;
 }
 async function reply(payload) {
   const appearance = payload.avatar?.name || '会話相手';
-  const system = `あなたは日本語の実践ロールプレイで「${appearance}」だけを演じます。利用者の役、コーチ、解説者を演じてはいけません。\n設定:${compactConfig(payload)}\n性格・態度・話し方は設定から判断し、アバターの性別や年代から推測しません。直前の利用者発言へ直接反応し、自然な口語1〜3文、原則120文字以内で答えてください。設定にない事実は創作しません。JSONのみを返してください。形式:{"reply":"返答","emotion":"positive|curious|neutral|skeptical|angry","deltas":{"trust":0,"interest":0,"stress":0}}`;
-  const history = (payload.conversation || []).slice(-12).map((item) => ({ role: item.role === 'user' ? 'user' : 'assistant', content: item.text }));
-  if (!history.length || history.at(-1)?.content !== payload.userText) history.push({ role: 'user', content: payload.userText });
-  const result = await complete([{ role: 'system', content: system }, ...history]);
-  return { reply: String(result.reply || 'もう少し具体的に教えていただけますか。').slice(0, 300), emotion: ['positive', 'curious', 'neutral', 'skeptical', 'angry'].includes(result.emotion) ? result.emotion : 'neutral', deltas: { trust: Number(result.deltas?.trust || 0), interest: Number(result.deltas?.interest || 0), stress: Number(result.deltas?.stress || 0) } };
+  const system = `日本語ロールプレイで「${appearance}」だけを演じます。設定:${clippedConfig(payload)}\n直前の利用者発言へ直接答え、自然な口語1文、80文字以内にしてください。利用者・コーチ・解説者を演じず、設定にない事実や個人名を創作しません。返答本文だけを出力してください。`;
+  const history = (payload.conversation || []).slice(-6).map((item) => ({ role: item.role === 'user' ? 'user' : 'assistant', content: String(item.text || '').slice(0, 500) }));
+  if (!history.length || history.at(-1)?.content !== payload.userText) history.push({ role: 'user', content: String(payload.userText || '').slice(0, 500) });
+  const generated = await generateFastReply([{ role: 'system', content: system }, ...history]);
+  return { reply: generated, emotion: 'neutral', deltas: { trust: 1, interest: 1, stress: 0 } };
 }
 async function evaluate(payload) {
   const rubrics = { sales: ['関係構築', '質問力', '傾聴・共感', '課題の深掘り', '提案・価値訴求', '次の行動'], manager: ['安心感', '質問力', '傾聴・共感', '事実整理', '本人の気づき', '行動合意'], interview: ['場づくり', '質問設計', '深掘り', '具体性確認', '公平性', '相互理解'], support: ['感情受容', '事実確認', '影響把握', '説明の明確さ', '解決策', '適切な境界'] };
   const rubric = rubrics[payload.category] || rubrics.sales;
   const transcript = (payload.conversation || []).map((item) => `${item.role === 'user' ? '利用者' : '相手'}:${item.text}`).join('\n');
-  const prompt = `次の日本語ロールプレイを評価してください。カテゴリーを混同せず、会話にない個人名・役職・商品を創作しません。\n設定:${compactConfig(payload)}\n評価項目:${rubric.join('、')}\n会話:\n${transcript}\nJSONのみを返してください。形式:{"scores":[{"name":"評価項目","score":70}],"headline":"見出し","summary":"要約","good":"良かった点","improve":"改善点","nextPhrase":"次に使う一言","hiddenNeed":"相手の本音"}`;
-  return complete([{ role: 'system', content: 'あなたは企業向けロールプレイの対話スキルコーチです。具体的で実行可能な日本語フィードバックをJSONで返します。' }, { role: 'user', content: prompt }], 820, 0.28);
+  const prompt = `次の日本語ロールプレイを評価してください。カテゴリーを混同せず、会話にない個人名・役職・商品を創作しません。\n設定:${clippedConfig(payload)}\n評価項目:${rubric.join('、')}\n会話:\n${transcript}\nJSONのみを返してください。形式:{"scores":[{"name":"評価項目","score":70}],"headline":"見出し","summary":"要約","good":"良かった点","improve":"改善点","nextPhrase":"次に使う一言","hiddenNeed":"相手の本音"}`;
+  return complete([{ role: 'system', content: 'あなたは企業向けロールプレイの対話スキルコーチです。具体的で実行可能な日本語フィードバックをJSONで返します。' }, { role: 'user', content: prompt }], 520, 0.28);
 }
 async function cached(modelId) { return hasModelInCache(normalizeModelId(modelId), { ...prebuiltAppConfig, cacheBackend: 'indexeddb' }); }
 async function remove(modelId) {
