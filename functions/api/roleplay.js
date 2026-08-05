@@ -98,6 +98,7 @@ function sanitizePayload(body) {
     difficulty: { label: sanitizeText(difficulty.label, 30) },
     topic: sanitizeText(body.topic, 140),
     context: sanitizeText(body.context, 800),
+    roleplayConfig: body.roleplayConfig || null,
     promptSettings: {
       meetingStage: sanitizeText(body.promptSettings?.meetingStage, 100),
       knownIssue: sanitizeText(body.promptSettings?.knownIssue, 240),
@@ -129,7 +130,9 @@ async function createReply(ai, data) {
     support: '問い合わせ・苦情へ対応する担当者',
   };
   const detail = data.promptSettings || {};
-  const system = `あなたは日本語の実践ロールプレイで「${data.avatar.name || '対話相手'}」だけを演じます。利用者の役を演じたり、コーチ・営業担当・解説者になったりしてはいけません。
+  const q = data.roleplayConfig;
+  const quickPrompt = q ? '【商品】'+JSON.stringify(q.product)+'\n【顧客】'+JSON.stringify(q.customer)+'\n【商談】'+JSON.stringify(q.deal)+'\n重要: アバターのgenderとageGroupは見た目だけ。性格・価値観・態度・話し方を推測しない。\n【詳細設定】'+(q.advancedEnabled?JSON.stringify(q.advanced):'なし')+'\n' : '';
+  const system = `${quickPrompt}`+`あなたは日本語の実践ロールプレイで「${data.avatar.name || '対話相手'}」だけを演じます。利用者の役を演じたり、コーチ・営業担当・解説者になったりしてはいけません。
 
 【役割を絶対に固定する】
 - あなた: ${data.avatar.industry || '組織'}の${data.avatar.role || data.scenario.sceneRole || '対話相手'}、${data.avatar.name || '対話相手'}
@@ -293,6 +296,9 @@ function clampDelta(value) {
   const n = Number(value);
   return Number.isFinite(n) ? Math.max(-7, Math.min(7, Math.round(n))) : 0;
 }
+
+
+
 
 
 

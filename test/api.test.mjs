@@ -18,7 +18,7 @@ test('setup supports selectable free-form prompt fields and contextual fallback'
   const { readFile } = await import('node:fs/promises');
   const html = await readFile('index.html', 'utf8');
   const app = await readFile('app.js', 'utf8');
-  for (const id of ['meetingStageInput', 'knownIssueInput', 'conversationGoalInput', 'constraintsInput']) assert.match(html, new RegExp(`id="${id}"`));
+  for (const id of ['dealSceneSelect', 'customerNeedsInput', 'roleplayGoalSelect', 'advancedToggle']) assert.match(html, new RegExp(`id="${id}"`));
   assert.match(html, /<datalist/);
   assert.match(app, /function localReply\(text,a\)/);
   assert.match(app, /費用対効果と現場への定着/);
@@ -34,3 +34,5 @@ test('sales presets are product-agnostic', async () => {
   assert.match(app, /物流・保守・業務委託サービス/);
   assert.doesNotMatch(api, /研修・サービスを提案する営業担当者/);
 });
+
+
