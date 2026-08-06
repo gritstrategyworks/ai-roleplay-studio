@@ -1,73 +1,67 @@
-# AI ROLEPLAY STUDIO — GitHub Test Edition v3.1
+# AI ROLEPLAY STUDIO
 
-GitHub Pagesへそのまま公開してテストプレイできる、AI音声ロールプレイWebアプリです。
+Cloudflare Workers AIと端末内Qwenに対応した、日本語の対話ロールプレイWebアプリです。
 
 ## 実装済み
 
-- 営業・商談、管理職面談、採用面接、クレーム対応
-- 14シナリオ、10人のアバター、各5表情
-- 相手の性格8種類、難易度3段階、練習／実践モード
-- 信頼・関心・負荷とアバター表情の連動
-- 音声認識、ハンズフリー会話、端末標準音声
-- Kokoro-82Mの日本語5音声（ブラウザ内生成）
-- AI未接続時のローカル会話
-- AI採点またはローカル採点、会話履歴、成績保存
-- 結果テキスト保存、全履歴JSON書き出し
-- 無料／プレミアム表示の課金UIテスト
-- スマートフォン対応、PWAキャッシュ
-- 外部Cloudflare WorkerのAIエンドポイント設定
+- 営業・商談、管理職面談、採用面接、クレーム対応の4カテゴリ
+- 基本12項目と、BtoB・BtoC・カテゴリ別の詳細設定
+- 外見だけを表す6種類の顧客アバター
+- 通常モード：Cloudflare Workers AIのQwen3 30Bで会話・採点
+- 社内情報モード：Qwen 0.6B / 1.7B / 4Bをブラウザ端末内で実行
+- 音声認識、ハンズフリー会話、端末標準音声、履歴保存、PWA
+- Stripe Checkout / Customer Portal / Webhook / D1による月額980円（税込）のPremium
+- Google Analytics 4（G-XH93D31BKJ）
+- Google Search Console所有権確認メタタグ
 
-## GitHub Pagesで公開
+## AI実行モード
 
-1. このフォルダの中身をGitHubの新しいリポジトリ直下へアップロードします。
-2. GitHubの `Settings → Pages` を開きます。
-3. `Deploy from a branch`、ブランチ `main`、フォルダ `/(root)` を選択します。
-4. 表示された `https://ユーザー名.github.io/リポジトリ名/` をChromeまたはEdgeで開きます。
+通常モードは同一ドメインの `/api/roleplay` を利用します。使用モデルは
+`@cf/qwen/qwen3-30b-a3b-fp8` です。詳細設定もサニタイズ後に会話・採点へ反映します。
 
-GitHub Pagesだけで公開した場合、会話はローカル会話モードです。音声認識、端末音声、Kokoro、アバター、採点、履歴は利用できます。
-
-## 本物のAI自由会話へ接続
-
-Cloudflare WorkerまたはPages Functionsで `functions/api/roleplay.js` を公開し、アプリの
-`設定 → AI APIエンドポイント` に次の形式で入力します。
-
-```text
-https://あなたのWorker名.workers.dev/api/roleplay
-```
-
-このプロジェクトのAPIはCORSを許可する設定です。Workers AIバインディング名は `AI` にしてください。
-
-## Kokoro音声
-
-- 初回に約90MBのモデルを取得します。
-- HTTPSまたはlocalhostで動作します。
-- 端末やブラウザで利用できない場合は標準音声へ自動切替します。
-- KokoroライブラリはjsDelivr、モデルはHugging Faceから取得します。
+社内情報モードはWebGPU対応の最新版ChromeまたはEdgeが必要です。会話、採点、自社情報は
+AI APIへ送信しません。初回だけモデルと実行ライブラリをダウンロードし、ブラウザ内へ保存します。
 
 ## ローカル確認
 
-静的機能だけ試す場合：
+`npm install` 後、次を実行します。
 
 ```bash
-python -m http.server 8000
+npm test
+npx wrangler pages dev . --ai AI
 ```
 
-Cloudflare Workers AIを含めて試す場合：
+秘密情報は `.dev.vars` に置き、Gitへ追加しないでください。
 
-```bash
-npm install
-npx wrangler login
-npm run dev
+## Stripe月額課金
+
+- 商品：AI Roleplay Studio Premium
+- 価格：月額980円（税込）
+- Stripe本番Price ID：`price_1U1JSkJYbwf4eLAfkVOYv6kq`
+- D1：`ai-roleplay-billing`
+- Webhook：`/api/billing/webhook`
+
+必要なSecretsは `STRIPE_SECRET_KEY`、`STRIPE_WEBHOOK_SECRET`、
+`BILLING_SESSION_SECRET` です。秘密鍵はHTML、ブラウザJavaScript、GitHubへ保存しません。
+
+本番設定の `BILLING_ENABLED` は現在 `false` です。Stripeアカウントの本番決済有効化と、
+販売事業者情報・専用問い合わせ先の掲載が完了した後にだけ `true` へ変更してください。
+
+## デプロイ
+
+現在の本番URL：
+
+```text
+https://ai-roleplay-studio.ai-roleplay-studio.workers.dev/
 ```
 
-## 注意
+この作業環境ではGitHubへ直接書き込みません。ローカルで確認後、
+`GITHUB_UPLOAD_GUIDE.md` に従って必要ファイルだけを手動アップロードしてください。
 
-- GitHub Pagesは静的ホスティングなので、Workers AIそのものは実行しません。
-- APIキーをHTMLやJavaScriptへ直接書かないでください。
-- 音声認識はブラウザ依存です。ChromeまたはEdgeを推奨します。
-- 成績と設定は利用者のブラウザのLocalStorageへ保存されます。
+## データと注意事項
 
-## 外部ライセンス
-
-- Kokoro-82M / kokoro-js: Apache License 2.0
-- 詳細は `THIRD_PARTY_NOTICES.md` を確認してください。
+- 設定・履歴・自社情報は原則として利用者のブラウザに保存します。
+- 社内情報モードでも、モデル初回取得時には外部通信が発生します。
+- Premiumの利用権は現在、署名付きCookieで購入端末に紐づきます。
+- 利用規約、プライバシーポリシー、特定商取引法表示は本番画面内にあります。
+- 外部ライセンスは `THIRD_PARTY_NOTICES.md` を確認してください。

@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ai-roleplay-studio",
+  "compatibility_date": "2026-07-31",
+  "pages_build_output_dir": ".",
+  "ai": { "binding": "AI" },
+  "d1_databases": [
+    {
+      "binding": "BILLING_DB",
+      "database_name": "ai-roleplay-billing",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ]
+}

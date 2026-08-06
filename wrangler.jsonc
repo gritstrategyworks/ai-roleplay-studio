@@ -2,6 +2,21 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ai-roleplay-studio",
   "compatibility_date": "2026-07-31",
+  "compatibility_flags": ["global_fetch_strictly_public"],
   "pages_build_output_dir": ".",
-  "ai": { "binding": "AI" }
+  "ai": { "binding": "AI" },
+  "d1_databases": [
+    {
+      "binding": "BILLING_DB",
+      "database_name": "ai-roleplay-billing",
+      "database_id": "b4383f39-07b0-450b-9e3b-7ca40aa56c4b",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "APP_URL": "https://ai-roleplay-studio.ai-roleplay-studio.workers.dev",
+    "STRIPE_PRICE_ID": "price_1U1JSkJYbwf4eLAfkVOYv6kq",
+    "BILLING_ENABLED": "false"
+  },
+  "observability": { "enabled": true }
 }
