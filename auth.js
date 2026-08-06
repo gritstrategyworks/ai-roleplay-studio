@@ -21,6 +21,7 @@
   const status = document.getElementById('authStatus');
   const loginTab = document.getElementById('authLoginTab');
   const registerTab = document.getElementById('authRegisterTab');
+  const guestButton = document.getElementById('authGuest');
   const policyDialog = document.getElementById('authPolicyDialog');
   const policyTitle = document.getElementById('authPolicyTitle');
   const policyContent = document.getElementById('authPolicyContent');
@@ -37,6 +38,7 @@
     passwordInput.disabled = busy;
     confirmInput.disabled = busy;
     agreementInput.disabled = busy;
+    guestButton.disabled = busy;
     if (busy && message) setStatus(message, 'loading');
   }
 
@@ -59,8 +61,23 @@
   }
 
   function setUserLabels(user) {
+    const guest = Boolean(user?.guest);
     document.querySelectorAll('[data-auth-email]').forEach((element) => {
-      element.textContent = user?.email || '';
+      element.textContent = guest ? 'ゲストモード' : (user?.email || '');
+    });
+    document.querySelectorAll('[data-auth-logout]').forEach((button) => {
+      button.textContent = guest ? 'ゲスト終了' : 'ログアウト';
+    });
+    document.querySelectorAll('[data-auth-account-title]').forEach((element) => {
+      element.textContent = guest ? 'ゲストとして利用中' : 'ログイン中のアカウント';
+    });
+    document.querySelectorAll('[data-auth-session-note]').forEach((element) => {
+      element.textContent = guest
+        ? '履歴・設定はこの端末のゲスト専用領域に保存されます。課金機能にはアカウント登録が必要です。'
+        : 'この端末では30日間ログイン状態を保持します。';
+    });
+    document.querySelectorAll('[data-auth-user-pill]').forEach((element) => {
+      element.title = guest ? 'ゲストとして利用中' : 'ログイン中';
     });
   }
 
@@ -83,8 +100,8 @@
     loading.hidden = false;
     panel.hidden = true;
     document.getElementById('authLoadingText').textContent = 'アプリを準備しています';
-    await loadScript('local-ai.js?v=1.17');
-    await loadScript('app.js?v=1.17');
+    await loadScript('local-ai.js?v=1.18');
+    await loadScript('app.js?v=1.18');
     appLoaded = true;
     loadedUserId = currentUser.id;
     setUserLabels(currentUser);
@@ -95,7 +112,7 @@
 
   async function unlock(data) {
     const previousLoadedUserId = loadedUserId;
-    currentUser = data.user;
+    currentUser = { ...data.user, guest: Boolean(data.guest || data.user?.guest) };
     setUserLabels(currentUser);
     if (appLoaded && previousLoadedUserId && previousLoadedUserId !== currentUser.id) {
       location.reload();
@@ -170,6 +187,18 @@
     }
   }
 
+  async function enterGuest() {
+    setBusy(true, 'ゲストモードを準備しています…');
+    try {
+      const data = await requestAuth('/api/auth/guest', {});
+      await unlock(data);
+    } catch (error) {
+      setStatus(error.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function logout() {
     const buttons = document.querySelectorAll('[data-auth-logout]');
     buttons.forEach(function (button) { button.disabled = true; });
@@ -199,7 +228,7 @@
       const data = await response.json();
       signupEnabled = data.signupEnabled !== false;
       registerTab.hidden = !signupEnabled;
-      if (response.ok && data.authenticated && data.user) {
+      if (response.ok && (data.authenticated || data.guest) && data.user) {
         await unlock(data);
       } else {
         showGate('');
@@ -225,6 +254,7 @@
 
   window.AuthGate = {
     get user() { return currentUser; },
+    get isGuest() { return Boolean(currentUser?.guest); },
     logout: logout,
   };
   window.logoutRoleplay = logout;
@@ -232,6 +262,7 @@
   form.addEventListener('submit', submitAuth);
   loginTab.addEventListener('click', function () { setMode('login'); });
   registerTab.addEventListener('click', function () { setMode('register'); });
+  guestButton.addEventListener('click', enterGuest);
   document.querySelectorAll('[data-auth-logout]').forEach(function (button) {
     button.addEventListener('click', logout);
   });

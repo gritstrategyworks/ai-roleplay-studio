@@ -5,6 +5,7 @@ Cloudflare Workers AIと端末内Qwenに対応した、日本語の対話ロー�
 ## 実装済み
 
 - メールアドレス＋パスワードの独自ログイン（30日保持・明示ログアウト）
+- ログイン不要のゲストモード（24時間、端末内データを分離、課金操作は不可）
 - 営業・商談、管理職面談、採用面接、クレーム対応の4カテゴリ
 - 基本12項目と、BtoB・BtoC・カテゴリ別の詳細設定
 - 外見だけを表す6種類の顧客アバター
@@ -36,9 +37,9 @@ npx wrangler pages dev . --ai AI
 
 ## ログインとセッション
 
-パスワードはPBKDF2-HMAC-SHA256（600,000回）とユーザー別Salt、Cloudflare Secretの
+パスワードはPBKDF2-HMAC-SHA256（Cloudflare対応上限の100,000回）とユーザー別Salt、Cloudflare Secretの
 `AUTH_PEPPER` で保護してD1へ保存します。ログインCookieは本番で `Secure`、`HttpOnly`、
-`SameSite=Lax`、30日間有効です。AI・課金APIは有効なログインセッションを必須とします。
+`SameSite=Lax`、30日間有効です。AI APIは有効なログインまたは署名付きゲストセッションを必須とし、課金APIはログインユーザーだけに許可します。
 
 ## Stripe月額課金
 

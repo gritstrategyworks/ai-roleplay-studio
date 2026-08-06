@@ -17,16 +17,16 @@
   <title>AI ROLEPLAY STUDIO</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=1.17">
-  <link rel="stylesheet" href="auth.css?v=1.17">
+  <link rel="stylesheet" href="styles.css?v=1.18">
+  <link rel="stylesheet" href="auth.css?v=1.18">
 </head>
 <body class="auth-pending">
 <div id="authGate" class="auth-gate">
   <div class="auth-layout">
     <section class="auth-intro">
       <div class="auth-brand"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 8.2A4.2 4.2 0 0 1 10.2 4h3.6A4.2 4.2 0 0 1 18 8.2v3.1a4.2 4.2 0 0 1-4.2 4.2h-1.3L9 19v-3.5A4.2 4.2 0 0 1 6 11.3V8.2Z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M9 9h6M9 12h4" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span><span>AI ROLEPLAY STUDIO<small>SECURE MEMBER ACCESS</small></span></div>
-      <div><div class="eyebrow">AI音声ロールプレイ</div><h1>対話力を、<br>会話で磨く。</h1><p>AI顧客・部下・応募者との実践練習を、あなた専用のアカウントで安全に続けられます。</p></div>
-      <ul class="auth-features"><li>詳細設定と6種類のアバター</li><li>通常モードと端末内Qwen</li><li>ログイン状態を30日間保持</li></ul>
+      <div><div class="eyebrow">AI音声ロールプレイ</div><h1>対話力を、<br>会話で磨く。</h1><p>アカウントで継続利用することも、ログインせずゲストとしてすぐ試すこともできます。</p></div>
+      <ul class="auth-features"><li>詳細設定と6種類のアバター</li><li>通常モードと端末内Qwen</li><li>アカウントまたはゲストで利用</li></ul>
     </section>
     <section class="auth-card">
       <div id="authLoading" class="auth-loading"><span class="auth-spinner"></span><strong id="authLoadingText">ログイン状態を確認しています</strong><p>安全な接続を準備しています。</p></div>
@@ -41,6 +41,9 @@
           <div id="authStatus" class="auth-status" role="alert" hidden></div>
           <button id="authSubmit" class="primary-btn auth-submit" type="submit">ログイン</button>
         </form>
+        <div class="auth-divider"><span>または</span></div>
+        <button id="authGuest" class="ghost-btn auth-guest" type="button">ログインせずゲストで試す</button>
+        <p class="auth-guest-note">アカウント登録は不要です。履歴と設定はこの端末のゲスト専用領域に保存され、課金機能は利用できません。</p>
         <div class="auth-remember"><span>✓</span><p><strong>ログイン状態を保持</strong><br>この端末では30日間ログインしたまま利用できます。共有端末では利用後にログアウトしてください。</p></div>
         <div class="auth-policy-links"><button type="button" data-auth-policy="terms">利用規約</button><button type="button" data-auth-policy="privacy">プライバシーポリシー</button></div>
       </div>
@@ -56,7 +59,7 @@
     </div>
     <div class="top-actions">
       <div id="apiStatus" class="api-status" title="Cloudflare Workers AIの接続状態"><span class="api-dot"></span><span id="apiStatusText">ローカルモード</span></div>
-      <div class="user-pill" title="ログイン中"><span class="user-avatar">●</span><span data-auth-email></span></div>
+      <div class="user-pill" title="ログイン中" data-auth-user-pill><span class="user-avatar">●</span><span data-auth-email></span></div>
       <button class="logout-btn" type="button" data-auth-logout>ログアウト</button>
       <button class="icon-btn" type="button" aria-label="設定" onclick="showScreen('settings')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.15.38.36.72.6 1 .29.33.68.53 1.1.6h.09v4h-.09a1.7 1.7 0 0 0-1.7.4Z"/></svg></button>
     </div>
@@ -197,7 +200,7 @@
     <section id="screen-settings" class="screen">
       <div class="page-header"><button class="back-btn" type="button" onclick="showScreen('home')">←</button><div><div class="eyebrow">SETTINGS</div><h2 style="margin-bottom:0">設定</h2></div></div>
       <div class="panel settings-grid">
-        <section class="account-setting"><div><div class="eyebrow">ACCOUNT</div><h3>ログイン中のアカウント</h3><p data-auth-email></p><small>この端末では30日間ログイン状態を保持します。</small></div><button class="ghost-btn compact-btn" type="button" data-auth-logout>ログアウト</button></section>
+        <section class="account-setting"><div><div class="eyebrow">ACCOUNT</div><h3 data-auth-account-title>ログイン中のアカウント</h3><p data-auth-email></p><small data-auth-session-note>この端末では30日間ログイン状態を保持します。</small></div><button class="ghost-btn compact-btn" type="button" data-auth-logout>ログアウト</button></section>
         <section class="ai-mode-section">
           <div><div class="eyebrow">AI MODE</div><h3>AI実行モード</h3><p class="help-text">扱う情報に合わせて、会話を処理する場所を選択します。</p></div>
           <div class="ai-mode-grid">
@@ -235,6 +238,6 @@
 <div id="toast" class="toast" role="status"></div>
 <div id="endModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="endModalTitle"><div class="modal"><h3 id="endModalTitle">ロープレを終了しますか？</h3><p class="lead" style="font-size:13px">ここまでの会話を採点し、改善ポイントを表示します。</p><div class="modal-actions"><button class="ghost-btn" type="button" onclick="closeEndModal()">続ける</button><button class="primary-btn" type="button" onclick="finishRoleplay()">終了して採点</button></div></div></div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-box"><div class="spinner"></div><strong>会話を振り返っています</strong><p style="color:#b9c7d9;font-size:13px">評価と改善ポイントを作成中です</p></div></div>
-<script src="auth.js?v=1.17" defer></script>
+<script src="auth.js?v=1.18" defer></script>
 </body>
 </html>

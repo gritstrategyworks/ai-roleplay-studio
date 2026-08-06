@@ -1,6 +1,6 @@
-const CACHE='ai-roleplay-studio-v1-17-auth';
+const CACHE='ai-roleplay-studio-v1-18-guest';
 const BASE=new URL('./',self.location.href);
-const CORE=['index.html','styles.css?v=1.17','auth.css?v=1.17','auth.js?v=1.17','app.js?v=1.17','local-ai.js?v=1.17','local-ai-worker.js?v=1.17','manifest.webmanifest','assets/icon.svg'].map(path=>new URL(path,BASE).href);
+const CORE=['index.html','styles.css?v=1.18','auth.css?v=1.18','auth.js?v=1.18','app.js?v=1.18','local-ai.js?v=1.18','local-ai-worker.js?v=1.18','manifest.webmanifest','assets/icon.svg'].map(path=>new URL(path,BASE).href);
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',event=>{

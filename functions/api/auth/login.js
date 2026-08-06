@@ -10,7 +10,7 @@ import { assertSameOrigin, errorResponse, json, readJson } from '../../_lib/http
 const DUMMY_PASSWORD = {
   salt: 'AAAAAAAAAAAAAAAAAAAAAA',
   hash: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-  iterations: 600000,
+  iterations: 100000,
 };
 
 export async function onRequestPost({ request, env }) {

@@ -1,9 +1,13 @@
 const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
 export const AUTH_COOKIE_NAME = '__Host-roleplay_session';
 export const LOCAL_AUTH_COOKIE_NAME = 'roleplay_session';
+export const GUEST_COOKIE_NAME = '__Host-roleplay_guest';
+export const LOCAL_GUEST_COOKIE_NAME = 'roleplay_guest';
 export const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
-export const PASSWORD_ITERATIONS = 600000;
+export const GUEST_TTL_SECONDS = 60 * 60 * 24;
+export const PASSWORD_ITERATIONS = 100000;
 
 function toBase64Url(bytes) {
   let value = '';
@@ -40,6 +44,10 @@ function parseCookies(request) {
 
 function cookieNameFor(request) {
   return new URL(request.url).protocol === 'https:' ? AUTH_COOKIE_NAME : LOCAL_AUTH_COOKIE_NAME;
+}
+
+function guestCookieNameFor(request) {
+  return new URL(request.url).protocol === 'https:' ? GUEST_COOKIE_NAME : LOCAL_GUEST_COOKIE_NAME;
 }
 
 export function normalizeEmail(value) {
@@ -88,18 +96,19 @@ async function derivePassword(password, pepper, salt, iterations) {
 }
 
 export async function hashPassword(password, pepper, iterations = PASSWORD_ITERATIONS) {
+  const safeIterations = Math.min(PASSWORD_ITERATIONS, Math.max(100000, Number(iterations) || PASSWORD_ITERATIONS));
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const hash = await derivePassword(password, pepper, salt, iterations);
+  const hash = await derivePassword(password, pepper, salt, safeIterations);
   return {
     algorithm: 'pbkdf2-hmac-sha256',
-    iterations,
+    iterations: safeIterations,
     salt: toBase64Url(salt),
     hash: toBase64Url(hash),
   };
 }
 
 export async function verifyPassword(password, pepper, stored) {
-  const iterations = Math.min(1000000, Math.max(100000, Number(stored?.iterations) || PASSWORD_ITERATIONS));
+  const iterations = Math.min(PASSWORD_ITERATIONS, Math.max(100000, Number(stored?.iterations) || PASSWORD_ITERATIONS));
   const salt = fromBase64Url(stored?.salt);
   const expected = fromBase64Url(stored?.hash);
   const safeSalt = salt.length === 16 ? salt : new Uint8Array(16);
@@ -128,6 +137,67 @@ export function clearSessionCookie(request) {
 export function readSessionToken(request) {
   const cookies = parseCookies(request);
   return cookies[AUTH_COOKIE_NAME] || cookies[LOCAL_AUTH_COOKIE_NAME] || null;
+}
+
+function readGuestToken(request) {
+  const cookies = parseCookies(request);
+  return cookies[GUEST_COOKIE_NAME] || cookies[LOCAL_GUEST_COOKIE_NAME] || null;
+}
+
+function buildGuestCookie(token, request, maxAge = GUEST_TTL_SECONDS) {
+  const secure = new URL(request.url).protocol === 'https:' ? '; Secure' : '';
+  return guestCookieNameFor(request) + '=' + token + '; Path=/; HttpOnly; SameSite=Lax; Max-Age=' + maxAge + secure;
+}
+
+export function clearGuestCookie(request) {
+  const secure = new URL(request.url).protocol === 'https:' ? '; Secure' : '';
+  return guestCookieNameFor(request) + '=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0' + secure;
+}
+
+export async function createGuestSession(request, env) {
+  if (!env.AUTH_PEPPER) throw new Error('AUTH_PEPPER is not configured.');
+  const now = Math.floor(Date.now() / 1000);
+  const expiresAt = now + GUEST_TTL_SECONDS;
+  const payload = toBase64Url(encoder.encode(JSON.stringify({
+    version: 1,
+    role: 'guest',
+    issuedAt: now,
+    expiresAt,
+    nonce: generateSessionToken(),
+  })));
+  const signature = toBase64Url(await hmac('guest-session:' + payload, env.AUTH_PEPPER));
+  const token = payload + '.' + signature;
+  return {
+    guest: true,
+    user: { id: 'guest', email: 'ゲストモード', guest: true },
+    expiresAt,
+    cookie: buildGuestCookie(token, request),
+  };
+}
+
+export async function getGuestUser(request, env) {
+  if (!env.AUTH_PEPPER) return null;
+  const token = readGuestToken(request);
+  if (!token || token.length > 512) return null;
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+  const expected = await hmac('guest-session:' + parts[0], env.AUTH_PEPPER);
+  const actual = fromBase64Url(parts[1]);
+  if (actual.length !== expected.length || !equalBytes(actual, expected)) return null;
+  try {
+    const payload = JSON.parse(decoder.decode(fromBase64Url(parts[0])));
+    const now = Math.floor(Date.now() / 1000);
+    if (payload.version !== 1 || payload.role !== 'guest') return null;
+    if (!Number.isInteger(payload.issuedAt) || !Number.isInteger(payload.expiresAt)) return null;
+    if (payload.issuedAt > now + 60 || payload.expiresAt <= now || payload.expiresAt - payload.issuedAt !== GUEST_TTL_SECONDS) return null;
+    return {
+      guest: true,
+      expiresAt: payload.expiresAt,
+      user: { id: 'guest', email: 'ゲストモード', guest: true },
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function createSession(request, env, userId) {

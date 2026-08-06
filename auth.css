@@ -30,6 +30,11 @@ body.auth-pending{overflow:auto;background:#07111f}
 .auth-status{margin-top:15px;padding:12px 13px;border-radius:12px;font-size:12px;line-height:1.6}
 .auth-status.error{color:#9a332c;background:#fff0ee;border:1px solid #f5cfca}
 .auth-status.loading{color:#73581c;background:#fff8e8;border:1px solid #f0dfb6}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:17px 0 12px;color:#8a97a8;font-size:10px;font-weight:900;letter-spacing:.12em}
+.auth-divider:before,.auth-divider:after{content:'';height:1px;flex:1;background:#dde4ec}
+.auth-guest{width:100%;min-height:48px;border-color:#cad5e2;background:#fff;color:var(--navy-800);font-weight:900}
+.auth-guest:hover{border-color:var(--teal);background:#f1faf7}
+.auth-guest-note{margin:9px 3px 0;color:#778598;font-size:10px;line-height:1.6;text-align:center}
 .auth-remember{display:flex;gap:10px;margin-top:20px;padding:13px;border-radius:13px;color:#57677b;background:#f4f7fa;font-size:11px;line-height:1.55}
 .auth-remember>span{display:grid;place-items:center;width:25px;height:25px;flex:none;border-radius:50%;color:#fff;background:var(--teal);font-weight:900}
 .auth-remember p{margin:0}
