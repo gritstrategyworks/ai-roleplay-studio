@@ -1,0 +1,246 @@
+(function () {
+  const nativeFetch = window.fetch.bind(window);
+  let currentUser = null;
+  let loadedUserId = null;
+  let appLoaded = false;
+  let authMode = 'login';
+  let signupEnabled = true;
+
+  const gate = document.getElementById('authGate');
+  const appShell = document.getElementById('appShell');
+  const loading = document.getElementById('authLoading');
+  const panel = document.getElementById('authPanel');
+  const form = document.getElementById('authForm');
+  const emailInput = document.getElementById('authEmail');
+  const passwordInput = document.getElementById('authPassword');
+  const confirmField = document.getElementById('authConfirmField');
+  const confirmInput = document.getElementById('authPasswordConfirm');
+  const agreementField = document.getElementById('authAgreementField');
+  const agreementInput = document.getElementById('authAgreement');
+  const submitButton = document.getElementById('authSubmit');
+  const status = document.getElementById('authStatus');
+  const loginTab = document.getElementById('authLoginTab');
+  const registerTab = document.getElementById('authRegisterTab');
+  const policyDialog = document.getElementById('authPolicyDialog');
+  const policyTitle = document.getElementById('authPolicyTitle');
+  const policyContent = document.getElementById('authPolicyContent');
+
+  function setStatus(message, type) {
+    status.textContent = message || '';
+    status.className = 'auth-status' + (type ? ' ' + type : '');
+    status.hidden = !message;
+  }
+
+  function setBusy(busy, message) {
+    submitButton.disabled = busy;
+    emailInput.disabled = busy;
+    passwordInput.disabled = busy;
+    confirmInput.disabled = busy;
+    agreementInput.disabled = busy;
+    if (busy && message) setStatus(message, 'loading');
+  }
+
+  function setMode(mode) {
+    authMode = mode === 'register' && signupEnabled ? 'register' : 'login';
+    const registering = authMode === 'register';
+    loginTab.classList.toggle('active', !registering);
+    registerTab.classList.toggle('active', registering);
+    confirmField.hidden = !registering;
+    agreementField.hidden = !registering;
+    confirmInput.required = registering;
+    agreementInput.required = registering;
+    passwordInput.autocomplete = registering ? 'new-password' : 'current-password';
+    submitButton.textContent = registering ? '無料アカウントを作成' : 'ログイン';
+    document.getElementById('authPanelTitle').textContent = registering ? 'アカウントを作成' : 'おかえりなさい';
+    document.getElementById('authPanelLead').textContent = registering
+      ? 'メールアドレスとパスワードで、利用を開始できます。'
+      : '登録したメールアドレスでログインしてください。';
+    setStatus('', '');
+  }
+
+  function setUserLabels(user) {
+    document.querySelectorAll('[data-auth-email]').forEach((element) => {
+      element.textContent = user?.email || '';
+    });
+  }
+
+  function loadScript(source) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = source;
+      script.onload = resolve;
+      script.onerror = function () { reject(new Error('アプリの読み込みに失敗しました。')); };
+      document.body.appendChild(script);
+    });
+  }
+
+  async function loadApplication() {
+    if (appLoaded) {
+      appShell.hidden = false;
+      gate.hidden = true;
+      return;
+    }
+    loading.hidden = false;
+    panel.hidden = true;
+    document.getElementById('authLoadingText').textContent = 'アプリを準備しています';
+    await loadScript('local-ai.js?v=1.17');
+    await loadScript('app.js?v=1.17');
+    appLoaded = true;
+    loadedUserId = currentUser.id;
+    setUserLabels(currentUser);
+    appShell.hidden = false;
+    gate.hidden = true;
+    document.body.classList.remove('auth-pending');
+  }
+
+  async function unlock(data) {
+    const previousLoadedUserId = loadedUserId;
+    currentUser = data.user;
+    setUserLabels(currentUser);
+    if (appLoaded && previousLoadedUserId && previousLoadedUserId !== currentUser.id) {
+      location.reload();
+      return;
+    }
+    try {
+      await loadApplication();
+    } catch (error) {
+      console.error(error);
+      showGate(error.message || 'アプリを読み込めませんでした。');
+    }
+  }
+
+  function showGate(message) {
+    currentUser = null;
+    appShell.hidden = true;
+    gate.hidden = false;
+    loading.hidden = true;
+    panel.hidden = false;
+    document.body.classList.add('auth-pending');
+    setMode('login');
+    if (message) setStatus(message, 'error');
+    setTimeout(function () { emailInput.focus(); }, 50);
+  }
+
+  async function requestAuth(path, body) {
+    const response = await nativeFetch(path, {
+      method: 'POST',
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body || {}),
+    });
+    const data = await response.json().catch(function () { return {}; });
+    if (!response.ok) {
+      const error = new Error(data.error || '認証処理に失敗しました。');
+      error.code = data.code;
+      throw error;
+    }
+    return data;
+  }
+
+  async function submitAuth(event) {
+    event.preventDefault();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    if (authMode === 'register') {
+      if (password.length < 10) {
+        setStatus('パスワードは10文字以上で入力してください。', 'error');
+        return;
+      }
+      if (password !== confirmInput.value) {
+        setStatus('確認用パスワードが一致しません。', 'error');
+        return;
+      }
+      if (!agreementInput.checked) {
+        setStatus('利用規約とプライバシーポリシーへの同意が必要です。', 'error');
+        return;
+      }
+    }
+
+    setBusy(true, authMode === 'register' ? 'アカウントを作成しています…' : 'ログインしています…');
+    try {
+      const data = await requestAuth('/api/auth/' + authMode, { email: email, password: password });
+      passwordInput.value = '';
+      confirmInput.value = '';
+      await unlock(data);
+    } catch (error) {
+      setStatus(error.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function logout() {
+    const buttons = document.querySelectorAll('[data-auth-logout]');
+    buttons.forEach(function (button) { button.disabled = true; });
+    try {
+      await requestAuth('/api/auth/logout', {});
+    } catch (error) {
+      console.warn(error);
+    }
+    location.reload();
+  }
+
+  function openPolicy(type) {
+    const source = document.getElementById('info-' + type);
+    if (!source) return;
+    policyTitle.textContent = type === 'terms' ? '利用規約' : 'プライバシーポリシー';
+    policyContent.innerHTML = source.innerHTML;
+    if (typeof policyDialog.showModal === 'function') policyDialog.showModal();
+    else policyDialog.setAttribute('open', '');
+  }
+
+  async function bootstrap() {
+    try {
+      const response = await nativeFetch('/api/auth/session', {
+        credentials: 'same-origin',
+        cache: 'no-store',
+      });
+      const data = await response.json();
+      signupEnabled = data.signupEnabled !== false;
+      registerTab.hidden = !signupEnabled;
+      if (response.ok && data.authenticated && data.user) {
+        await unlock(data);
+      } else {
+        showGate('');
+      }
+    } catch (error) {
+      console.error(error);
+      showGate('接続を確認できませんでした。通信環境を確認して再読み込みしてください。');
+    }
+  }
+
+  window.fetch = async function (input, init) {
+    const response = await nativeFetch(input, init);
+    try {
+      const url = new URL(typeof input === 'string' ? input : input.url, location.href);
+      if (response.status === 401 && url.origin === location.origin && url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/auth/')) {
+        showGate('ログインの有効期限が切れました。もう一度ログインしてください。');
+      }
+    } catch {
+      // The original response is returned unchanged.
+    }
+    return response;
+  };
+
+  window.AuthGate = {
+    get user() { return currentUser; },
+    logout: logout,
+  };
+  window.logoutRoleplay = logout;
+
+  form.addEventListener('submit', submitAuth);
+  loginTab.addEventListener('click', function () { setMode('login'); });
+  registerTab.addEventListener('click', function () { setMode('register'); });
+  document.querySelectorAll('[data-auth-logout]').forEach(function (button) {
+    button.addEventListener('click', logout);
+  });
+  document.querySelectorAll('[data-auth-policy]').forEach(function (button) {
+    button.addEventListener('click', function () { openPolicy(button.dataset.authPolicy); });
+  });
+  document.getElementById('authPolicyClose').addEventListener('click', function () { policyDialog.close(); });
+  policyDialog.addEventListener('click', function (event) {
+    if (event.target === policyDialog) policyDialog.close();
+  });
+  bootstrap();
+}());

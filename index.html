@@ -17,17 +17,47 @@
   <title>AI ROLEPLAY STUDIO</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=1.16">
+  <link rel="stylesheet" href="styles.css?v=1.17">
+  <link rel="stylesheet" href="auth.css?v=1.17">
 </head>
-<body>
-<div class="app-shell">
+<body class="auth-pending">
+<div id="authGate" class="auth-gate">
+  <div class="auth-layout">
+    <section class="auth-intro">
+      <div class="auth-brand"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 8.2A4.2 4.2 0 0 1 10.2 4h3.6A4.2 4.2 0 0 1 18 8.2v3.1a4.2 4.2 0 0 1-4.2 4.2h-1.3L9 19v-3.5A4.2 4.2 0 0 1 6 11.3V8.2Z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M9 9h6M9 12h4" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span><span>AI ROLEPLAY STUDIO<small>SECURE MEMBER ACCESS</small></span></div>
+      <div><div class="eyebrow">AI音声ロールプレイ</div><h1>対話力を、<br>会話で磨く。</h1><p>AI顧客・部下・応募者との実践練習を、あなた専用のアカウントで安全に続けられます。</p></div>
+      <ul class="auth-features"><li>詳細設定と6種類のアバター</li><li>通常モードと端末内Qwen</li><li>ログイン状態を30日間保持</li></ul>
+    </section>
+    <section class="auth-card">
+      <div id="authLoading" class="auth-loading"><span class="auth-spinner"></span><strong id="authLoadingText">ログイン状態を確認しています</strong><p>安全な接続を準備しています。</p></div>
+      <div id="authPanel" hidden>
+        <div class="auth-tabs" role="tablist"><button id="authLoginTab" class="active" type="button" role="tab">ログイン</button><button id="authRegisterTab" type="button" role="tab">アカウント作成</button></div>
+        <div class="auth-heading"><h2 id="authPanelTitle">おかえりなさい</h2><p id="authPanelLead">登録したメールアドレスでログインしてください。</p></div>
+        <form id="authForm" novalidate>
+          <label class="auth-field">メールアドレス<input id="authEmail" type="email" inputmode="email" autocomplete="email" maxlength="254" required placeholder="name@example.com"></label>
+          <label class="auth-field">パスワード<input id="authPassword" type="password" autocomplete="current-password" minlength="10" maxlength="128" required placeholder="10文字以上"></label>
+          <label id="authConfirmField" class="auth-field" hidden>パスワード（確認）<input id="authPasswordConfirm" type="password" autocomplete="new-password" minlength="10" maxlength="128" placeholder="もう一度入力"></label>
+          <label id="authAgreementField" class="auth-agreement" hidden><input id="authAgreement" type="checkbox"> <span>利用規約とプライバシーポリシーに同意します。</span></label>
+          <div id="authStatus" class="auth-status" role="alert" hidden></div>
+          <button id="authSubmit" class="primary-btn auth-submit" type="submit">ログイン</button>
+        </form>
+        <div class="auth-remember"><span>✓</span><p><strong>ログイン状態を保持</strong><br>この端末では30日間ログインしたまま利用できます。共有端末では利用後にログアウトしてください。</p></div>
+        <div class="auth-policy-links"><button type="button" data-auth-policy="terms">利用規約</button><button type="button" data-auth-policy="privacy">プライバシーポリシー</button></div>
+      </div>
+    </section>
+  </div>
+</div>
+<dialog id="authPolicyDialog" class="auth-policy-dialog"><div class="auth-policy-head"><h2 id="authPolicyTitle"></h2><button id="authPolicyClose" type="button" aria-label="閉じる">×</button></div><div id="authPolicyContent" class="auth-policy-content"></div></dialog>
+<div id="appShell" class="app-shell" hidden>
   <header class="topbar">
     <div class="brand" role="button" tabindex="0" onclick="showScreen('home')" onkeydown="if(event.key==='Enter')showScreen('home')">
       <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 8.2A4.2 4.2 0 0 1 10.2 4h3.6A4.2 4.2 0 0 1 18 8.2v3.1a4.2 4.2 0 0 1-4.2 4.2h-1.3L9 19v-3.5A4.2 4.2 0 0 1 6 11.3V8.2Z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M9 9h6M9 12h4" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span>
-      <span class="brand-name">AI ROLEPLAY STUDIO<span class="brand-sub">CLOUDFLARE EDITION · v1.0</span></span>
+      <span class="brand-name">AI ROLEPLAY STUDIO<span class="brand-sub">CLOUDFLARE EDITION · v1.1 LOGIN</span></span>
     </div>
     <div class="top-actions">
       <div id="apiStatus" class="api-status" title="Cloudflare Workers AIの接続状態"><span class="api-dot"></span><span id="apiStatusText">ローカルモード</span></div>
+      <div class="user-pill" title="ログイン中"><span class="user-avatar">●</span><span data-auth-email></span></div>
+      <button class="logout-btn" type="button" data-auth-logout>ログアウト</button>
       <button class="icon-btn" type="button" aria-label="設定" onclick="showScreen('settings')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.15.38.36.72.6 1 .29.33.68.53 1.1.6h.09v4h-.09a1.7 1.7 0 0 0-1.7.4Z"/></svg></button>
     </div>
   </header>
@@ -156,8 +186,8 @@
           <article id="info-pricing" class="info-section"><div class="status-banner caution"><strong>Stripe本番決済の有効化準備中です</strong><span>商品と価格は本番モードに作成済みです。Stripeアカウント審査・有効化の完了後に申込みを開始します。</span></div><h3>料金</h3><div class="pricing-card"><span>無料プラン</span><strong>0円</strong><p>基本設定、ロールプレイ、音声会話を利用できます。</p></div><div class="pricing-card"><span>AI Roleplay Studio Premium</span><strong>月額980円（税込）</strong><p>項目別スコア、改善ポイント、次に使う一言、相手の本音、会話記録などの詳細分析を利用できます。1か月ごとの自動更新です。</p></div><p class="legal-warning">本番決済はStripeアカウントの有効化と、販売事業者情報・非公開問い合わせ窓口の掲載が完了するまで開始しません。</p></article>
           <article id="info-operator" class="info-section" hidden><h3>運営者</h3><dl class="legal-list"><div><dt>運営者名</dt><dd>Grit Strategy Works</dd></div><div><dt>サービス名</dt><dd>AI ROLEPLAY STUDIO</dd></div><div><dt>有料プラン</dt><dd>AI Roleplay Studio Premium・月額980円（税込）</dd></div><div><dt>提供状況</dt><dd>Stripe本番決済の有効化準備中</dd></div></dl><p>販売事業者の正式名称、運営責任者、所在地、電話番号、契約・請求に関する専用問い合わせ先は本番決済開始前に掲載します。</p></article>
           <article id="info-commerce" class="info-section" hidden><h3>特定商取引法に基づく表記</h3><div class="status-banner caution"><strong>有料販売開始前の準備表示</strong><span>Stripe本番決済の有効化と未掲載の事業者情報の補完後に申込みを開始します。</span></div><dl class="legal-list"><div><dt>運営者</dt><dd>Grit Strategy Works</dd></div><div><dt>販売事業者の正式名称・責任者</dt><dd>本番決済開始前に掲載</dd></div><div><dt>所在地・電話番号</dt><dd>本番決済開始前に掲載。法令上認められる場合は、請求に応じて申込み前に遅滞なく提供できる体制を整えます。</dd></div><div><dt>販売価格</dt><dd>AI Roleplay Studio Premium：月額980円（税込）</dd></div><div><dt>商品代金以外の負担</dt><dd>インターネット接続・通信に必要な費用は利用者負担です。</dd></div><div><dt>支払方法・支払時期</dt><dd>クレジットカード（Stripe）。申込み時に初回決済し、以後1か月ごとに自動更新します。</dd></div><div><dt>サービス提供時期</dt><dd>決済完了後、プレミアム機能を利用できます。</dd></div><div><dt>解約・返金</dt><dd>本ページ内の「解約方法」「返金方針」を参照してください。</dd></div></dl><p class="reference-links"><a href="https://www.no-trouble.caa.go.jp/what/mailorder/advertising.html" target="_blank" rel="noopener">消費者庁・特定商取引法ガイド</a></p></article>
-          <article id="info-terms" class="info-section" hidden><h3>利用規約</h3><p class="policy-date">改定日：2026年8月6日</p><h4>1. 適用</h4><p>本規約は、Grit Strategy Worksが提供するAI ROLEPLAY STUDIOの利用条件を定めます。利用者は本規約に同意して本サービスを利用します。</p><h4>2. サービスの性質</h4><p>本サービスは対話練習を支援するもので、AIの応答・採点は参考情報です。正確性、完全性、特定目的への適合を保証するものではなく、採用・人事評価・契約・苦情処理などの最終判断は利用者が行います。</p><h4>3. 有料プラン</h4><p>Premiumは月額980円（税込）の1か月ごとの自動更新です。利用者が次回更新日前に解約しない限り契約は更新されます。価格や内容を変更する場合は、適用前にサイト上で案内します。</p><h4>4. 禁止事項</h4><p>法令違反、第三者の権利侵害、個人情報・機密情報の不適切な入力、サービスへの不正アクセス、過度な負荷、解析・転用による妨害を禁止します。</p><h4>5. 知的財産</h4><p>本サービスのプログラム、デザイン、画像等の権利は運営者または正当な権利者に帰属します。利用者が入力する内容の権利は利用者に留保されます。</p><h4>6. 変更・停止</h4><p>保守、障害、仕様改善、法令対応等によりサービス内容を変更または停止することがあります。重要な変更はサイト上で告知します。</p><h4>7. 準拠法</h4><p>本規約は日本法に準拠します。紛争が生じた場合は、法令に従い管轄裁判所を定めます。</p></article>
-          <article id="info-privacy" class="info-section" hidden><h3>プライバシーポリシー</h3><p class="policy-date">改定日：2026年8月6日</p><h4>取得・処理する情報</h4><p>ロープレ設定、テキスト化された会話内容、採点結果、利用設定、接続に伴う技術情報を処理する場合があります。成績・設定・履歴は原則として利用端末のブラウザ内に保存されます。音声入力はブラウザの音声認識機能を利用し、本サービスは生の録音データを保存しません。</p><h4>利用目的</h4><p>ロープレ応答・採点の提供、履歴表示、品質・安全性の維持、不正利用防止、問い合わせ対応、利用状況の分析、サービス改善、決済・契約管理、法令遵守のために利用します。</p><h4>外部サービス・委託</h4><p>通常モードのAI応答とサイト配信にCloudflare WorkersおよびWorkers AI、利用状況の分析にGoogle Analytics、Premiumの決済・契約管理にStripeを利用します。Google AnalyticsはCookie等を使用してページ閲覧、端末・ブラウザ、参照元などの情報を収集する場合があります。社内情報モードではQwenを端末内で実行し、会話・採点・自社情報をAI APIへ送信しません。モデルファイルの初回取得時のみ外部通信が発生します。通常モードでブラウザの音声認識・読み上げ機能を利用する場合、それぞれの提供者の条件が適用されます。</p><h4>利用者による管理</h4><p>設定画面の「全データ削除」で端末内の成績・設定・履歴を削除できます。Cookieはブラウザ設定で無効化できます。入力内容には第三者の個人情報、営業秘密、要配慮情報を含めないでください。</p><h4>安全管理・開示等</h4><p>アクセス制御、通信の暗号化、必要最小限の処理等を行います。保有個人データの開示・訂正・利用停止等の窓口は、本番決済開始前に専用問い合わせ先とともに掲載します。</p><p class="reference-links"><a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener">Googleプライバシーポリシー</a> <a href="https://stripe.com/jp/privacy" target="_blank" rel="noopener">Stripeプライバシーポリシー</a> <a href="https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/" target="_blank" rel="noopener">個人情報保護委員会ガイドライン</a></p></article>
+          <article id="info-terms" class="info-section" hidden><h3>利用規約</h3><p class="policy-date">改定日：2026年8月6日</p><h4>1. 適用</h4><p>本規約は、Grit Strategy Worksが提供するAI ROLEPLAY STUDIOの利用条件を定めます。利用者は本規約に同意して本サービスを利用します。</p><h4>2. アカウント</h4><p>利用者は正確な情報でアカウントを作成し、パスワードとログイン端末を適切に管理します。第三者による不正利用を確認した場合は速やかにログアウトしてください。</p><h4>3. サービスの性質</h4><p>本サービスは対話練習を支援するもので、AIの応答・採点は参考情報です。正確性、完全性、特定目的への適合を保証するものではなく、採用・人事評価・契約・苦情処理などの最終判断は利用者が行います。</p><h4>4. 有料プラン</h4><p>Premiumは月額980円（税込）の1か月ごとの自動更新です。利用者が次回更新日前に解約しない限り契約は更新されます。価格や内容を変更する場合は、適用前にサイト上で案内します。</p><h4>5. 禁止事項</h4><p>法令違反、第三者の権利侵害、個人情報・機密情報の不適切な入力、サービスへの不正アクセス、過度な負荷、解析・転用による妨害を禁止します。</p><h4>6. 知的財産</h4><p>本サービスのプログラム、デザイン、画像等の権利は運営者または正当な権利者に帰属します。利用者が入力する内容の権利は利用者に留保されます。</p><h4>7. 変更・停止</h4><p>保守、障害、仕様改善、法令対応等によりサービス内容を変更または停止することがあります。重要な変更はサイト上で告知します。</p><h4>8. 準拠法</h4><p>本規約は日本法に準拠します。紛争が生じた場合は、法令に従い管轄裁判所を定めます。</p></article>
+          <article id="info-privacy" class="info-section" hidden><h3>プライバシーポリシー</h3><p class="policy-date">改定日：2026年8月6日</p><h4>取得・処理する情報</h4><p>ログイン用メールアドレス、暗号学的に保護されたパスワードハッシュ、セッション情報、ロープレ設定、テキスト化された会話内容、採点結果、利用設定、接続に伴う技術情報を処理する場合があります。パスワードの平文は保存しません。成績・設定・履歴は原則として利用端末のブラウザ内に保存されます。音声入力はブラウザの音声認識機能を利用し、本サービスは生の録音データを保存しません。</p><h4>利用目的</h4><p>ロープレ応答・採点の提供、履歴表示、品質・安全性の維持、不正利用防止、問い合わせ対応、利用状況の分析、サービス改善、決済・契約管理、法令遵守のために利用します。</p><h4>外部サービス・委託</h4><p>通常モードのAI応答とサイト配信にCloudflare WorkersおよびWorkers AI、利用状況の分析にGoogle Analytics、Premiumの決済・契約管理にStripeを利用します。Google AnalyticsはCookie等を使用してページ閲覧、端末・ブラウザ、参照元などの情報を収集する場合があります。社内情報モードではQwenを端末内で実行し、会話・採点・自社情報をAI APIへ送信しません。モデルファイルの初回取得時のみ外部通信が発生します。通常モードでブラウザの音声認識・読み上げ機能を利用する場合、それぞれの提供者の条件が適用されます。</p><h4>利用者による管理</h4><p>設定画面の「全データ削除」で端末内の成績・設定・履歴を削除できます。Cookieはブラウザ設定で無効化できます。入力内容には第三者の個人情報、営業秘密、要配慮情報を含めないでください。</p><h4>安全管理・開示等</h4><p>アクセス制御、通信の暗号化、必要最小限の処理等を行います。保有個人データの開示・訂正・利用停止等の窓口は、本番決済開始前に専用問い合わせ先とともに掲載します。</p><p class="reference-links"><a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener">Googleプライバシーポリシー</a> <a href="https://stripe.com/jp/privacy" target="_blank" rel="noopener">Stripeプライバシーポリシー</a> <a href="https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/" target="_blank" rel="noopener">個人情報保護委員会ガイドライン</a></p></article>
           <article id="info-cancellation" class="info-section" hidden><h3>解約方法</h3><p>Premium契約者は、設定画面の「契約・支払いを管理」からStripeの契約管理画面を開き、次回更新日前までに解約できます。</p><p>解約後も支払済み期間の終了まではプレミアム機能を利用でき、期間終了後は自動的に無料プランへ切り替わります。</p></article>
           <article id="info-refund" class="info-section" hidden><h3>返金方針</h3><p>デジタルサービスの性質上、利用者都合による支払済み期間の途中解約について、日割り返金は行いません。</p><p>重複決済、当方の責めに帰すべき事由でサービスを提供できなかった場合、または法令上返金が必要な場合は、確認のうえ対応します。申請窓口は本番決済開始前に掲載します。</p></article>
           <article id="info-contact" class="info-section" hidden><h3>問い合わせ先</h3><p>現在の無料ベータ版に関する不具合・改善要望は、GitHubリポジトリのIssuesで受け付けます。公開ページのため、氏名、メールアドレス、会話内容などの個人情報・機密情報は記載しないでください。</p><p><a class="primary-btn inline-action" href="https://github.com/gritstrategyworks/ai-roleplay-studio/issues" target="_blank" rel="noopener">GitHub Issuesを開く</a></p><p class="legal-warning">契約・請求・個人情報に関する非公開の専用問い合わせ先は課金開始前に掲載します。</p></article>
@@ -167,6 +197,7 @@
     <section id="screen-settings" class="screen">
       <div class="page-header"><button class="back-btn" type="button" onclick="showScreen('home')">←</button><div><div class="eyebrow">SETTINGS</div><h2 style="margin-bottom:0">設定</h2></div></div>
       <div class="panel settings-grid">
+        <section class="account-setting"><div><div class="eyebrow">ACCOUNT</div><h3>ログイン中のアカウント</h3><p data-auth-email></p><small>この端末では30日間ログイン状態を保持します。</small></div><button class="ghost-btn compact-btn" type="button" data-auth-logout>ログアウト</button></section>
         <section class="ai-mode-section">
           <div><div class="eyebrow">AI MODE</div><h3>AI実行モード</h3><p class="help-text">扱う情報に合わせて、会話を処理する場所を選択します。</p></div>
           <div class="ai-mode-grid">
@@ -204,7 +235,6 @@
 <div id="toast" class="toast" role="status"></div>
 <div id="endModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="endModalTitle"><div class="modal"><h3 id="endModalTitle">ロープレを終了しますか？</h3><p class="lead" style="font-size:13px">ここまでの会話を採点し、改善ポイントを表示します。</p><div class="modal-actions"><button class="ghost-btn" type="button" onclick="closeEndModal()">続ける</button><button class="primary-btn" type="button" onclick="finishRoleplay()">終了して採点</button></div></div></div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-box"><div class="spinner"></div><strong>会話を振り返っています</strong><p style="color:#b9c7d9;font-size:13px">評価と改善ポイントを作成中です</p></div></div>
-<script src="local-ai.js?v=1.16" defer></script>
-<script src="app.js?v=1.16" defer></script>
+<script src="auth.js?v=1.17" defer></script>
 </body>
 </html>

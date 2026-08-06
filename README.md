@@ -4,6 +4,7 @@ Cloudflare Workers AIと端末内Qwenに対応した、日本語の対話ロー�
 
 ## 実装済み
 
+- メールアドレス＋パスワードの独自ログイン（30日保持・明示ログアウト）
 - 営業・商談、管理職面談、採用面接、クレーム対応の4カテゴリ
 - 基本12項目と、BtoB・BtoC・カテゴリ別の詳細設定
 - 外見だけを表す6種類の顧客アバター
@@ -33,6 +34,12 @@ npx wrangler pages dev . --ai AI
 
 秘密情報は `.dev.vars` に置き、Gitへ追加しないでください。
 
+## ログインとセッション
+
+パスワードはPBKDF2-HMAC-SHA256（600,000回）とユーザー別Salt、Cloudflare Secretの
+`AUTH_PEPPER` で保護してD1へ保存します。ログインCookieは本番で `Secure`、`HttpOnly`、
+`SameSite=Lax`、30日間有効です。AI・課金APIは有効なログインセッションを必須とします。
+
 ## Stripe月額課金
 
 - 商品：AI Roleplay Studio Premium
@@ -41,8 +48,8 @@ npx wrangler pages dev . --ai AI
 - D1：`ai-roleplay-billing`
 - Webhook：`/api/billing/webhook`
 
-必要なSecretsは `STRIPE_SECRET_KEY`、`STRIPE_WEBHOOK_SECRET`、
-`BILLING_SESSION_SECRET` です。秘密鍵はHTML、ブラウザJavaScript、GitHubへ保存しません。
+必要なSecretsは `STRIPE_SECRET_KEY`、`STRIPE_WEBHOOK_SECRET`、認証用の
+`AUTH_PEPPER` です。秘密鍵はHTML、ブラウザJavaScript、GitHubへ保存しません。
 
 本番設定の `BILLING_ENABLED` は現在 `false` です。Stripeアカウントの本番決済有効化と、
 販売事業者情報・専用問い合わせ先の掲載が完了した後にだけ `true` へ変更してください。
@@ -55,13 +62,12 @@ npx wrangler pages dev . --ai AI
 https://ai-roleplay-studio.ai-roleplay-studio.workers.dev/
 ```
 
-この作業環境ではGitHubへ直接書き込みません。ローカルで確認後、
-`GITHUB_UPLOAD_GUIDE.md` に従って必要ファイルだけを手動アップロードしてください。
+ローカルで確認後、個人Forkの専用ブランチへpushし、元リポジトリ宛てのDraft PRでレビューします。
 
 ## データと注意事項
 
-- 設定・履歴・自社情報は原則として利用者のブラウザに保存します。
+- 設定・履歴・自社情報はログインユーザー別に分離して利用者のブラウザへ保存します。
 - 社内情報モードでも、モデル初回取得時には外部通信が発生します。
-- Premiumの利用権は現在、署名付きCookieで購入端末に紐づきます。
+- Premiumの利用権はログインユーザーIDに紐づき、同じアカウントで確認できます。
 - 利用規約、プライバシーポリシー、特定商取引法表示は本番画面内にあります。
 - 外部ライセンスは `THIRD_PARTY_NOTICES.md` を確認してください。

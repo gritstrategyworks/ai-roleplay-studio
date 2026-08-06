@@ -10,7 +10,7 @@ export async function onRequestPost({ request, env }) {
       return json({ error: 'Billing is not yet available.', code: 'billing_unavailable' }, { status: 503 });
     }
 
-    const { accountId, cookie } = await getBillingIdentity(request, env);
+    const { accountId, cookie, user } = await getBillingIdentity(request, env);
     const subscription = await getSubscription(env, accountId);
     if (hasPremiumAccess(subscription)) {
       return json({ error: 'Subscription is already active.', code: 'already_subscribed' }, { status: 409 });
@@ -36,6 +36,7 @@ export async function onRequestPost({ request, env }) {
       cancel_url: `${appUrl}/?checkout=cancelled`,
     });
     if (subscription?.stripe_customer_id) form.set('customer', subscription.stripe_customer_id);
+    else if (user?.email) form.set('customer_email', user.email);
 
     const session = await stripeRequest(env, '/checkout/sessions', { method: 'POST', body: form });
     return json({ url: session.url }, { headers: cookie ? { 'set-cookie': cookie } : {} });

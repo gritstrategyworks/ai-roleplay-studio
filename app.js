@@ -1,7 +1,8 @@
 'use strict';
 
-const APP_KEY = 'aiRoleplayStudio_history_v2';
-const SETTINGS_KEY = 'aiRoleplayStudio_settings_v2';
+const STORAGE_SCOPE = globalThis.AuthGate?.user?.id || 'guest';
+const APP_KEY = 'aiRoleplayStudio_history_v2:' + STORAGE_SCOPE;
+const SETTINGS_KEY = 'aiRoleplayStudio_settings_v2:' + STORAGE_SCOPE;
 const DEFAULT_SETTINGS = { preferAI:true, aiMode:'cloud', localModel:'Qwen3-0.6B-q4f32_1-MLC', companyProfile:'', localSaveHistory:false, speech:true, handsFree:true, autoSend:true, ttsEngine:'browser', voiceURI:'auto', kokoroVoice:'auto', speechRate:1, apiEndpoint:'', premiumPreview:true };
 const CATEGORY_LABELS = { sales:'営業・商談', manager:'管理職面談', interview:'採用面接', support:'クレーム対応' };
 const EMOTIONS = ['neutral','positive','curious','skeptical','angry'];
@@ -317,7 +318,7 @@ function init(){setupSpeechRecognition();loadVoices();refreshKokoroVoiceSelects(
 
 
 
-const ROLEPLAY_DRAFT_KEY='aiRoleplayStudio_salesSetup_v1';
+const ROLEPLAY_DRAFT_KEY='aiRoleplayStudio_salesSetup_v1:'+STORAGE_SCOPE;
 const CUSTOMER_APPEARANCES=[['male','young','男性A','saito'],['male','middle','男性B','yamamoto'],['male','older','男性C','suzuki'],['female','young','女性A','nakamura'],['female','middle','女性B','kato'],['female','older','女性C','ito']].map(([gender,ageGroup,label,assetId])=>({gender,ageGroup,label,assetId}));
 const DETAIL_IDS=['btobRoleInput','decisionAuthoritySelect','decisionFlowInput','budgetInput','competitorInput','purchaseDecisionMakerInput','familyStructureInput','purchaseExperienceInput','purchaseTimingInput','priceSentimentInput','personaInput','speakingStyleInput','industryInput','companySizeInput','valuesInput','warinessSelect','disclosureSelect'];
 function defaultRoleplayConfig(){return {product:{name:'',target:'btob',type:'intangible',price:'',description:'',benefits:''},customer:{gender:'male',ageGroup:'middle',needs:''},deal:{scene:'初回訪問',attitude:'普通',difficulty:'normal',goal:'信頼関係をつくる'},advancedEnabled:false,advanced:{}}}

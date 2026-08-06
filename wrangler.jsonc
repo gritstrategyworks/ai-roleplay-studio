@@ -16,7 +16,8 @@
   "vars": {
     "APP_URL": "https://ai-roleplay-studio.ai-roleplay-studio.workers.dev",
     "STRIPE_PRICE_ID": "price_1U1JSkJYbwf4eLAfkVOYv6kq",
-    "BILLING_ENABLED": "false"
+    "BILLING_ENABLED": "false",
+    "SIGNUP_ENABLED": "true"
   },
   "observability": { "enabled": true }
 }
