@@ -17,8 +17,8 @@
   <title>AI ROLEPLAY STUDIO</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=1.18">
-  <link rel="stylesheet" href="auth.css?v=1.18">
+  <link rel="stylesheet" href="styles.css?v=1.19">
+  <link rel="stylesheet" href="auth.css?v=1.19">
 </head>
 <body class="auth-pending">
 <div id="authGate" class="auth-gate">
@@ -96,7 +96,7 @@
       <div class="setup-layout">
         <div class="panel quick-setup-panel">
           <div id="setupAIModeBanner" class="setup-mode-banner"><div><strong id="setupAIModeTitle">☁️ 通常モード</strong><span id="setupAIModeDescription">Cloudflare Workers AIで会話します。</span></div><button type="button" onclick="showScreen('settings')">変更</button></div>
-          <div class="setup-intro"><div><div class="eyebrow">QUICK SETUP</div><h3>30秒でロープレを開始</h3><p>基本項目だけで開始できます。高度な条件は詳細設定へまとめています。</p></div><span class="setup-count">基本 12項目</span></div>
+          <div class="setup-intro"><div><div class="eyebrow">QUICK SETUP</div><h3>30秒でロープレを開始</h3><p>開始前に分かっている情報だけを入力します。相手の本音と判断条件は非公開シナリオとして固定されます。</p></div><span class="setup-count">公開情報＋非公開設定</span></div>
           <div id="setupValidation" class="setup-validation" role="alert" hidden></div>
           <div class="quick-form-grid">
             <div class="field"><label for="productNameInput">① 商品・サービス名 <em>必須</em></label><input id="productNameInput" required placeholder="例：営業研修" oninput="updateSetupDraft()"></div>
@@ -106,15 +106,31 @@
             <div class="field field-wide"><label for="productDescriptionInput">⑤ 商品・サービス内容 <em>必須</em></label><textarea id="productDescriptionInput" required placeholder="提供内容を簡潔に入力" oninput="updateSetupDraft()"></textarea></div>
             <div class="field field-wide"><label for="productBenefitsInput">⑥ 商品のメリット <em>必須</em></label><textarea id="productBenefitsInput" required placeholder="顧客が得られる成果や価値" oninput="updateSetupDraft()"></textarea></div>
             <div class="field field-wide"><label>⑦ 顧客アバター <em>必須</em></label><p class="field-help">見た目だけを選択します。性格・態度には影響しません。</p><div id="customerAvatarGrid" class="customer-avatar-grid"></div></div>
-            <div class="field field-wide"><label for="customerNeedsInput">⑧ 顧客ニーズ <em>必須</em></label><textarea id="customerNeedsInput" required placeholder="例：営業力を高めたい" oninput="updateSetupDraft()"></textarea></div>
+            <div class="field field-wide"><label for="customerNeedsInput">⑧ 事前に分かっている顧客情報 <span class="optional-tag">任意</span></label><p id="publicFactsHelp" class="field-help">問い合わせ内容など、商談前から分かっている事実だけを入力します。</p><textarea id="customerNeedsInput" maxlength="700" placeholder="例：営業部から「商談力を高めたい」と問い合わせがあった" oninput="updateSetupDraft()"></textarea></div>
             <div class="field"><label for="dealSceneSelect">⑨ 商談場面 <em>必須</em></label><select id="dealSceneSelect" onchange="updateSetupDraft()"><option>初回訪問</option><option>ヒアリング</option><option>商品説明</option><option>比較検討</option><option>クロージング</option><option>アフターフォロー</option><option>クレーム対応</option></select></div>
             <div class="field"><label for="customerAttitudeSelect">⑩ 顧客の態度 <em>必須</em></label><select id="customerAttitudeSelect" onchange="updateSetupDraft()"><option>好意的</option><option selected>普通</option><option>慎重</option><option>警戒している</option><option>否定的</option></select></div>
             <div class="field"><label for="roleplayDifficultySelect">⑪ 難易度 <em>必須</em></label><select id="roleplayDifficultySelect" onchange="updateSetupDraft()"><option value="easy">初級</option><option value="normal" selected>中級</option><option value="hard">上級</option></select></div>
             <div class="field"><label for="roleplayGoalSelect">⑫ 今回のゴール <em>必須</em></label><select id="roleplayGoalSelect" onchange="updateSetupDraft()"><option>信頼関係をつくる</option><option>ニーズを把握する</option><option>商品を提案する</option><option>見積提出につなげる</option><option>契約する</option><option>クレームを収束させる</option></select></div>
           </div>
+          <section class="scenario-design" aria-labelledby="scenarioDesignTitle">
+            <div class="scenario-design-head"><div><div class="eyebrow">HIDDEN SCENARIO</div><h3 id="scenarioDesignTitle">相手の本音・背景をどう決めますか？</h3><p>内容は開始時に固定され、ロープレ画面には表示されません。適切な質問があったときだけ相手が段階的に話します。</p></div><span class="private-badge">AIのみ参照</span></div>
+            <div class="scenario-mode-grid" role="group" aria-label="非公開シナリオの設定方法">
+              <button class="scenario-mode-card selected" data-scenario-mode="auto" type="button" onclick="setScenarioDesignMode('auto')"><strong>✨ AIにおまかせ</strong><span>場面・難易度から本音と判断条件を自動で固定</span></button>
+              <button class="scenario-mode-card" data-scenario-mode="guided" type="button" onclick="setScenarioDesignMode('guided')"><strong>🧭 方向性だけ指定</strong><span>価格重視など、シナリオの方向だけ決める</span></button>
+              <button class="scenario-mode-card" data-scenario-mode="manual" type="button" onclick="setScenarioDesignMode('manual')"><strong>✍️ すべて自分で設定</strong><span>研修担当者が本音と判断条件を固定</span></button>
+            </div>
+            <div id="scenarioAutoNote" class="scenario-mode-note">AIが開始時に一度だけ生成し、同じ設定で再挑戦すると同じシナリオを使用します。</div>
+            <div id="scenarioGuidedFields" class="scenario-private-fields" hidden>
+              <div class="field"><label id="hiddenDirectionLabel" for="hiddenDirectionInput">潜在ニーズの方向性</label><textarea id="hiddenDirectionInput" maxlength="700" placeholder="例：価格よりも、現場に定着するかを不安に感じている" oninput="updateSetupDraft()"></textarea></div>
+            </div>
+            <div id="scenarioManualFields" class="scenario-private-fields" hidden>
+              <div class="field"><label id="hiddenTruthLabel" for="hiddenTruthInput">顧客の本当のニーズ・背景 <em>必須</em></label><textarea id="hiddenTruthInput" maxlength="700" placeholder="相手がすぐには話さない本音や背景" oninput="updateSetupDraft()"></textarea></div>
+              <div class="field"><label id="hiddenConditionsLabel" for="hiddenConditionsInput">意思決定条件・譲れないこと</label><textarea id="hiddenConditionsInput" maxlength="700" placeholder="質問で確認できる判断条件" oninput="updateSetupDraft()"></textarea></div>
+            </div>
+          </section>
           <button id="advancedToggle" class="advanced-toggle" type="button" aria-expanded="false" onclick="toggleAdvancedSettings()"><span>詳細設定</span><span>研修担当者・上級者向け　⌄</span></button>
           <section id="advancedSettings" class="advanced-settings" hidden>
-            <div class="advanced-head"><strong>会話のプロンプト</strong><p>候補から選択し、必要なら自由入力できます。入力した項目だけAIへ追加します。</p></div>
+            <div class="advanced-head"><strong>AI向け補足条件</strong><p>研修担当者が必要な場合だけ設定します。入力内容はロープレ画面には表示せず、人物・状況の演技条件としてAIだけが参照します。</p></div>
             <div id="btobDetails" class="detail-grid">
               <div class="field"><label>役職</label><input id="btobRoleInput" list="roleList" oninput="updateSetupDraft()"><datalist id="roleList"><option value="担当者"><option value="課長・マネージャー"><option value="部長"><option value="経営者・役員"></datalist></div>
               <div class="field"><label>決裁権</label><input id="decisionAuthoritySelect" list="authorityList" oninput="updateSetupDraft()"><datalist id="authorityList"><option value="本人に決裁権あり"><option value="一部あり"><option value="決裁権なし"></datalist></div>
@@ -143,7 +159,7 @@
             </div>
           </section>
         </div>
-        <aside class="summary-card"><div class="summary-avatar"><img id="summaryAvatar" alt="選択中のアバター"><div><strong id="summaryName">中堅男性</strong><div id="summaryRole">BtoB・無形商材</div></div></div><div class="summary-line"><span>商品</span><strong id="summaryProduct">未入力</strong></div><div class="summary-line"><span>商談場面</span><strong id="summaryScene">初回訪問</strong></div><div class="summary-line"><span>顧客の態度</span><strong id="summaryAttitude">普通</strong></div><div class="summary-line"><span>難易度</span><strong id="summaryDifficulty">中級</strong></div><div class="summary-line"><span>ゴール</span><strong id="summaryGoal">信頼関係をつくる</strong></div><button class="primary-btn" type="button" onclick="beginRoleplay()">この設定で開始</button><p class="privacy-note">入力値はこの端末に保存されます。アバターは外見だけを表します。</p></aside>
+        <aside class="summary-card"><div class="summary-avatar"><img id="summaryAvatar" alt="選択中のアバター"><div><strong id="summaryName">中堅男性</strong><div id="summaryRole">BtoB・無形商材</div></div></div><div class="summary-line"><span>商品</span><strong id="summaryProduct">未入力</strong></div><div class="summary-line"><span>商談場面</span><strong id="summaryScene">初回訪問</strong></div><div class="summary-line"><span>顧客の態度</span><strong id="summaryAttitude">普通</strong></div><div class="summary-line"><span>難易度</span><strong id="summaryDifficulty">中級</strong></div><div class="summary-line"><span>ゴール</span><strong id="summaryGoal">信頼関係をつくる</strong></div><div class="summary-line"><span>非公開設定</span><strong id="summaryScenarioMode">AIにおまかせ</strong></div><button class="primary-btn" type="button" onclick="beginRoleplay()">この設定で開始</button><p class="privacy-note">入力値はこの端末に保存されます。アバターは外見だけを表します。</p></aside>
       </div>
     </section>
 
@@ -155,7 +171,7 @@
           <div class="meters"><div class="meter-row"><span>信頼</span><div class="meter-track"><div id="trustBar" class="meter-fill trust-fill"></div></div><strong id="trustValue">50</strong></div><div class="meter-row"><span>関心</span><div class="meter-track"><div id="interestBar" class="meter-fill interest-fill"></div></div><strong id="interestValue">45</strong></div><div class="meter-row"><span>負荷</span><div class="meter-track"><div id="stressBar" class="meter-fill stress-fill"></div></div><strong id="stressValue">20</strong></div></div>
         </aside>
         <section class="conversation-panel">
-          <div class="conversation-head"><div class="objective"><strong>今回のゴール：</strong><span id="objectiveText">相手の課題を具体化する</span></div><div id="phasePills" class="phase-pills"></div></div>
+          <div class="conversation-head"><div class="objective"><strong>今回のゴール：</strong><span id="objectiveText">相手の課題を具体化する</span><small class="discovery-live-note">相手の本音は、質問に応じて少しずつ明らかになります</small></div><div id="phasePills" class="phase-pills"></div></div>
           <div id="messageList" class="messages" aria-live="polite"></div>
           <div id="hintCard" class="hint-card">💡 <span id="hintText"></span></div>
           <div id="voiceBanner" class="voice-banner"><div><strong id="voiceBannerTitle">音声会話は停止中です</strong><span id="voiceBannerText">開始すると、AI発話後に自動でマイクが開きます。</span></div><button id="voiceSessionButton" class="voice-session-btn" type="button" onclick="toggleVoiceSession()">音声会話を開始</button></div>
@@ -167,7 +183,7 @@
     <section id="screen-results" class="screen">
       <div class="page-header"><div><div class="eyebrow">RESULT</div><h2 style="margin-bottom:0">トレーニング結果</h2></div></div>
       <div class="result-hero"><div class="score-ring" id="scoreRing" style="--score:0"><div class="score-value"><strong id="totalScore">0</strong><span>100点満点</span></div></div><div><div id="rankBadge" class="rank-badge">Bランク</div><h2 id="resultHeadline">基本を押さえた対話でした</h2><p id="resultSummary">相手の発言を受け止めながら進められました。</p><div class="result-actions"><button class="primary-btn" type="button" onclick="retryRoleplay()">同じ設定でもう一度</button><button class="secondary-btn" type="button" onclick="downloadLatestReport()">結果を保存</button><button class="secondary-btn" type="button" onclick="showScreen('home')">ホームへ</button></div></div></div>
-      <div id="planPreviewBanner" class="plan-preview-banner" hidden><strong>無料プラン表示</strong><span>詳細分析はプレミアム機能としてロックされています。設定からプレミアム表示へ切り替えてテストできます。</span></div><div class="result-grid premium-only"><div class="panel"><h3>項目別スコア</h3><p class="help-text">今回の発言内容をもとに評価しています。</p><div id="scoreList" class="score-list"></div><div class="form-section"><h3>音声指標</h3><div class="voice-metrics"><div class="voice-metric"><strong id="speechTurnMetric">0</strong><span>音声発話回数</span></div><div class="voice-metric"><strong id="fillerMetric">0</strong><span>フィラー語</span></div><div class="voice-metric"><strong id="avgLengthMetric">0</strong><span>平均文字数</span></div></div></div><div class="form-section"><h3>会話記録</h3><div id="transcriptList" class="transcript"></div></div></div><div class="feedback-stack"><div class="feedback-card good"><h3>✅ 良かった点</h3><p id="goodFeedback">—</p></div><div class="feedback-card improve"><h3>🔧 改善ポイント</h3><p id="improveFeedback">—</p></div><div class="feedback-card"><h3>💬 次に使う一言</h3><p id="nextPhraseFeedback">—</p></div><div class="feedback-card"><h3>🔍 相手の本音</h3><p id="hiddenNeedFeedback">—</p></div></div></div>
+      <div id="planPreviewBanner" class="plan-preview-banner" hidden><strong>無料プラン表示</strong><span>詳細分析はプレミアム機能としてロックされています。設定からプレミアム表示へ切り替えてテストできます。</span></div><div class="result-grid premium-only"><div class="panel"><h3>項目別スコア</h3><p class="help-text">今回の発言内容をもとに評価しています。</p><div id="scoreList" class="score-list"></div><div class="form-section"><h3>音声指標</h3><div class="voice-metrics"><div class="voice-metric"><strong id="speechTurnMetric">0</strong><span>音声発話回数</span></div><div class="voice-metric"><strong id="fillerMetric">0</strong><span>フィラー語</span></div><div class="voice-metric"><strong id="avgLengthMetric">0</strong><span>平均文字数</span></div></div></div><div class="form-section"><h3>会話記録</h3><div id="transcriptList" class="transcript"></div></div></div><div class="feedback-stack"><div class="feedback-card good"><h3>✅ 良かった点</h3><p id="goodFeedback">—</p></div><div class="feedback-card improve"><h3>🔧 改善ポイント</h3><p id="improveFeedback">—</p></div><div class="feedback-card"><h3>💬 次に使う一言</h3><p id="nextPhraseFeedback">—</p></div><div class="feedback-card discovery-card"><div class="discovery-score-head"><h3>🎯 ヒアリング到達度</h3><strong><span id="discoveryScore">0</span>%</strong></div><div class="discovery-progress"><i id="discoveryProgress"></i></div><p id="discoveredFeedback">—</p><p id="missedFeedback" class="missed-feedback">—</p></div><div class="feedback-card"><h3>🔍 相手の本音・判断条件</h3><p id="hiddenNeedFeedback">—</p></div></div></div>
     </section>
 
     <section id="screen-history" class="screen"><div class="page-header"><button class="back-btn" type="button" onclick="showScreen('home')">←</button><div><div class="eyebrow">PROGRESS</div><h2 style="margin-bottom:0">成績・成長記録</h2></div></div><div class="history-grid"><div class="metric-card"><span>累計トレーニング</span><strong id="historyCount">0回</strong></div><div class="metric-card"><span>平均スコア</span><strong id="historyAverage">--</strong></div><div class="metric-card"><span>最高スコア</span><strong id="historyBest">--</strong></div></div><div class="panel"><h3>履歴</h3><div id="historyList" class="history-list"></div></div></section>
@@ -238,6 +254,6 @@
 <div id="toast" class="toast" role="status"></div>
 <div id="endModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="endModalTitle"><div class="modal"><h3 id="endModalTitle">ロープレを終了しますか？</h3><p class="lead" style="font-size:13px">ここまでの会話を採点し、改善ポイントを表示します。</p><div class="modal-actions"><button class="ghost-btn" type="button" onclick="closeEndModal()">続ける</button><button class="primary-btn" type="button" onclick="finishRoleplay()">終了して採点</button></div></div></div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-box"><div class="spinner"></div><strong>会話を振り返っています</strong><p style="color:#b9c7d9;font-size:13px">評価と改善ポイントを作成中です</p></div></div>
-<script src="auth.js?v=1.18" defer></script>
+<script src="auth.js?v=1.19" defer></script>
 </body>
 </html>
