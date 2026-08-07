@@ -78,15 +78,14 @@ test('frontend and Workers AI share the hidden scenario contract', async () => {
     readFile(new URL('../roleplay.js', import.meta.url), 'utf8'),
     readFile(new URL('../service-worker.js', import.meta.url), 'utf8'),
   ]);
-  for (const marker of ['AIにおまかせ', '方向性だけ指定', 'すべて自分で設定', 'ヒアリング到達度']) {
-    assert.match(index, new RegExp(marker));
-  }
+  assert.match(index, /ヒアリング到達度/);
+  assert.doesNotMatch(index, /AIにおまかせ|方向性だけ指定|すべて自分で設定|公開情報＋非公開設定/);
   assert.match(app, /buildHiddenProfile/);
   assert.match(app, /analyzeDiscovery/);
   assert.doesNotMatch(app, /\['customerNeedsInput','顧客ニーズ'\]/);
   assert.match(worker, /開始前から利用者が知っている公開情報/);
   assert.match(worker, /AIだけが知る非公開の本音・背景/);
   assert.match(worker, /discoveryScore/);
-  assert.match(auth, /scenario-design\.js\?v=1\.19/);
-  assert.match(serviceWorker, /scenario-design\.js\?v=1\.19/);
+  assert.match(auth, /scenario-design\.js\?v=1\.20/);
+  assert.match(serviceWorker, /scenario-design\.js\?v=1\.20/);
 });

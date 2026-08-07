@@ -1,11 +1,21 @@
 const MODELS = Object.freeze({
-  'Qwen3-0.6B-q4f32_1-MLC': 'Qwen3-0.6B-q4f32_1_cs1k-webgpu.wasm',
-  'Qwen3-1.7B-q4f32_1-MLC': 'Qwen3-1.7B-q4f32_1_cs1k-webgpu.wasm',
-  'Qwen3-4B-q4f32_1-MLC': 'Qwen3-4B-q4f32_1_cs1k-webgpu.wasm',
+  'gemma-3-4b-it-q4f16_1-MLC': {
+    repo: 'mlc-ai/gemma-3-4b-it-q4f16_1-MLC',
+    revision: 'af1fe173321285b526dd3dd9b9d8f5000f324baf',
+    library: 'https://huggingface.co/Phreak87/gemma3-4b-it-q4f16_1-MLC-wasm/resolve/eb69d439a177714feeda310e04edfd1e6ce10932/gemma3-4b.wasm',
+  },
+  'Qwen3-4B-q4f32_1-MLC': {
+    repo: 'mlc-ai/Qwen3-4B-q4f32_1-MLC',
+    revision: 'b7e4eb1ba80728187fb5df44055cc1a7c32310e0',
+    library: 'https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/025bcaf3780fa8254f5e5efd3bfea0a5397248f4/web-llm-models/v0_2_84/base/Qwen3-4B-q4f32_1_cs1k-webgpu.wasm',
+  },
+  'Llama-3.2-3B-Instruct-q4f32_1-MLC': {
+    repo: 'mlc-ai/Llama-3.2-3B-Instruct-q4f32_1-MLC',
+    revision: '6083cfdaaf08d2dd4872d7f5b87fb0242aa7d75c',
+    library: 'https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/025bcaf3780fa8254f5e5efd3bfea0a5397248f4/web-llm-models/v0_2_84/base/Llama-3.2-3B-Instruct-q4f32_1_cs1k-webgpu.wasm',
+  },
 });
 
-const MODEL_LIBRARY_BASE =
-  'https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/web-llm-models/v0_2_84/base/';
 const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
 
 function json(body, status = 400) {
@@ -53,21 +63,20 @@ function resolveUpstream(pathname) {
 
   const parts = pathname.slice(prefix.length).split('/').map(decodeURIComponent);
   const [kind, modelId, ...rest] = parts;
-  if (!Object.hasOwn(MODELS, modelId)) return null;
+  const model = MODELS[modelId];
+  if (!model) return null;
 
-  if (kind === 'lib' && rest.length === 0) {
-    return `${MODEL_LIBRARY_BASE}${MODELS[modelId]}`;
-  }
+  if (kind === 'lib' && rest.length === 0) return model.library;
 
   if (
     kind === 'model' &&
     rest.length >= 3 &&
     rest[0] === 'resolve' &&
     rest[1] === 'main' &&
-    rest.slice(2).every((part) => part && part !== '.' && part !== '..' && !part.includes('\\'))
+    rest.slice(2).every((part) => part && part !== '.' && part !== '..' && !part.includes('/') && !part.includes('\\'))
   ) {
-    const safePath = rest.map(encodeURIComponent).join('/');
-    return `https://huggingface.co/mlc-ai/${encodeURIComponent(modelId)}/${safePath}`;
+    const safePath = rest.slice(2).map(encodeURIComponent).join('/');
+    return `https://huggingface.co/${model.repo}/resolve/${model.revision}/${safePath}`;
   }
 
   return null;

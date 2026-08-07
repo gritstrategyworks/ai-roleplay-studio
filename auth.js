@@ -100,9 +100,9 @@
     loading.hidden = false;
     panel.hidden = true;
     document.getElementById('authLoadingText').textContent = 'アプリを準備しています';
-    await loadScript('local-ai.js?v=1.19');
-    await loadScript('scenario-design.js?v=1.19');
-    await loadScript('app.js?v=1.19');
+    await loadScript('local-ai.js?v=1.20');
+    await loadScript('scenario-design.js?v=1.20');
+    await loadScript('app.js?v=1.20');
     appLoaded = true;
     loadedUserId = currentUser.id;
     setUserLabels(currentUser);

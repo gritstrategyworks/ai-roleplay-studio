@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-labelledby="title">
+  <title id="title">男性Cのアバター</title>
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e6f7eb"/><stop offset="1" stop-color="#8cc6a0"/></linearGradient></defs>
+  <rect width="180" height="180" rx="28" fill="url(#bg)"/>
+  <circle cx="90" cy="74" r="38" fill="#eac3a2"/>
+  <path d="M54 66c5-24 18-37 36-37 20 0 32 13 36 35-12-7-24-10-36-10s-24 4-36 12Z" fill="#c5c8ca"/>
+  <path d="M33 180c5-42 24-63 57-63s52 21 57 63" fill="#476a5a"/>
+  <path d="M64 76h19M97 76h19" stroke="#3b4742" stroke-width="4" stroke-linecap="round"/>
+  <path d="M83 77h14M77 96c9 7 17 7 26 0" fill="none" stroke="#925d53" stroke-width="4" stroke-linecap="round"/>
+  <path d="M72 122h36l-18 18Z" fill="#f7faf8"/>
+</svg>
