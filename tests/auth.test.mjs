@@ -129,13 +129,13 @@ test('frontend requires authentication before loading the application bundles', 
   assert.match(index, /id="authGate"/);
   assert.match(index, /id="appShell" class="app-shell" hidden/);
   assert.match(index, /id="authGuest"/);
-  assert.match(index, /auth\.js\?v=1\.20/);
+  assert.match(index, /auth\.js\?v=1\.21/);
   assert.doesNotMatch(index, /<script src="app\.js/);
   assert.match(auth, /\/api\/auth\/session/);
   assert.match(auth, /\/api\/auth\/guest/);
-  assert.match(auth, /local-ai\.js\?v=1\.20/);
-  assert.match(auth, /scenario-design\.js\?v=1\.20/);
-  assert.match(auth, /app\.js\?v=1\.20/);
+  assert.match(auth, /local-ai\.js\?v=1\.21/);
+  assert.match(auth, /scenario-design\.js\?v=1\.21/);
+  assert.match(auth, /app\.js\?v=1\.21/);
   assert.match(app, /STORAGE_SCOPE = globalThis\.AuthGate\?\.user\?\.id/);
 });
 

@@ -86,6 +86,6 @@ test('frontend and Workers AI share the hidden scenario contract', async () => {
   assert.match(worker, /開始前から利用者が知っている公開情報/);
   assert.match(worker, /AIだけが知る非公開の本音・背景/);
   assert.match(worker, /discoveryScore/);
-  assert.match(auth, /scenario-design\.js\?v=1\.20/);
-  assert.match(serviceWorker, /scenario-design\.js\?v=1\.20/);
+  assert.match(auth, /scenario-design\.js\?v=1\.21/);
+  assert.match(serviceWorker, /scenario-design\.js\?v=1\.21/);
 });
