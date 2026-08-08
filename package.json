@@ -1,11 +1,13 @@
 {
   "name": "ai-roleplay-studio",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "wrangler pages dev . --ai AI",
     "deploy": "wrangler pages deploy . --project-name ai-roleplay-studio",
-    "check": "node --check app.js && node --check kokoro-worker.js && node --check functions/api/roleplay.js"
+    "test": "node --test tests/auth.test.mjs tests/billing.test.mjs tests/restored-v20.test.mjs tests/scenario-design.test.mjs tests/role-contract.test.mjs",
+    "check": "node --check auth.js && node --check app.js && node --check roleplay.js && node --check functions/_middleware.js && node --check functions/_lib/auth.js && node --check functions/api/auth/guest.js && node --check functions/api/auth/register.js && node --check functions/api/auth/login.js && node --check functions/api/auth/logout.js && node --check functions/api/auth/session.js && node --check functions/api/roleplay.js && node --check functions/api/local-model/[[path]].js && node --check functions/api/billing/status.js && node --check functions/api/billing/checkout.js && node --check functions/api/billing/portal.js && node --check functions/api/billing/webhook.js"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"

@@ -1,53 +1,67 @@
-# GitHubアップロード用ガイド
+# GitHub手動アップロードガイド
 
-このフォルダ内のファイルとフォルダを、GitHubリポジトリの最上位（ルート）へすべてアップロードしてください。
+ローカルで確認後、個人Forkの専用ブランチへpushし、元リポジトリ宛てのDraft PRを作成します。
 
 ## 必須ファイル
 
-- `index.html`
-- `styles.css`
-- `app.js`
-- `kokoro-worker.js`
-- `service-worker.js`
-- `manifest.webmanifest`
-- `package.json`
-- `wrangler.jsonc`
-- `README.md`
-- `THIRD_PARTY_NOTICES.md`
-- `functions/`
-- `assets/`
+- index.html / styles.css / auth.css / auth.js / app.js
+- _headers
+- local-ai.js / local-ai-worker.js
+- service-worker.js / manifest.webmanifest
+- assets/icon.svg
+- roleplay.js
+- functions/（middleware、auth、roleplay、local-model、billing）
+- migrations/
+- tests/
+- package.json / wrangler.jsonc
+- README.md / THIRD_PARTY_NOTICES.md
+- .dev.vars.example（値はダミーのみ）
 
-## GitHub上の正しい構成
+## アップロードしないもの
+
+- .dev.vars
+- Stripe、Cloudflare、Webhookの秘密鍵
+- node_modules/
+- .wrangler/
+- deploy-*/
+- ローカルの一時スクリプトやスクリーンショット
+
+## GitHub上の構成
 
 ```text
 リポジトリ直下/
 ├─ index.html
 ├─ styles.css
+├─ auth.css
+├─ auth.js
 ├─ app.js
-├─ kokoro-worker.js
+├─ local-ai.js
+├─ local-ai-worker.js
+├─ roleplay.js
 ├─ service-worker.js
 ├─ manifest.webmanifest
 ├─ package.json
 ├─ wrangler.jsonc
-├─ README.md
-├─ THIRD_PARTY_NOTICES.md
 ├─ functions/
+│  ├─ _middleware.js
+│  ├─ _lib/auth.js
 │  └─ api/
-│     └─ roleplay.js
-└─ assets/
-   ├─ icon.svg
-   └─ avatars/
+│     ├─ auth/
+│     ├─ roleplay.js
+│     ├─ local-model/[[path]].js
+│     └─ billing/
+├─ migrations/
+├─ tests/
+└─ assets/icon.svg
 ```
 
-ZIPファイル自体をGitHubへ置くのではなく、ZIPを展開し、中身をアップロードしてください。
+## Cloudflare設定
 
-## CloudflareでAIを使う際の重要設定
+- Workers AIバインディング：AI
+- D1バインディング：BILLING_DB
+- 本番Price ID：price_1U1JSkJYbwf4eLAfkVOYv6kq
+- AUTH_PEPPERはCloudflare Secretで管理
+- SIGNUP_ENABLEDは新規登録を受け付ける間だけtrue
+- BILLING_ENABLEDはStripe本番決済と法定表示の準備完了までfalse
 
-Workers AIのバインディング名を `AI` に設定してください。
-`functions/api/roleplay.js` がAI会話APIです。
-
-## 注意
-
-- APIキーや秘密鍵をGitHubへアップロードしないでください。
-- GitHub Pagesでは画面・ローカル会話・音声を確認できます。
-- Workers AIを含めたテストはCloudflareへデプロイして確認してください。
+秘密鍵はGitHubへ置かず、Cloudflare Secretsで管理してください。

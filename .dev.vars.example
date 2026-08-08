@@ -1,0 +1,5 @@
+STRIPE_SECRET_KEY=sk_test_replace_me
+STRIPE_PRICE_ID=price_1U1JSkJYbwf4eLAfkVOYv6kq
+STRIPE_WEBHOOK_SECRET=whsec_replace_me
+AUTH_PEPPER=replace_with_32_random_bytes_or_more
+APP_URL=http://localhost:8788

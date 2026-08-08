@@ -5,20 +5,62 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07111f">
   <meta name="description" content="AI顧客・部下・応募者と音声で会話し、対話力を反復練習できるロールプレイアプリ">
-  <title>AI ROLEPLAY STUDIO｜GitHub Test Edition</title>
+  <meta name="google-site-verification" content="zbpYn_l9DVdW1Ev0OZdQOJDWLreuTin9i0nqUele1Mo">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XH93D31BKJ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XH93D31BKJ');
+  </script>
+  <title>AI ROLEPLAY STUDIO</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=1.21">
+  <link rel="stylesheet" href="auth.css?v=1.21">
 </head>
-<body>
-<div class="app-shell">
+<body class="auth-pending">
+<div id="authGate" class="auth-gate">
+  <div class="auth-layout">
+    <section class="auth-intro">
+      <div class="auth-brand"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 8.2A4.2 4.2 0 0 1 10.2 4h3.6A4.2 4.2 0 0 1 18 8.2v3.1a4.2 4.2 0 0 1-4.2 4.2h-1.3L9 19v-3.5A4.2 4.2 0 0 1 6 11.3V8.2Z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M9 9h6M9 12h4" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span><span>AI ROLEPLAY STUDIO</span></div>
+      <div><div class="eyebrow">AI音声ロールプレイ</div><h1>対話力を、<br>会話で磨く。</h1><p>アカウントで継続利用することも、ログインせずゲストとしてすぐ試すこともできます。</p></div>
+      <ul class="auth-features"><li>詳細設定と6種類のアバター</li><li>通常モードと3種類の端末内AI</li><li>アカウントまたはゲストで利用</li></ul>
+    </section>
+    <section class="auth-card">
+      <div id="authLoading" class="auth-loading"><span class="auth-spinner"></span><strong id="authLoadingText">ログイン状態を確認しています</strong><p>安全な接続を準備しています。</p></div>
+      <div id="authPanel" hidden>
+        <div class="auth-tabs" role="tablist"><button id="authLoginTab" class="active" type="button" role="tab">ログイン</button><button id="authRegisterTab" type="button" role="tab">アカウント作成</button></div>
+        <div class="auth-heading"><h2 id="authPanelTitle">おかえりなさい</h2><p id="authPanelLead">登録したメールアドレスでログインしてください。</p></div>
+        <form id="authForm" novalidate>
+          <label class="auth-field">メールアドレス<input id="authEmail" type="email" inputmode="email" autocomplete="email" maxlength="254" required placeholder="name@example.com"></label>
+          <label class="auth-field">パスワード<input id="authPassword" type="password" autocomplete="current-password" minlength="10" maxlength="128" required placeholder="10文字以上"></label>
+          <label id="authConfirmField" class="auth-field" hidden>パスワード（確認）<input id="authPasswordConfirm" type="password" autocomplete="new-password" minlength="10" maxlength="128" placeholder="もう一度入力"></label>
+          <label id="authAgreementField" class="auth-agreement" hidden><input id="authAgreement" type="checkbox"> <span>利用規約とプライバシーポリシーに同意します。</span></label>
+          <div id="authStatus" class="auth-status" role="alert" hidden></div>
+          <button id="authSubmit" class="primary-btn auth-submit" type="submit">ログイン</button>
+        </form>
+        <div class="auth-divider"><span>または</span></div>
+        <button id="authGuest" class="ghost-btn auth-guest" type="button">ログインせずゲストで試す</button>
+        <p class="auth-guest-note">アカウント登録は不要です。履歴と設定はこの端末のゲスト専用領域に保存され、課金機能は利用できません。</p>
+        <div class="auth-remember"><span>✓</span><p><strong>ログイン状態を保持</strong><br>この端末では30日間ログインしたまま利用できます。共有端末では利用後にログアウトしてください。</p></div>
+        <div class="auth-policy-links"><button type="button" data-auth-policy="terms">利用規約</button><button type="button" data-auth-policy="privacy">プライバシーポリシー</button></div>
+      </div>
+    </section>
+  </div>
+</div>
+<dialog id="authPolicyDialog" class="auth-policy-dialog"><div class="auth-policy-head"><h2 id="authPolicyTitle"></h2><button id="authPolicyClose" type="button" aria-label="閉じる">×</button></div><div id="authPolicyContent" class="auth-policy-content"></div></dialog>
+<div id="appShell" class="app-shell" hidden>
   <header class="topbar">
     <div class="brand" role="button" tabindex="0" onclick="showScreen('home')" onkeydown="if(event.key==='Enter')showScreen('home')">
       <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 8.2A4.2 4.2 0 0 1 10.2 4h3.6A4.2 4.2 0 0 1 18 8.2v3.1a4.2 4.2 0 0 1-4.2 4.2h-1.3L9 19v-3.5A4.2 4.2 0 0 1 6 11.3V8.2Z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M9 9h6M9 12h4" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span>
-      <span class="brand-name">AI ROLEPLAY STUDIO<span class="brand-sub">GITHUB TEST EDITION · v1.1</span></span>
+      <span class="brand-name">AI ROLEPLAY STUDIO</span>
     </div>
     <div class="top-actions">
       <div id="apiStatus" class="api-status" title="Cloudflare Workers AIの接続状態"><span class="api-dot"></span><span id="apiStatusText">ローカルモード</span></div>
+      <div class="user-pill" title="ログイン中" data-auth-user-pill><span class="user-avatar">●</span><span data-auth-email></span></div>
+      <button class="logout-btn" type="button" data-auth-logout>ログアウト</button>
       <button class="icon-btn" type="button" aria-label="設定" onclick="showScreen('settings')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.15.38.36.72.6 1 .29.33.68.53 1.1.6h.09v4h-.09a1.7 1.7 0 0 0-1.7.4Z"/></svg></button>
     </div>
   </header>
@@ -29,8 +71,8 @@
         <div class="hero-copy">
           <div class="eyebrow" style="color:#ffad73">AI音声ロールプレイ</div>
           <h1>仕事の対話力を、<br>会話で磨く。</h1>
-          <p class="lead">10人のアバターが、顧客・部下・応募者・クレーム相手を演じます。声で話し、相手の表情と反応を見ながら練習し、終了後はAIコーチが具体的に採点します。</p>
-          <div class="hero-actions"><button class="primary-btn" type="button" onclick="startSetup('sales')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="m8 5 11 7-11 7V5Z"/></svg>音声ロープレを始める</button><button class="secondary-btn" type="button" onclick="showScreen('history')">成績を見る</button></div>
+          <p class="lead">6種類のアバターから外見を選び、AIが顧客・部下・応募者・クレーム相手を演じます。声で話し、相手の表情と反応を見ながら練習し、終了後はAIコーチが具体的に採点します。</p>
+          <div class="hero-actions"><button class="secondary-btn" type="button" onclick="showScreen('history')">成績を見る</button></div>
         </div>
         <div class="hero-panel"><div class="hero-stat"><div class="num" id="homeTotalCount">0</div><div class="label">累計トレーニング</div></div><div class="hero-stat"><div class="num" id="homeAverage">--</div><div class="label">平均スコア</div></div><div class="hero-stat"><div class="num" id="homeBest">--</div><div class="label">ベストスコア</div></div><div class="hero-stat"><div class="num" id="homeStreak">0</div><div class="label">連続練習日</div></div></div>
       </div>
@@ -43,8 +85,7 @@
         <button class="category-card" style="--cat-bg:#fff6df;--card-glow:rgba(226,167,44,.15)" onclick="startSetup('support')"><span class="chevron">→</span><div class="cat-icon">🎧</div><h3>クレーム対応</h3><p>感情受容、事実確認、解決策、境界設定を実践。</p></button>
       </div>
 
-      <div class="section-head"><div><div class="eyebrow">AVATARS</div><h2>会話相手</h2></div><p>人物ごとに表情、性格、話す速度、声の高さが変わります。</p></div>
-      <div id="homeAvatarStrip" class="avatar-strip"></div>
+      <div id="homeAvatarStrip" hidden></div>
 
       <div class="section-head"><div><div class="eyebrow">RECENT</div><h2>直近のトレーニング</h2></div></div>
       <div id="recentResult" class="recent-card"><div class="empty-state" style="width:100%">まだ結果がありません。最初のロープレに挑戦しましょう。</div></div>
@@ -53,16 +94,55 @@
     <section id="screen-setup" class="screen">
       <div class="page-header"><button class="back-btn" type="button" aria-label="戻る" onclick="showScreen('home')">←</button><div><div class="eyebrow">SETUP</div><h2 style="margin-bottom:0">トレーニング設定</h2></div></div>
       <div class="setup-layout">
-        <div class="panel">
-          <div class="form-section" style="padding-top:0;margin-top:0;border:0"><div class="label-row"><label>ロープレ内容</label><span class="help-text">目的に近いものを選択</span></div><div id="scenarioOptions" class="option-grid"></div></div>
-          <div class="form-section"><div class="label-row"><label>会話相手のアバター</label><span class="help-text">🔊で声を試せます</span></div><div id="avatarOptions" class="avatar-gallery"></div></div>
-          <div class="form-section"><div class="label-row"><label>相手の性格</label><span class="help-text">同じ人物でも反応が変わります</span></div><div id="personaOptions" class="persona-grid"></div></div>
-          <div class="form-section"><div class="label-row"><label>難易度</label><span class="help-text">本音の引き出しやすさが変化</span></div><div id="difficultyOptions" class="difficulty-row"></div></div>
-          <div class="form-section"><div class="label-row"><label>会話方法</label></div><div class="option-grid"><button id="interactionVoice" class="option-card selected" type="button" onclick="selectInteraction('voice')"><strong>🎙️ 音声会話</strong><span>AIが話し、ユーザーも声で応答</span></button><button id="interactionText" class="option-card" type="button" onclick="selectInteraction('text')"><strong>⌨️ テキスト</strong><span>入力中心。音声読み上げは設定で変更</span></button></div></div>
-          <div class="form-section"><div class="label-row"><label>練習モード</label></div><div class="option-grid"><button id="modePractice" class="option-card selected" type="button" onclick="selectMode('practice')"><strong>練習モード</strong><span>フェーズとヒントを表示</span></button><button id="modeChallenge" class="option-card" type="button" onclick="selectMode('challenge')"><strong>実践モード</strong><span>ヒントなしで本番に近い練習</span></button></div></div>
-          <div class="form-section"><div class="label-row"><label>詳細設定</label></div><div class="field"><label class="field-label" for="topicInput" id="topicLabel">提案する商品・サービス</label><input id="topicInput" maxlength="120" placeholder="例：若手営業向け提案力研修"></div><div class="field"><label class="field-label" for="contextInput" id="contextLabel">今回の前提・背景</label><textarea id="contextInput" maxlength="600" placeholder="例：初回訪問。若手営業の育成に課題があると聞いている。"></textarea></div><div class="field"><label class="field-label" for="timeLimitSelect">制限時間</label><select id="timeLimitSelect"><option value="180">3分</option><option value="300" selected>5分</option><option value="600">10分</option><option value="0">制限なし</option></select></div><div class="field"><label class="field-label" for="setupTtsEngineSelect">読み上げエンジン</label><select id="setupTtsEngineSelect" onchange="selectTtsEngineOverride(this.value)"><option value="auto">自動（Kokoro優先・非対応時は端末音声）</option><option value="kokoro">Kokoro AI音声</option><option value="browser">端末標準音声</option></select></div><div id="setupKokoroVoiceField" class="field"><label class="field-label" for="setupKokoroVoiceSelect">Kokoroの声</label><select id="setupKokoroVoiceSelect" onchange="selectKokoroVoiceOverride(this.value)"></select></div><div id="setupBrowserVoiceField" class="field"><label class="field-label" for="setupVoiceSelect">端末標準音声</label><select id="setupVoiceSelect" onchange="selectVoiceOverride(this.value)"><option value="auto">アバターに合わせて自動選択</option></select></div><div id="setupKokoroNotice" class="kokoro-notice"><strong>Kokoro音声</strong><span>初回利用時にモデルを準備します。</span></div></div>
+        <div class="panel quick-setup-panel">
+          <div id="setupAIModeBanner" class="setup-mode-banner"><div><strong id="setupAIModeTitle">☁️ 通常モード</strong><span id="setupAIModeDescription">Cloudflare Workers AIで会話します。</span></div><button type="button" onclick="showScreen('settings')">変更</button></div>
+          <div class="setup-intro"><div><div class="eyebrow">QUICK SETUP</div><h3>すぐにロープレを開始</h3><p>各項目は入力済みです。必要なところだけ変更して開始できます。</p></div></div>
+          <div id="setupValidation" class="setup-validation" role="alert" hidden></div>
+          <div class="quick-form-grid">
+            <div class="field"><label for="productNameInput">① 商品・サービス名 <em>必須</em></label><input id="productNameInput" required placeholder="例：営業研修" oninput="updateSetupDraft()"></div>
+            <div class="field"><label for="salesTargetSelect">② 販売対象 <em>必須</em></label><select id="salesTargetSelect" onchange="updateSetupDraft(true)"><option value="btob">BtoB</option><option value="btoc">BtoC</option></select></div>
+            <div class="field"><label for="productTypeSelect">③ 商材タイプ <em>必須</em></label><select id="productTypeSelect" onchange="updateSetupDraft()"><option value="intangible">無形商材</option><option value="tangible">有形商材</option></select></div>
+            <div class="field"><label for="priceInput">④ 価格 <em>必須</em></label><input id="priceInput" required placeholder="例：月額3万円 / 見積制" oninput="updateSetupDraft()"></div>
+            <div class="field field-wide"><label for="productDescriptionInput">⑤ 商品・サービス内容 <em>必須</em></label><textarea id="productDescriptionInput" required placeholder="提供内容を簡潔に入力" oninput="updateSetupDraft()"></textarea></div>
+            <div class="field field-wide"><label for="productBenefitsInput">⑥ 商品のメリット <em>必須</em></label><textarea id="productBenefitsInput" required placeholder="顧客が得られる成果や価値" oninput="updateSetupDraft()"></textarea></div>
+            <div class="field field-wide"><label>⑦ 顧客アバター <em>必須</em></label><p class="field-help">見た目だけを選択します。性格・態度には影響しません。</p><div id="customerAvatarGrid" class="customer-avatar-grid"></div></div>
+            <div class="field"><label for="dealSceneSelect">⑨ 商談場面 <em>必須</em></label><select id="dealSceneSelect" onchange="updateSetupDraft()"><option>初回訪問</option><option>ヒアリング</option><option>商品説明</option><option>比較検討</option><option>クロージング</option><option>アフターフォロー</option><option>クレーム対応</option></select></div>
+            <div class="field"><label for="customerAttitudeSelect">⑩ 顧客の態度 <em>必須</em></label><select id="customerAttitudeSelect" onchange="updateSetupDraft()"><option>好意的</option><option selected>普通</option><option>慎重</option><option>警戒している</option><option>否定的</option></select></div>
+            <div class="field"><label for="roleplayDifficultySelect">⑪ 難易度 <em>必須</em></label><select id="roleplayDifficultySelect" onchange="updateSetupDraft()"><option value="easy">初級</option><option value="normal" selected>中級</option><option value="hard">上級</option></select></div>
+            <div class="field"><label for="roleplayGoalSelect">⑫ 今回のゴール <em>必須</em></label><select id="roleplayGoalSelect" onchange="updateSetupDraft()"><option>信頼関係をつくる</option><option>ニーズを把握する</option><option>商品を提案する</option><option>見積提出につなげる</option><option>契約する</option><option>クレームを収束させる</option></select></div>
+          </div>
+          <button id="advancedToggle" class="advanced-toggle" type="button" aria-expanded="false" onclick="toggleAdvancedSettings()"><span>詳細設定</span><span>研修担当者・上級者向け　⌄</span></button>
+          <section id="advancedSettings" class="advanced-settings" hidden>
+            <div class="advanced-head"><strong>AI向け補足条件</strong><p>研修担当者が必要な場合だけ設定します。入力内容はロープレ画面には表示せず、人物・状況の演技条件としてAIだけが参照します。</p></div>
+            <div id="btobDetails" class="detail-grid">
+              <div class="field"><label>役職</label><input id="btobRoleInput" list="roleList" oninput="updateSetupDraft()"><datalist id="roleList"><option value="担当者"><option value="課長・マネージャー"><option value="部長"><option value="経営者・役員"></datalist></div>
+              <div class="field"><label>決裁権</label><input id="decisionAuthoritySelect" list="authorityList" oninput="updateSetupDraft()"><datalist id="authorityList"><option value="本人に決裁権あり"><option value="一部あり"><option value="決裁権なし"></datalist></div>
+              <div class="field"><label>決裁フロー</label><input id="decisionFlowInput" placeholder="担当者→上長→役員" oninput="updateSetupDraft()"></div>
+              <div class="field"><label>予算感</label><input id="budgetInput" placeholder="年間300万円以内" oninput="updateSetupDraft()"></div>
+              <div class="field"><label>競合有無</label><input id="competitorInput" list="competitorList" oninput="updateSetupDraft()"><datalist id="competitorList"><option value="競合なし"><option value="複数社を比較中"><option value="既存取引先あり"></datalist></div>
+            </div>
+            <div id="btocDetails" class="detail-grid" hidden>
+              <div class="field"><label>購入決定者</label><input id="purchaseDecisionMakerInput" list="makerList" oninput="updateSetupDraft()"><datalist id="makerList"><option value="本人"><option value="本人と配偶者"><option value="家族で相談"></datalist></div>
+              <div class="field"><label>家族構成</label><input id="familyStructureInput" oninput="updateSetupDraft()"></div>
+              <div class="field"><label>購入経験</label><input id="purchaseExperienceInput" list="experienceList" oninput="updateSetupDraft()"><datalist id="experienceList"><option value="初めて"><option value="購入経験あり"><option value="他社サービスを利用中"></datalist></div>
+              <div class="field"><label>購入予定時期</label><input id="purchaseTimingInput" list="timingList" oninput="updateSetupDraft()"><datalist id="timingList"><option value="すぐに"><option value="1か月以内"><option value="半年以内"><option value="未定"></datalist></div>
+            </div>
+            <div id="commonSalesDetails" class="detail-grid common-details">
+              <div class="field"><label>価格感</label><input id="priceSentimentInput" list="priceFeelList" oninput="updateSetupDraft()"><datalist id="priceFeelList"><option value="価格より品質を重視"><option value="費用対効果を重視"><option value="予算に厳しい"></datalist></div>
+              <div class="field"><label>ペルソナ</label><input id="personaInput" list="personaList" oninput="updateSetupDraft()"><datalist id="personaList"><option value="論理的で数字を重視"><option value="直感的でスピードを重視"><option value="周囲の意見を重視"></datalist></div>
+              <div class="field"><label>話し方</label><input id="speakingStyleInput" list="speakList" oninput="updateSetupDraft()"><datalist id="speakList"><option value="簡潔"><option value="丁寧"><option value="率直"><option value="ゆっくり"></datalist></div>
+              <div class="field"><label>業種</label><input id="industryInput" oninput="updateSetupDraft()"></div>
+              <div class="field"><label>会社規模</label><input id="companySizeInput" list="sizeList" oninput="updateSetupDraft()"><datalist id="sizeList"><option value="小規模"><option value="中堅"><option value="大企業"></datalist></div>
+              <div class="field"><label>価値観</label><input id="valuesInput" oninput="updateSetupDraft()"></div>
+              <div class="field"><label>警戒心</label><input id="warinessSelect" list="warinessList" oninput="updateSetupDraft()"><datalist id="warinessList"><option value="低い"><option value="普通"><option value="高い"></datalist></div>
+              <div class="field"><label>情報開示レベル</label><input id="disclosureSelect" list="disclosureList" oninput="updateSetupDraft()"><datalist id="disclosureList"><option value="積極的"><option value="質問されれば答える"><option value="限定的"></datalist></div>
+            </div>
+            <div id="categoryDetails" class="detail-grid" hidden></div>
+            <div style="display:none">
+            </div>
+          </section>
         </div>
-        <aside class="summary-card"><div class="summary-avatar"><img id="summaryAvatar" alt="選択中のアバター"><div><strong id="summaryName">鈴木社長</strong><div style="font-size:12px;color:#9fb0c7" id="summaryRole">建設業・代表取締役</div></div></div><div class="summary-line"><span>カテゴリー</span><strong id="summaryCategory">営業・商談</strong></div><div class="summary-line"><span>内容</span><strong id="summaryScenario">課題ヒアリング</strong></div><div class="summary-line"><span>性格</span><strong id="summaryPersona">慎重型</strong></div><div class="summary-line"><span>難易度</span><strong id="summaryDifficulty">標準</strong></div><div class="summary-line"><span>会話方法</span><strong id="summaryInteraction">音声会話</strong></div><div class="summary-line"><span>相手の声</span><strong id="summaryVoice">Kokoro・自動</strong></div><button class="primary-btn" type="button" onclick="beginRoleplay()">この設定で開始</button><p class="privacy-note">AI接続時は会話内容がCloudflare Workers AIへ送信されます。成績と設定はこの端末に保存されます。</p></aside>
+        <aside class="summary-card"><div class="summary-avatar"><img id="summaryAvatar" alt="選択中のアバター"><div><strong id="summaryName">中堅男性</strong><div id="summaryRole">BtoB・無形商材</div></div></div><div class="summary-line"><span>商品</span><strong id="summaryProduct">未入力</strong></div><div class="summary-line"><span>商談場面</span><strong id="summaryScene">初回訪問</strong></div><div class="summary-line"><span>顧客の態度</span><strong id="summaryAttitude">普通</strong></div><div class="summary-line"><span>難易度</span><strong id="summaryDifficulty">中級</strong></div><div class="summary-line"><span>ゴール</span><strong id="summaryGoal">信頼関係をつくる</strong></div><button class="primary-btn" type="button" onclick="beginRoleplay()">この設定で開始</button><p class="privacy-note">入力値はこの端末に保存されます。アバターは外見だけを表します。</p></aside>
       </div>
     </section>
 
@@ -86,13 +166,70 @@
     <section id="screen-results" class="screen">
       <div class="page-header"><div><div class="eyebrow">RESULT</div><h2 style="margin-bottom:0">トレーニング結果</h2></div></div>
       <div class="result-hero"><div class="score-ring" id="scoreRing" style="--score:0"><div class="score-value"><strong id="totalScore">0</strong><span>100点満点</span></div></div><div><div id="rankBadge" class="rank-badge">Bランク</div><h2 id="resultHeadline">基本を押さえた対話でした</h2><p id="resultSummary">相手の発言を受け止めながら進められました。</p><div class="result-actions"><button class="primary-btn" type="button" onclick="retryRoleplay()">同じ設定でもう一度</button><button class="secondary-btn" type="button" onclick="downloadLatestReport()">結果を保存</button><button class="secondary-btn" type="button" onclick="showScreen('home')">ホームへ</button></div></div></div>
-      <div id="planPreviewBanner" class="plan-preview-banner" hidden><strong>無料プラン表示</strong><span>詳細分析はプレミアム機能としてロックされています。設定からプレミアム表示へ切り替えてテストできます。</span></div><div class="result-grid premium-only"><div class="panel"><h3>項目別スコア</h3><p class="help-text">今回の発言内容をもとに評価しています。</p><div id="scoreList" class="score-list"></div><div class="form-section"><h3>音声指標</h3><div class="voice-metrics"><div class="voice-metric"><strong id="speechTurnMetric">0</strong><span>音声発話回数</span></div><div class="voice-metric"><strong id="fillerMetric">0</strong><span>フィラー語</span></div><div class="voice-metric"><strong id="avgLengthMetric">0</strong><span>平均文字数</span></div></div></div><div class="form-section"><h3>会話記録</h3><div id="transcriptList" class="transcript"></div></div></div><div class="feedback-stack"><div class="feedback-card good"><h3>✅ 良かった点</h3><p id="goodFeedback">—</p></div><div class="feedback-card improve"><h3>🔧 改善ポイント</h3><p id="improveFeedback">—</p></div><div class="feedback-card"><h3>💬 次に使う一言</h3><p id="nextPhraseFeedback">—</p></div><div class="feedback-card"><h3>🔍 相手の本音</h3><p id="hiddenNeedFeedback">—</p></div></div></div>
+      <div id="planPreviewBanner" class="plan-preview-banner" hidden><strong>無料プラン</strong><span>詳細分析はプレミアムプランで利用できます。</span></div><div class="result-grid premium-only"><div class="panel"><h3>項目別スコア</h3><p class="help-text">今回の発言内容をもとに評価しています。</p><div id="scoreList" class="score-list"></div><div class="form-section"><h3>音声指標</h3><div class="voice-metrics"><div class="voice-metric"><strong id="speechTurnMetric">0</strong><span>音声発話回数</span></div><div class="voice-metric"><strong id="fillerMetric">0</strong><span>フィラー語</span></div><div class="voice-metric"><strong id="avgLengthMetric">0</strong><span>平均文字数</span></div></div></div><div class="form-section"><h3>会話記録</h3><div id="transcriptList" class="transcript"></div></div></div><div class="feedback-stack"><div class="feedback-card good"><h3>✅ 良かった点</h3><p id="goodFeedback">—</p></div><div class="feedback-card improve"><h3>🔧 改善ポイント</h3><p id="improveFeedback">—</p></div><div class="feedback-card"><h3>💬 次に使う一言</h3><p id="nextPhraseFeedback">—</p></div><div class="feedback-card discovery-card"><div class="discovery-score-head"><h3>🎯 ヒアリング到達度</h3><strong><span id="discoveryScore">0</span>%</strong></div><div class="discovery-progress"><i id="discoveryProgress"></i></div><p id="discoveredFeedback">—</p><p id="missedFeedback" class="missed-feedback">—</p></div><div class="feedback-card"><h3>🔍 相手の本音・判断条件</h3><p id="hiddenNeedFeedback">—</p></div></div></div>
     </section>
 
     <section id="screen-history" class="screen"><div class="page-header"><button class="back-btn" type="button" onclick="showScreen('home')">←</button><div><div class="eyebrow">PROGRESS</div><h2 style="margin-bottom:0">成績・成長記録</h2></div></div><div class="history-grid"><div class="metric-card"><span>累計トレーニング</span><strong id="historyCount">0回</strong></div><div class="metric-card"><span>平均スコア</span><strong id="historyAverage">--</strong></div><div class="metric-card"><span>最高スコア</span><strong id="historyBest">--</strong></div></div><div class="panel"><h3>履歴</h3><div id="historyList" class="history-list"></div></div></section>
 
-    <section id="screen-settings" class="screen"><div class="page-header"><button class="back-btn" type="button" onclick="showScreen('home')">←</button><div><div class="eyebrow">SETTINGS</div><h2 style="margin-bottom:0">設定</h2></div></div><div class="panel settings-grid"><div class="setting-row"><div><strong>AI会話を優先</strong><p>Workers AIが利用可能な場合に自由会話を使います。</p></div><button id="aiSwitch" class="switch on" type="button" aria-label="AI会話を切り替え" onclick="toggleSetting('preferAI')"></button></div><div class="setting-row setting-row-stack"><div><strong>AI APIエンドポイント</strong><p>GitHub PagesからCloudflare Workerへ接続する場合にURLを入力します。空欄では同一ドメインの <code>/api/roleplay</code> を使用します。</p></div><div class="endpoint-controls"><input id="apiEndpointInput" class="setting-input" type="url" inputmode="url" placeholder="https://your-worker.workers.dev/api/roleplay" onchange="changeApiEndpoint(this.value)"><button class="ghost-btn" type="button" onclick="testApiEndpoint()">接続テスト</button></div></div><div class="setting-row"><div><strong>課金プラン表示テスト</strong><p>オンでは詳細分析を表示し、オフでは無料プランのロック状態を再現します。</p></div><button id="premiumSwitch" class="switch on" type="button" aria-label="プレミアム表示を切り替え" onclick="togglePremiumPreview()"></button></div><div class="setting-row"><div><strong>相手の音声読み上げ</strong><p>AIの返答をKokoroまたは端末標準音声で読み上げます。</p></div><button id="speechSwitch" class="switch on" type="button" aria-label="音声読み上げを切り替え" onclick="toggleSetting('speech')"></button></div><div class="setting-row"><div><strong>ハンズフリーを既定にする</strong><p>AIの発話が終わるたびに、自動でユーザーの音声を待ちます。</p></div><button id="handsFreeSwitch" class="switch on" type="button" aria-label="ハンズフリーを切り替え" onclick="toggleSetting('handsFree')"></button></div><div class="setting-row"><div><strong>音声認識後に自動送信</strong><p>話し終わったとき、認識結果を送信します。</p></div><button id="autoSendSwitch" class="switch on" type="button" aria-label="自動送信を切り替え" onclick="toggleSetting('autoSend')"></button></div><div class="setting-row"><div><strong>読み上げエンジン</strong><p>自動ではKokoroを優先し、非対応端末では標準音声へ切り替えます。</p></div><select id="settingsTtsEngineSelect" class="setting-select" onchange="changeTtsEngine(this.value)"><option value="auto">自動（推奨）</option><option value="kokoro">Kokoro AI音声</option><option value="browser">端末標準音声</option></select></div><div id="settingsKokoroVoiceRow" class="setting-row"><div><strong>Kokoroの声</strong><p>日本語の男性1種類・女性4種類から選択します。</p></div><select id="settingsKokoroVoiceSelect" class="setting-select" onchange="changeKokoroVoice(this.value)"></select></div><div id="settingsBrowserVoiceRow" class="setting-row"><div><strong>端末標準音声</strong><p>端末に登録されている日本語音声から選択します。</p></div><select id="settingsVoiceSelect" class="setting-select" onchange="changeSettingsVoice(this.value)"><option value="auto">アバターに合わせて自動選択</option></select></div><div class="setting-row kokoro-model-row"><div class="kokoro-model-copy"><strong>Kokoroモデル</strong><p id="kokoroStatusDetail">初回利用時に約90MBのモデルを取得し、ブラウザへキャッシュします。</p><div class="kokoro-progress"><i id="kokoroProgressFill"></i></div></div><div class="kokoro-model-action"><span id="kokoroStatusText" class="kokoro-status-badge">未準備</span><button id="kokoroLoadButton" class="ghost-btn" type="button" onclick="prepareKokoroModel()">モデルを準備</button></div></div><div class="setting-row"><div><strong>読み上げ速度</strong><p>Kokoro・端末標準音声の両方に適用します。</p></div><div class="range-wrap"><input id="speechRateRange" type="range" min="0.8" max="1.2" step="0.05" value="1" oninput="changeSpeechRate(this.value)"><strong id="speechRateValue">1.00</strong></div></div><div class="setting-row"><div><strong>音声テスト</strong><p>現在選択中のエンジンと声でサンプルを読み上げます。</p></div><button class="ghost-btn" type="button" style="min-height:42px" onclick="previewCurrentVoice()">声を試す</button></div><div class="setting-row"><div><strong>成績データを書き出す</strong><p>この端末に保存した全履歴をJSON形式でダウンロードします。</p></div><button class="ghost-btn" type="button" style="min-height:42px" onclick="exportAllHistory()">履歴を保存</button></div><div class="setting-row"><div><strong>会話データ</strong><p>この端末に保存された成績・設定・履歴を削除します。</p></div><button class="danger-btn" type="button" style="min-height:42px" onclick="confirmResetData()">全データ削除</button></div></div></section>
+    <section id="screen-information" class="screen">
+      <div class="page-header"><button class="back-btn" type="button" onclick="showScreen('home')">←</button><div><div class="eyebrow">SERVICE INFORMATION</div><h2 id="informationTitle" style="margin-bottom:0">料金</h2></div></div>
+      <div class="information-layout">
+        <nav class="info-nav" aria-label="サービス情報">
+          <button class="info-link active" data-info="pricing" onclick="showInformation('pricing')">料金</button>
+          <button class="info-link" data-info="operator" onclick="showInformation('operator')">運営者</button>
+          <button class="info-link" data-info="commerce" onclick="showInformation('commerce')">特定商取引法に基づく表記</button>
+          <button class="info-link" data-info="terms" onclick="showInformation('terms')">利用規約</button>
+          <button class="info-link" data-info="privacy" onclick="showInformation('privacy')">プライバシーポリシー</button>
+          <button class="info-link" data-info="cancellation" onclick="showInformation('cancellation')">解約方法</button>
+          <button class="info-link" data-info="refund" onclick="showInformation('refund')">返金方針</button>
+          <button class="info-link" data-info="contact" onclick="showInformation('contact')">問い合わせ先</button>
+        </nav>
+        <div class="info-content">
+          <article id="info-pricing" class="info-section"><div class="status-banner caution"><strong>Stripe本番決済の有効化準備中です</strong><span>商品と価格は本番モードに作成済みです。Stripeアカウント審査・有効化の完了後に申込みを開始します。</span></div><h3>料金</h3><div class="pricing-card"><span>無料プラン</span><strong>0円</strong><p>基本設定、ロールプレイ、音声会話を利用できます。</p></div><div class="pricing-card"><span>AI Roleplay Studio Premium</span><strong>月額980円（税込）</strong><p>項目別スコア、改善ポイント、次に使う一言、相手の本音、会話記録などの詳細分析を利用できます。1か月ごとの自動更新です。</p></div><p class="legal-warning">本番決済はStripeアカウントの有効化と、販売事業者情報・非公開問い合わせ窓口の掲載が完了するまで開始しません。</p></article>
+          <article id="info-operator" class="info-section" hidden><h3>運営者</h3><dl class="legal-list"><div><dt>運営者名</dt><dd>Grit Strategy Works</dd></div><div><dt>サービス名</dt><dd>AI ROLEPLAY STUDIO</dd></div><div><dt>有料プラン</dt><dd>AI Roleplay Studio Premium・月額980円（税込）</dd></div><div><dt>提供状況</dt><dd>Stripe本番決済の有効化準備中</dd></div></dl><p>販売事業者の正式名称、運営責任者、所在地、電話番号、契約・請求に関する専用問い合わせ先は本番決済開始前に掲載します。</p></article>
+          <article id="info-commerce" class="info-section" hidden><h3>特定商取引法に基づく表記</h3><div class="status-banner caution"><strong>有料販売開始前の準備表示</strong><span>Stripe本番決済の有効化と未掲載の事業者情報の補完後に申込みを開始します。</span></div><dl class="legal-list"><div><dt>運営者</dt><dd>Grit Strategy Works</dd></div><div><dt>販売事業者の正式名称・責任者</dt><dd>本番決済開始前に掲載</dd></div><div><dt>所在地・電話番号</dt><dd>本番決済開始前に掲載。法令上認められる場合は、請求に応じて申込み前に遅滞なく提供できる体制を整えます。</dd></div><div><dt>販売価格</dt><dd>AI Roleplay Studio Premium：月額980円（税込）</dd></div><div><dt>商品代金以外の負担</dt><dd>インターネット接続・通信に必要な費用は利用者負担です。</dd></div><div><dt>支払方法・支払時期</dt><dd>クレジットカード（Stripe）。申込み時に初回決済し、以後1か月ごとに自動更新します。</dd></div><div><dt>サービス提供時期</dt><dd>決済完了後、プレミアム機能を利用できます。</dd></div><div><dt>解約・返金</dt><dd>本ページ内の「解約方法」「返金方針」を参照してください。</dd></div></dl><p class="reference-links"><a href="https://www.no-trouble.caa.go.jp/what/mailorder/advertising.html" target="_blank" rel="noopener">消費者庁・特定商取引法ガイド</a></p></article>
+          <article id="info-terms" class="info-section" hidden><h3>利用規約</h3><p class="policy-date">改定日：2026年8月6日</p><h4>1. 適用</h4><p>本規約は、Grit Strategy Worksが提供するAI ROLEPLAY STUDIOの利用条件を定めます。利用者は本規約に同意して本サービスを利用します。</p><h4>2. アカウント</h4><p>利用者は正確な情報でアカウントを作成し、パスワードとログイン端末を適切に管理します。第三者による不正利用を確認した場合は速やかにログアウトしてください。</p><h4>3. サービスの性質</h4><p>本サービスは対話練習を支援するもので、AIの応答・採点は参考情報です。正確性、完全性、特定目的への適合を保証するものではなく、採用・人事評価・契約・苦情処理などの最終判断は利用者が行います。</p><h4>4. 有料プラン</h4><p>Premiumは月額980円（税込）の1か月ごとの自動更新です。利用者が次回更新日前に解約しない限り契約は更新されます。価格や内容を変更する場合は、適用前にサイト上で案内します。</p><h4>5. 禁止事項</h4><p>法令違反、第三者の権利侵害、個人情報・機密情報の不適切な入力、サービスへの不正アクセス、過度な負荷、解析・転用による妨害を禁止します。</p><h4>6. 知的財産</h4><p>本サービスのプログラム、デザイン、画像等の権利は運営者または正当な権利者に帰属します。利用者が入力する内容の権利は利用者に留保されます。</p><h4>7. 変更・停止</h4><p>保守、障害、仕様改善、法令対応等によりサービス内容を変更または停止することがあります。重要な変更はサイト上で告知します。</p><h4>8. 準拠法</h4><p>本規約は日本法に準拠します。紛争が生じた場合は、法令に従い管轄裁判所を定めます。</p></article>
+          <article id="info-privacy" class="info-section" hidden><h3>プライバシーポリシー</h3><p class="policy-date">改定日：2026年8月6日</p><h4>取得・処理する情報</h4><p>ログイン用メールアドレス、暗号学的に保護されたパスワードハッシュ、セッション情報、ロープレ設定、テキスト化された会話内容、採点結果、利用設定、接続に伴う技術情報を処理する場合があります。パスワードの平文は保存しません。成績・設定・履歴は原則として利用端末のブラウザ内に保存されます。音声入力はブラウザの音声認識機能を利用し、本サービスは生の録音データを保存しません。</p><h4>利用目的</h4><p>ロープレ応答・採点の提供、履歴表示、品質・安全性の維持、不正利用防止、問い合わせ対応、利用状況の分析、サービス改善、決済・契約管理、法令遵守のために利用します。</p><h4>外部サービス・委託</h4><p>通常モードのAI応答とサイト配信にCloudflare WorkersおよびWorkers AI、利用状況の分析にGoogle Analytics、Premiumの決済・契約管理にStripeを利用します。Google AnalyticsはCookie等を使用してページ閲覧、端末・ブラウザ、参照元などの情報を収集する場合があります。社内情報モードでは選択したローカルAIを端末内で実行し、会話・採点・自社情報をAI APIへ送信しません。モデルファイルの初回取得時のみ外部通信が発生します。通常モードでブラウザの音声認識・読み上げ機能を利用する場合、それぞれの提供者の条件が適用されます。</p><h4>利用者による管理</h4><p>設定画面の「全データ削除」で端末内の成績・設定・履歴を削除できます。Cookieはブラウザ設定で無効化できます。入力内容には第三者の個人情報、営業秘密、要配慮情報を含めないでください。</p><h4>安全管理・開示等</h4><p>アクセス制御、通信の暗号化、必要最小限の処理等を行います。保有個人データの開示・訂正・利用停止等の窓口は、本番決済開始前に専用問い合わせ先とともに掲載します。</p><p class="reference-links"><a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener">Googleプライバシーポリシー</a> <a href="https://stripe.com/jp/privacy" target="_blank" rel="noopener">Stripeプライバシーポリシー</a> <a href="https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/" target="_blank" rel="noopener">個人情報保護委員会ガイドライン</a></p></article>
+          <article id="info-cancellation" class="info-section" hidden><h3>解約方法</h3><p>Premium契約者は、設定画面の「契約・支払いを管理」からStripeの契約管理画面を開き、次回更新日前までに解約できます。</p><p>解約後も支払済み期間の終了まではプレミアム機能を利用でき、期間終了後は自動的に無料プランへ切り替わります。</p></article>
+          <article id="info-refund" class="info-section" hidden><h3>返金方針</h3><p>デジタルサービスの性質上、利用者都合による支払済み期間の途中解約について、日割り返金は行いません。</p><p>重複決済、当方の責めに帰すべき事由でサービスを提供できなかった場合、または法令上返金が必要な場合は、確認のうえ対応します。申請窓口は本番決済開始前に掲載します。</p></article>
+          <article id="info-contact" class="info-section" hidden><h3>問い合わせ先</h3><p>本サービスに関する不具合・改善要望は、GitHubリポジトリのIssuesで受け付けます。公開ページのため、氏名、メールアドレス、会話内容などの個人情報・機密情報は記載しないでください。</p><p><a class="primary-btn inline-action" href="https://github.com/gritstrategyworks/ai-roleplay-studio/issues" target="_blank" rel="noopener">GitHub Issuesを開く</a></p><p class="legal-warning">契約・請求・個人情報に関する非公開の専用問い合わせ先は課金開始前に掲載します。</p></article>
+        </div>
+      </div>
+    </section>
+    <section id="screen-settings" class="screen">
+      <div class="page-header"><button class="back-btn" type="button" onclick="showScreen('home')">←</button><div><div class="eyebrow">SETTINGS</div><h2 style="margin-bottom:0">設定</h2></div></div>
+      <div class="panel settings-grid">
+        <section class="account-setting"><div><div class="eyebrow">ACCOUNT</div><h3 data-auth-account-title>ログイン中のアカウント</h3><p data-auth-email></p><small data-auth-session-note>この端末では30日間ログイン状態を保持します。</small></div><button class="ghost-btn compact-btn" type="button" data-auth-logout>ログアウト</button></section>
+        <section class="ai-mode-section">
+          <div><div class="eyebrow">AI MODE</div><h3>AI実行モード</h3><p class="help-text">扱う情報に合わせて、会話を処理する場所を選択します。</p></div>
+          <div class="ai-mode-grid">
+            <button id="cloudModeCard" class="ai-mode-card" type="button" onclick="setAIMode('cloud')"><span class="mode-icon">☁️</span><strong>通常モード</strong><span>Cloudflare Workers AIを使用。モデル準備なしですぐ開始できます。</span><small>機密情報・個人情報は入力しないでください</small></button>
+            <button id="localModeCard" class="ai-mode-card" type="button" onclick="setAIMode('local')"><span class="mode-icon">🔒</span><strong>社内情報モード</strong><span>選択したAIをこの端末で実行し、会話・採点をAI APIへ送信しません。</span><small>初回のみモデルのダウンロードが必要です</small></button>
+          </div>
+        </section>
+        <section id="localAISettings" class="local-ai-settings" hidden>
+          <div class="local-mode-notice"><strong>端末内処理</strong><span>入力内容をクラウドへ自動送信しません。Cloudflare AIへの自動フォールバックも行いません。音声会話は利用できません。テキストで練習します。</span></div>
+          <div class="setting-row"><div><strong>端末対応状況</strong><p id="localSupportText">確認中です</p></div><span id="localSupportBadge" class="local-status-badge">確認中</span></div>
+          <div class="setting-row"><div><strong>ローカルモデル</strong><p>端末のGPUメモリに合わせて選択してください。Gemma 3 4Bはshader-f16対応GPUが必要です。</p></div><select id="localModelSelect" class="setting-select" onchange="changeLocalModel(this.value)"><option value="gemma-3-4b-it-q4f16_1-MLC">Gemma 3 4B</option><option value="Qwen3-4B-q4f32_1-MLC" selected>Qwen3 4B（推奨）</option><option value="Llama-3.2-3B-Instruct-q4f32_1-MLC">Llama 3.2 3B</option></select></div>
+          <div class="setting-row setting-row-stack"><div><strong>モデルの準備</strong><p id="localModelStatusDetail">未準備です。モデル本体はブラウザ内へ保存されます。</p></div><div class="local-model-progress"><i id="localModelProgressFill"></i></div><div class="local-model-actions"><span id="localModelStatus" class="local-status-badge">未準備</span><button id="localModelPrepareButton" class="primary-btn compact-btn" type="button" onclick="prepareLocalModel()">モデルを準備</button><button class="ghost-btn compact-btn" type="button" onclick="deleteLocalModel()">モデルを削除</button></div></div>
+          <div class="setting-row setting-row-stack"><div><strong>自社情報</strong><p>会社概要、商品、価格、対応方針などを入力します。この端末のブラウザ内だけに保存します。</p></div><textarea id="companyProfileInput" class="company-profile-input" maxlength="12000" placeholder="例：会社概要、商品・サービス、価格、営業方針、クレーム対応基準" oninput="changeCompanyProfile(this.value)"></textarea><p class="local-only-note">第三者の個人情報、パスワード、秘密鍵は入力しないでください。</p></div>
+          <div class="setting-row"><div><strong>社内情報モードの成績保存</strong><p>オフでは結果を画面表示するだけで、履歴へ保存しません。</p></div><button id="localHistorySwitch" class="switch" type="button" aria-label="社内情報モードの成績保存を切り替え" onclick="toggleSetting('localSaveHistory')"></button></div>
+        </section>
+        <div id="cloudAIEndpointRow" class="setting-row setting-row-stack"><div><strong>AI APIエンドポイント</strong><p>通常モードで使用します。空欄では同一ドメインの <code>/api/roleplay</code> を使用します。</p></div><div class="endpoint-controls"><input id="apiEndpointInput" class="setting-input" type="url" inputmode="url" placeholder="https://your-worker.workers.dev/api/roleplay" onchange="changeApiEndpoint(this.value)"><button class="ghost-btn" type="button" onclick="testApiEndpoint()">接続テスト</button></div></div>
+        <div id="billingSettingsRow" class="setting-row"></div>
+        <div class="setting-row cloud-voice-setting"><div><strong>相手の音声読み上げ</strong><p>通常モードで端末標準音声を使って読み上げます。</p></div><button id="speechSwitch" class="switch on" type="button" aria-label="音声読み上げを切り替え" onclick="toggleSetting('speech')"></button></div>
+        <div class="setting-row cloud-voice-setting"><div><strong>ハンズフリーを既定にする</strong><p>AIの発話が終わるたびに、自動でユーザーの音声を待ちます。</p></div><button id="handsFreeSwitch" class="switch on" type="button" aria-label="ハンズフリーを切り替え" onclick="toggleSetting('handsFree')"></button></div>
+        <div class="setting-row cloud-voice-setting"><div><strong>音声認識後に自動送信</strong><p>話し終わったとき、認識結果を送信します。</p></div><button id="autoSendSwitch" class="switch on" type="button" aria-label="自動送信を切り替え" onclick="toggleSetting('autoSend')"></button></div>
+        <div id="settingsBrowserVoiceRow" class="setting-row cloud-voice-setting"><div><strong>端末標準音声</strong><p>端末に登録されている日本語音声から選択します。</p></div><select id="settingsVoiceSelect" class="setting-select" onchange="changeSettingsVoice(this.value)"><option value="auto">アバターに合わせて自動選択</option></select></div>
+        <div class="setting-row cloud-voice-setting"><div><strong>読み上げ速度</strong><p>端末標準音声に適用します。</p></div><div class="range-wrap"><input id="speechRateRange" type="range" min="0.8" max="1.2" step="0.05" value="1" oninput="changeSpeechRate(this.value)"><strong id="speechRateValue">1.00</strong></div></div>
+        <div class="setting-row cloud-voice-setting"><div><strong>音声テスト</strong><p>現在選択中の端末音声でサンプルを読み上げます。</p></div><button class="ghost-btn" type="button" style="min-height:42px" onclick="previewCurrentVoice()">声を試す</button></div>
+        <div class="setting-row"><div><strong>成績データを書き出す</strong><p>この端末に保存した全履歴をJSON形式でダウンロードします。</p></div><button class="ghost-btn" type="button" style="min-height:42px" onclick="exportAllHistory()">履歴を保存</button></div>
+        <div class="setting-row"><div><strong>会話データ</strong><p>この端末に保存された成績・設定・自社情報を削除します。ローカルモデルは上の専用ボタンから削除します。</p></div><button class="danger-btn" type="button" style="min-height:42px" onclick="confirmResetData()">全データ削除</button></div>
+      </div>
+    </section>
   </main>
+  <footer class="site-footer"><div><strong>AI ROLEPLAY STUDIO</strong><span>運営者：Grit Strategy Works</span></div><nav aria-label="フッターナビゲーション"><button onclick="showInformation('pricing')">料金</button><button onclick="showInformation('operator')">運営者</button><button onclick="showInformation('commerce')">特定商取引法に基づく表記</button><button onclick="showInformation('terms')">利用規約</button><button onclick="showInformation('privacy')">プライバシーポリシー</button><button onclick="showInformation('cancellation')">解約方法</button><button onclick="showInformation('refund')">返金方針</button><button onclick="showInformation('contact')">問い合わせ先</button></nav></footer>
+
 
   <nav class="bottom-nav" aria-label="メインナビゲーション"><button id="navHome" class="nav-btn active" type="button" onclick="showScreen('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1v-9Z"/></svg>ホーム</button><button id="navStart" class="nav-btn" type="button" onclick="startSetup('sales')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4V8Z"/></svg>練習</button><button id="navHistory" class="nav-btn" type="button" onclick="showScreen('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>成績</button><button id="navSettings" class="nav-btn" type="button" onclick="showScreen('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.15.38.36.72.6 1 .29.33.68.53 1.1.6h.09v4h-.09a1.7 1.7 0 0 0-1.7.4Z"/></svg>設定</button></nav>
 </div>
@@ -100,6 +237,6 @@
 <div id="toast" class="toast" role="status"></div>
 <div id="endModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="endModalTitle"><div class="modal"><h3 id="endModalTitle">ロープレを終了しますか？</h3><p class="lead" style="font-size:13px">ここまでの会話を採点し、改善ポイントを表示します。</p><div class="modal-actions"><button class="ghost-btn" type="button" onclick="closeEndModal()">続ける</button><button class="primary-btn" type="button" onclick="finishRoleplay()">終了して採点</button></div></div></div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-box"><div class="spinner"></div><strong>会話を振り返っています</strong><p style="color:#b9c7d9;font-size:13px">評価と改善ポイントを作成中です</p></div></div>
-<script src="app.js" defer></script>
+<script src="auth.js?v=1.22" defer></script>
 </body>
 </html>
