@@ -1,7 +1,26 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ai-roleplay-studio",
+  "main": "src/index.js",
   "compatibility_date": "2026-07-31",
-  "pages_build_output_dir": ".",
-  "ai": { "binding": "AI" }
+  "compatibility_flags": ["global_fetch_strictly_public"],
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "d1_databases": [
+    {
+      "binding": "BILLING_DB",
+      "database_name": "ai-roleplay-billing",
+      "database_id": "b4383f39-07b0-450b-9e3b-7ca40aa56c4b"
+    }
+  ],
+  "ai": { "binding": "AI" },
+  "vars": {
+    "APP_URL": "https://ai-roleplay-studio.ai-roleplay-studio.workers.dev",
+    "BILLING_ENABLED": "false",
+    "SIGNUP_ENABLED": "true",
+    "STRIPE_PRICE_ID": "price_1U1JSkJYbwf4eLAfkVOYv6kq"
+  }
 }

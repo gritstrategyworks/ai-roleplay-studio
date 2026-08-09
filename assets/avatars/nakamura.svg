@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-labelledby="title">
+  <title id="title">女性Aのアバター</title>
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0f6"/><stop offset="1" stop-color="#e7a6c0"/></linearGradient></defs>
+  <rect width="180" height="180" rx="28" fill="url(#bg)"/>
+  <path d="M48 81c0-38 17-58 43-58 27 0 44 22 44 61v39H46Z" fill="#3c2a2a"/>
+  <circle cx="90" cy="72" r="37" fill="#f2c7aa"/>
+  <path d="M54 63c8-27 23-38 42-38 21 0 35 15 38 39-17-3-30-12-38-25-11 13-25 21-42 24Z" fill="#3c2a2a"/>
+  <path d="M31 180c5-41 25-62 59-62s54 21 59 62" fill="#a94f76"/>
+  <path d="M70 75h5M105 75h5" stroke="#3a3033" stroke-width="5" stroke-linecap="round"/>
+  <path d="M78 95c8 7 16 7 24 0" fill="none" stroke="#b35968" stroke-width="4" stroke-linecap="round"/>
+  <path d="m71 122 19 18 19-18" fill="#fff" opacity=".92"/>
+</svg>
