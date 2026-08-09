@@ -788,6 +788,11 @@ async function onRequestPost7({ request, env }) {
 __name(onRequestPost7, "onRequestPost7");
 __name2(onRequestPost7, "onRequestPost");
 var MODELS = Object.freeze({
+  "Qwen2.5-0.5B-Instruct-q4f32_1-MLC": {
+    repo: "mlc-ai/Qwen2.5-0.5B-Instruct-q4f32_1-MLC",
+    revision: "8e6ec5f417c7d0e1414703ef619b8a24686e3ab0",
+    library: "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/025bcaf3780fa8254f5e5efd3bfea0a5397248f4/web-llm-models/v0_2_84/base/Qwen2-0.5B-Instruct-q4f32_1_cs1k-webgpu.wasm"
+  },
   "gemma-3-4b-it-q4f16_1-MLC": {
     repo: "mlc-ai/gemma-3-4b-it-q4f16_1-MLC",
     revision: "af1fe173321285b526dd3dd9b9d8f5000f324baf",
@@ -1266,14 +1271,24 @@ async function createEvaluation(ai, data) {
     interview: ["\u5834\u3065\u304F\u308A", "\u8CEA\u554F\u8A2D\u8A08", "\u6DF1\u6398\u308A", "\u5177\u4F53\u6027\u78BA\u8A8D", "\u516C\u5E73\u6027", "\u76F8\u4E92\u7406\u89E3"],
     support: ["\u611F\u60C5\u53D7\u5BB9", "\u4E8B\u5B9F\u78BA\u8A8D", "\u5F71\u97FF\u628A\u63E1", "\u8AAC\u660E\u306E\u660E\u78BA\u3055", "\u89E3\u6C7A\u7B56", "\u9069\u5207\u306A\u5883\u754C"]
   };
+  const profileMap = {
+    sales: { coach: "法人営業コーチ", outcome: "顧客課題の影響と意思決定条件を捉え、提案価値を結び付けて次の商談行動に合意する", focus: "課題の深さ、業務・経営への影響、提案価値との接続、決裁者・予算・導入時期、次回日程と担当", penalties: "一方的な商品説明、安易な値引き、決裁条件を確認しないクロージング、曖昧な『検討します』での終了", next: "顧客の影響・判断条件・次回行動のうち、最も不足した一点を確認する営業質問" },
+    manager: { coach: "マネジメント面談コーチ", outcome: "心理的安全性を保ち、本人の認識と背景を整理して、本人が選ぶ行動・上司の支援・フォロー日を合意する", focus: "感情受容、事実と解釈の分離、本人の気づきと自己決定、上司の支援、具体的なフォロー", penalties: "結論の押し付け、人格評価、詰問、退職意思の否定、本人の納得がない行動指示", next: "本人の考え・選択肢・必要な支援を引き出す非誘導の問い" },
+    interview: { coach: "採用面接コーチ", outcome: "職務要件に関係する具体的な経験から、候補者の役割・行動・成果・再現性を公平に見極め、相互理解をつくる", focus: "質問の職務関連性、状況・役割・行動・成果の深掘り、回答の一貫性、評価根拠、公平性、候補者への情報提供", penalties: "誘導質問、印象だけの評価、全候補者で基準が異なる質問、家族・結婚・宗教など職務と無関係な質問", next: "候補者本人の役割・具体行動・成果のうち、根拠が不足した一点を確かめる面接質問" },
+    support: { coach: "顧客対応品質コーチ", outcome: "感情を落ち着かせながら事実と影響を確認し、権限内の対応・担当・次の連絡期限・必要な境界を明確にする", focus: "感情受容、事実と要望の分離、顧客影響、説明の明確さ、対応可能範囲、担当と期限、必要時の境界・引き継ぎ", penalties: "事実確認前の断定、権限外の返金・交換・解決の確約、謝罪だけで具体策がない対応、危険・暴言への無制限な迎合", next: "顧客に見通しを与える事実確認・対応範囲・連絡期限の一言" }
+  };
   const rubric = rubricMap[data.category] || rubricMap.sales;
+  const profile = profileMap[data.category] || profileMap.sales;
   const transcript = data.conversation.map((m) => `${m.role === "user" ? "\u5229\u7528\u8005" : data.avatar.name || "\u76F8\u624B"}: ${m.text}`).join("\n");
   const averageChars = data.audioStats.speechTurns ? Math.round(data.audioStats.totalChars / data.audioStats.speechTurns) : 0;
-  const prompt = `\u4EE5\u4E0B\u306E\u65E5\u672C\u8A9E\u30ED\u30FC\u30EB\u30D7\u30EC\u30A4\u3092\u3001\u4F01\u696D\u7814\u4FEE\u306E\u5BFE\u8A71\u30B9\u30AD\u30EB\u30B3\u30FC\u30C1\u3068\u3057\u3066\u8A55\u4FA1\u3057\u3066\u304F\u3060\u3055\u3044\u3002
+  const prompt = `以下の日本語ロールプレイを、${profile.coach}として評価してください。
 
 \u5834\u9762: ${data.scenario.title}
 \u5BFE\u8A71\u76F8\u624B: ${data.avatar.name}\uFF08${data.avatar.traits}\uFF09
 \u76EE\u7684: ${data.scenario.objective}
+このモードの成功条件: ${profile.outcome}
+重点評価: ${profile.focus}
+固有の減点条件: ${profile.penalties}
 \u8A55\u4FA1\u9805\u76EE: ${rubric.join("\u3001")}
 \u958B\u59CB\u524D\u306E\u516C\u958B\u60C5\u5831: ${data.discovery.publicFacts || data.context || "\u7279\u306B\u306A\u3057"}
 \u76F8\u624B\u306E\u975E\u516C\u958B\u306E\u672C\u97F3\u30FB\u80CC\u666F: ${data.discovery.hiddenTruth || data.scenario.hiddenNeed}
@@ -1289,12 +1304,14 @@ ${transcript}
 
 \u6761\u4EF6:
 - \u5404\u9805\u76EE\u30920\u301C100\u70B9\u3067\u63A1\u70B9\u3059\u308B\u3002
-- \u826F\u304B\u3063\u305F\u70B9\u3068\u6539\u5584\u70B9\u306F\u3001\u4F1A\u8A71\u4E2D\u306E\u5177\u4F53\u7684\u306A\u767A\u8A00\u30FB\u884C\u52D5\u306B\u57FA\u3065\u304F\u3002
+- headline、summary、良かった点、改善点は${profile.coach}の観点で書き、他モードの助言語彙を流用しない。
+- 良かった点と改善点は、会話中の利用者の具体的な発言・行動を引用または要約して根拠にする。
+- このモードの成功条件と固有の減点条件を採点へ明確に反映する。
 - \u6839\u62E0\u306A\u304F\u9AD8\u5F97\u70B9\u306B\u3057\u306A\u3044\u304C\u3001\u5B66\u7FD2\u610F\u6B32\u3092\u640D\u306A\u3046\u8868\u73FE\u306F\u907F\u3051\u308B\u3002
 - \u97F3\u58F0\u6307\u6A19\u304C\u3042\u308B\u5834\u5408\u3001\u30D5\u30A3\u30E9\u30FC\u8A9E\u3084\u4E00\u767A\u8A00\u306E\u9577\u3055\u3082\u5FC5\u8981\u306B\u5FDC\u3058\u3066\u6539\u5584\u70B9\u3078\u53CD\u6620\u3059\u308B\u3002
 - \u4F1A\u8A71\u4E2D\u306E\u5229\u7528\u8005\u306E\u8CEA\u554F\u3068\u76F8\u624B\u306E\u56DE\u7B54\u3060\u3051\u3092\u6839\u62E0\u306B\u3001\u30D2\u30A2\u30EA\u30F3\u30B0\u5230\u9054\u5EA6\u30920\u301C100\u70B9\u3067\u63A1\u70B9\u3059\u308B\u3002
 - discovered\u306B\u306F\u805E\u304D\u51FA\u305B\u305F\u672C\u97F3\u30FB\u80CC\u666F\u3092\u3001missed\u306B\u306F\u805E\u3051\u306A\u304B\u3063\u305F\u91CD\u8981\u9805\u76EE\u3092\u5177\u4F53\u7684\u306B\u66F8\u304F\u3002
-- \u300C\u6B21\u306B\u4F7F\u3046\u4E00\u8A00\u300D\u306F\u3001\u305D\u306E\u307E\u307E\u4F7F\u3048\u308B\u81EA\u7136\u306A\u65E5\u672C\u8A9E\u306B\u3059\u308B\u3002
+- 「次に使う一言」は、そのまま使える自然な日本語とし、${profile.next}にする。
 - JSON\u4EE5\u5916\u306F\u51FA\u529B\u3057\u306A\u3044\u3002`;
   const schema = {
     type: "object",
@@ -1319,7 +1336,7 @@ ${transcript}
   };
   const output = await ai.run(MODEL, {
     messages: [
-      { role: "system", content: "/no_think\n\u3042\u306A\u305F\u306F\u4F01\u696D\u7814\u4FEE\u306E\u5BFE\u8A71\u30B9\u30AD\u30EB\u30B3\u30FC\u30C1\u3067\u3059\u3002\u5177\u4F53\u7684\u3067\u5B9F\u884C\u53EF\u80FD\u306A\u65E5\u672C\u8A9E\u30D5\u30A3\u30FC\u30C9\u30D0\u30C3\u30AF\u3092\u8FD4\u3057\u307E\u3059\u3002" },
+      { role: "system", content: `/no_think\nあなたは${profile.coach}です。対象モード固有の成功条件で厳密に採点し、具体的で実行可能な日本語フィードバックを返します。` },
       { role: "user", content: prompt }
     ],
     temperature: 0.28,
