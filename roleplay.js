@@ -272,6 +272,17 @@ ${detailedSettings || '未設定'}
 - 採点、助言、メタ説明、AIであることへの言及は禁止。
 - JSON以外の文字を出力しない。`;
 
+  const goal = data.promptSettings?.conversationGoal || data.roleplayConfig?.deal?.goal || data.scenario.objective || '設定された会話目的';
+  const goalRules = `
+
+【ゴール達成判定】
+今回のゴール: ${goal}
+確認したい条件: ${(data.discovery.successCriteria || []).join('、') || '会話目的を実質的に満たすこと'}
+- ゴールが会話の中で実質的に達成され、必要な合意・開示・確認が完了した場合だけgoalAchievedをtrueにする。
+- ゴールに触れただけ、提案しただけ、曖昧な返答、未確認事項が残る場合はfalseにする。迷う場合もfalseにする。
+- trueの場合は、人物として結果を認め、感謝や次の行動を含む自然な締めの返答にする。新しい質問で会話を続けない。
+- goalConfidenceは達成の確信度を0〜100で、goalEvidenceは会話中の根拠を短く示す。採点やメタ説明はreplyに含めない。`;
+
   const history = data.conversation.map((m) => ({ role: m.role, content: m.text }));
   const last = history.at(-1);
   if (!last || last.role !== 'user' || last.content !== data.userText) {
@@ -284,6 +295,9 @@ ${detailedSettings || '未設定'}
       reply: { type: 'string', description: '人物としての自然な日本語の返答' },
       speakerRole: { type: 'string', enum: [contract.speakerRole], description: '固定されたAI側の役割識別子' },
       emotion: { type: 'string', enum: ['positive', 'curious', 'neutral', 'skeptical', 'angry'] },
+      goalAchieved: { type: 'boolean', description: 'True only when the configured goal is substantively complete' },
+      goalConfidence: { type: 'integer', minimum: 0, maximum: 100 },
+      goalEvidence: { type: 'string', description: 'Brief evidence from the conversation' },
       deltas: {
         type: 'object',
         properties: {
@@ -294,12 +308,12 @@ ${detailedSettings || '未設定'}
         required: ['trust', 'interest', 'stress'],
       },
     },
-    required: ['reply', 'speakerRole', 'emotion', 'deltas'],
+    required: ['reply', 'speakerRole', 'emotion', 'goalAchieved', 'goalConfidence', 'goalEvidence', 'deltas'],
   };
 
   async function generateReply(correction = '') {
     const output = await ai.run(MODEL, {
-      messages: [{ role: 'system', content: `${system}${correction}` }, ...history],
+      messages: [{ role: 'system', content: `${system}${goalRules}${correction}` }, ...history],
       temperature: correction ? 0.45 : 0.72,
       max_tokens: 360,
       chat_template_kwargs: { enable_thinking: false },
@@ -317,12 +331,18 @@ ${detailedSettings || '未設定'}
       reply: contract.fallback,
       speakerRole: contract.speakerRole,
       emotion: 'neutral',
+      goalAchieved: false,
+      goalConfidence: 0,
+      goalEvidence: '',
       deltas: { trust: 0, interest: 0, stress: 0 },
     };
   }
   return {
     reply: sanitizeText(parsed.reply, 300) || 'もう少し具体的に教えていただけますか。',
     emotion: ['positive', 'curious', 'neutral', 'skeptical', 'angry'].includes(parsed.emotion) ? parsed.emotion : 'neutral',
+    goalAchieved: parsed.goalAchieved === true,
+    goalConfidence: clampNumber(parsed.goalConfidence, 0),
+    goalEvidence: sanitizeText(parsed.goalEvidence, 200),
     deltas: {
       trust: clampDelta(parsed.deltas?.trust),
       interest: clampDelta(parsed.deltas?.interest),
@@ -339,15 +359,25 @@ async function createEvaluation(ai, data) {
     interview: ['場づくり', '質問設計', '深掘り', '具体性確認', '公平性', '相互理解'],
     support: ['感情受容', '事実確認', '影響把握', '説明の明確さ', '解決策', '適切な境界'],
   };
+  const profileMap = {
+    sales: { coach: '法人営業コーチ', outcome: '顧客課題の影響と意思決定条件を捉え、提案価値を結び付けて次の商談行動に合意する', focus: '課題の深さ、業務・経営への影響、提案価値との接続、決裁者・予算・導入時期、次回日程と担当', penalties: '一方的な商品説明、安易な値引き、決裁条件を確認しないクロージング、曖昧な「検討します」での終了', next: '顧客の影響・判断条件・次回行動のうち、最も不足した一点を確認する営業質問' },
+    manager: { coach: 'マネジメント面談コーチ', outcome: '心理的安全性を保ち、本人の認識と背景を整理して、本人が選ぶ行動・上司の支援・フォロー日を合意する', focus: '感情受容、事実と解釈の分離、本人の気づきと自己決定、上司の支援、具体的なフォロー', penalties: '結論の押し付け、人格評価、詰問、退職意思の否定、本人の納得がない行動指示', next: '本人の考え・選択肢・必要な支援を引き出す非誘導の問い' },
+    interview: { coach: '採用面接コーチ', outcome: '職務要件に関係する具体的な経験から、候補者の役割・行動・成果・再現性を公平に見極め、相互理解をつくる', focus: '質問の職務関連性、状況・役割・行動・成果の深掘り、回答の一貫性、評価根拠、公平性、候補者への情報提供', penalties: '誘導質問、印象だけの評価、全候補者で基準が異なる質問、家族・結婚・宗教など職務と無関係な質問', next: '候補者本人の役割・具体行動・成果のうち、根拠が不足した一点を確かめる面接質問' },
+    support: { coach: '顧客対応品質コーチ', outcome: '感情を落ち着かせながら事実と影響を確認し、権限内の対応・担当・次の連絡期限・必要な境界を明確にする', focus: '感情受容、事実と要望の分離、顧客影響、説明の明確さ、対応可能範囲、担当と期限、必要時の境界・引き継ぎ', penalties: '事実確認前の断定、権限外の返金・交換・解決の確約、謝罪だけで具体策がない対応、危険・暴言への無制限な迎合', next: '顧客に見通しを与える事実確認・対応範囲・連絡期限の一言' },
+  };
   const rubric = rubricMap[data.category] || rubricMap.sales;
+  const profile = profileMap[data.category] || profileMap.sales;
   const transcript = data.conversation.map((m) => `${m.role === 'user' ? '利用者' : data.avatar.name || '相手'}: ${m.text}`).join('\n');
   const averageChars = data.audioStats.speechTurns ? Math.round(data.audioStats.totalChars / data.audioStats.speechTurns) : 0;
 
-  const prompt = `以下の日本語ロールプレイを、企業研修の対話スキルコーチとして評価してください。
+  const prompt = `以下の日本語ロールプレイを、${profile.coach}として評価してください。
 
 場面: ${data.scenario.title}
 対話相手: ${data.avatar.name}（${data.avatar.traits}）
 目的: ${data.scenario.objective}
+このモードの成功条件: ${profile.outcome}
+重点評価: ${profile.focus}
+固有の減点条件: ${profile.penalties}
 評価項目: ${rubric.join('、')}
 開始前の公開情報: ${data.discovery.publicFacts || data.context || '特になし'}
 相手の非公開の本音・背景: ${data.discovery.hiddenTruth || data.scenario.hiddenNeed}
@@ -363,12 +393,14 @@ ${transcript}
 
 条件:
 - 各項目を0〜100点で採点する。
-- 良かった点と改善点は、会話中の具体的な発言・行動に基づく。
+- headline、summary、良かった点、改善点は${profile.coach}の観点で書き、他モードの助言語彙を流用しない。
+- 良かった点と改善点は、会話中の利用者の具体的な発言・行動を引用または要約して根拠にする。
+- このモードの成功条件と固有の減点条件を採点へ明確に反映する。
 - 根拠なく高得点にしないが、学習意欲を損なう表現は避ける。
 - 音声指標がある場合、フィラー語や一発言の長さも必要に応じて改善点へ反映する。
 - 会話中の利用者の質問と相手の回答だけを根拠に、ヒアリング到達度を0〜100点で採点する。
 - discoveredには聞き出せた本音・背景を、missedには聞けなかった重要項目を具体的に書く。
-- 「次に使う一言」は、そのまま使える自然な日本語にする。
+- 「次に使う一言」は、そのまま使える自然な日本語とし、${profile.next}にする。
 - JSON以外は出力しない。`;
 
   const schema = {
@@ -386,7 +418,7 @@ ${transcript}
 
   const output = await ai.run(MODEL, {
     messages: [
-      { role: 'system', content: '/no_think\nあなたは企業研修の対話スキルコーチです。具体的で実行可能な日本語フィードバックを返します。' },
+      { role: 'system', content: `/no_think\nあなたは${profile.coach}です。対象モード固有の成功条件で厳密に採点し、具体的で実行可能な日本語フィードバックを返します。` },
       { role: 'user', content: prompt },
     ],
     temperature: 0.28,
@@ -436,7 +468,7 @@ function parseModelResponse(output, action = 'reply') {
       }
       const replyMatch = cleaned.match(/["“]?reply["”]?\s*[:：]\s*["“]([\s\S]*?)["”](?:\s*[,}]|$)/i);
       if (replyMatch) {
-        return { reply: replyMatch[1], emotion: 'neutral', deltas: { trust: 0, interest: 0, stress: 0 } };
+        return { reply: replyMatch[1], emotion: 'neutral', goalAchieved: false, goalConfidence: 0, goalEvidence: '', deltas: { trust: 0, interest: 0, stress: 0 } };
       }
       continue;
     }
@@ -451,6 +483,9 @@ function parseModelResponse(output, action = 'reply') {
     return {
       reply: (plain || 'もう少し具体的に教えていただけますか。').slice(0, 300),
       emotion: 'neutral',
+      goalAchieved: false,
+      goalConfidence: 0,
+      goalEvidence: '',
       deltas: { trust: 0, interest: 0, stress: 0 },
     };
   }
