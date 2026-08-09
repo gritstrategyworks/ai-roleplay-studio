@@ -140,7 +140,7 @@ function scenario(){return (SCENARIOS[state.category]||[]).find(s=>s.id===state.
 function avatar(id=state.avatarId){return AVATARS.find(a=>a.id===id)||AVATARS[0]}
 function persona(){return PERSONAS.find(p=>p.id===state.persona)||PERSONAS[1]}
 function difficulty(){return DIFFICULTIES.find(d=>d.id===state.difficulty)||DIFFICULTIES[1]}
-function avatarImage(id,emotion='neutral',thumb=false){return `assets/avatars/${id}.svg`}
+function avatarImage(id,emotion='neutral',thumb=false){return `assets/avatars/${id}.webp`}
 function getApiEndpoint(){const value=String(settings.apiEndpoint||'').trim();return value?value.replace(/\/$/,''):'/api/roleplay'}
 function isRoleplayActive(){return document.getElementById('screen-roleplay')?.classList.contains('active')}
 
