@@ -272,6 +272,17 @@ ${detailedSettings || '未設定'}
 - 採点、助言、メタ説明、AIであることへの言及は禁止。
 - JSON以外の文字を出力しない。`;
 
+  const goal = data.promptSettings?.conversationGoal || data.roleplayConfig?.deal?.goal || data.scenario.objective || '設定された会話目的';
+  const goalRules = `
+
+【ゴール達成判定】
+今回のゴール: ${goal}
+確認したい条件: ${(data.discovery.successCriteria || []).join('、') || '会話目的を実質的に満たすこと'}
+- ゴールが会話の中で実質的に達成され、必要な合意・開示・確認が完了した場合だけgoalAchievedをtrueにする。
+- ゴールに触れただけ、提案しただけ、曖昧な返答、未確認事項が残る場合はfalseにする。迷う場合もfalseにする。
+- trueの場合は、人物として結果を認め、感謝や次の行動を含む自然な締めの返答にする。新しい質問で会話を続けない。
+- goalConfidenceは達成の確信度を0〜100で、goalEvidenceは会話中の根拠を短く示す。採点やメタ説明はreplyに含めない。`;
+
   const history = data.conversation.map((m) => ({ role: m.role, content: m.text }));
   const last = history.at(-1);
   if (!last || last.role !== 'user' || last.content !== data.userText) {
@@ -284,6 +295,9 @@ ${detailedSettings || '未設定'}
       reply: { type: 'string', description: '人物としての自然な日本語の返答' },
       speakerRole: { type: 'string', enum: [contract.speakerRole], description: '固定されたAI側の役割識別子' },
       emotion: { type: 'string', enum: ['positive', 'curious', 'neutral', 'skeptical', 'angry'] },
+      goalAchieved: { type: 'boolean', description: 'True only when the configured goal is substantively complete' },
+      goalConfidence: { type: 'integer', minimum: 0, maximum: 100 },
+      goalEvidence: { type: 'string', description: 'Brief evidence from the conversation' },
       deltas: {
         type: 'object',
         properties: {
@@ -294,12 +308,12 @@ ${detailedSettings || '未設定'}
         required: ['trust', 'interest', 'stress'],
       },
     },
-    required: ['reply', 'speakerRole', 'emotion', 'deltas'],
+    required: ['reply', 'speakerRole', 'emotion', 'goalAchieved', 'goalConfidence', 'goalEvidence', 'deltas'],
   };
 
   async function generateReply(correction = '') {
     const output = await ai.run(MODEL, {
-      messages: [{ role: 'system', content: `${system}${correction}` }, ...history],
+      messages: [{ role: 'system', content: `${system}${goalRules}${correction}` }, ...history],
       temperature: correction ? 0.45 : 0.72,
       max_tokens: 360,
       chat_template_kwargs: { enable_thinking: false },
@@ -317,12 +331,18 @@ ${detailedSettings || '未設定'}
       reply: contract.fallback,
       speakerRole: contract.speakerRole,
       emotion: 'neutral',
+      goalAchieved: false,
+      goalConfidence: 0,
+      goalEvidence: '',
       deltas: { trust: 0, interest: 0, stress: 0 },
     };
   }
   return {
     reply: sanitizeText(parsed.reply, 300) || 'もう少し具体的に教えていただけますか。',
     emotion: ['positive', 'curious', 'neutral', 'skeptical', 'angry'].includes(parsed.emotion) ? parsed.emotion : 'neutral',
+    goalAchieved: parsed.goalAchieved === true,
+    goalConfidence: clampNumber(parsed.goalConfidence, 0),
+    goalEvidence: sanitizeText(parsed.goalEvidence, 200),
     deltas: {
       trust: clampDelta(parsed.deltas?.trust),
       interest: clampDelta(parsed.deltas?.interest),
@@ -436,7 +456,7 @@ function parseModelResponse(output, action = 'reply') {
       }
       const replyMatch = cleaned.match(/["“]?reply["”]?\s*[:：]\s*["“]([\s\S]*?)["”](?:\s*[,}]|$)/i);
       if (replyMatch) {
-        return { reply: replyMatch[1], emotion: 'neutral', deltas: { trust: 0, interest: 0, stress: 0 } };
+        return { reply: replyMatch[1], emotion: 'neutral', goalAchieved: false, goalConfidence: 0, goalEvidence: '', deltas: { trust: 0, interest: 0, stress: 0 } };
       }
       continue;
     }
@@ -451,6 +471,9 @@ function parseModelResponse(output, action = 'reply') {
     return {
       reply: (plain || 'もう少し具体的に教えていただけますか。').slice(0, 300),
       emotion: 'neutral',
+      goalAchieved: false,
+      goalConfidence: 0,
+      goalEvidence: '',
       deltas: { trust: 0, interest: 0, stress: 0 },
     };
   }

@@ -1177,6 +1177,16 @@ ${detailedSettings || "\u672A\u8A2D\u5B9A"}
 - \u904E\u53BB\u306E\u767A\u8A00\u3068\u77DB\u76FE\u3057\u306A\u3044\u3002\u540C\u3058\u8CEA\u554F\u3092\u7E70\u308A\u8FD4\u3055\u308C\u305F\u3089\u81EA\u7136\u306B\u6307\u6458\u3059\u308B\u3002
 - \u63A1\u70B9\u3001\u52A9\u8A00\u3001\u30E1\u30BF\u8AAC\u660E\u3001AI\u3067\u3042\u308B\u3053\u3068\u3078\u306E\u8A00\u53CA\u306F\u7981\u6B62\u3002
 - JSON\u4EE5\u5916\u306E\u6587\u5B57\u3092\u51FA\u529B\u3057\u306A\u3044\u3002`;
+  const goal = data.promptSettings?.conversationGoal || data.roleplayConfig?.deal?.goal || data.scenario.objective || "設定された会話目的";
+  const goalRules = `
+
+【ゴール達成判定】
+今回のゴール: ${goal}
+確認したい条件: ${(data.discovery.successCriteria || []).join("、") || "会話目的を実質的に満たすこと"}
+- ゴールが会話の中で実質的に達成され、必要な合意・開示・確認が完了した場合だけgoalAchievedをtrueにする。
+- ゴールに触れただけ、提案しただけ、曖昧な返答、未確認事項が残る場合はfalseにする。迷う場合もfalseにする。
+- trueの場合は、人物として結果を認め、感謝や次の行動を含む自然な締めの返答にする。新しい質問で会話を続けない。
+- goalConfidenceは達成の確信度を0〜100で、goalEvidenceは会話中の根拠を短く示す。採点やメタ説明はreplyに含めない。`;
   const history = data.conversation.map((m) => ({ role: m.role, content: m.text }));
   const last = history.at(-1);
   if (!last || last.role !== "user" || last.content !== data.userText) {
@@ -1188,6 +1198,9 @@ ${detailedSettings || "\u672A\u8A2D\u5B9A"}
       reply: { type: "string", description: "\u4EBA\u7269\u3068\u3057\u3066\u306E\u81EA\u7136\u306A\u65E5\u672C\u8A9E\u306E\u8FD4\u7B54" },
       speakerRole: { type: "string", enum: [contract.speakerRole], description: "\u56FA\u5B9A\u3055\u308C\u305FAI\u5074\u306E\u5F79\u5272\u8B58\u5225\u5B50" },
       emotion: { type: "string", enum: ["positive", "curious", "neutral", "skeptical", "angry"] },
+      goalAchieved: { type: "boolean", description: "True only when the configured goal is substantively complete" },
+      goalConfidence: { type: "integer", minimum: 0, maximum: 100 },
+      goalEvidence: { type: "string", description: "Brief evidence from the conversation" },
       deltas: {
         type: "object",
         properties: {
@@ -1198,11 +1211,11 @@ ${detailedSettings || "\u672A\u8A2D\u5B9A"}
         required: ["trust", "interest", "stress"]
       }
     },
-    required: ["reply", "speakerRole", "emotion", "deltas"]
+    required: ["reply", "speakerRole", "emotion", "goalAchieved", "goalConfidence", "goalEvidence", "deltas"]
   };
   async function generateReply(correction = "") {
     const output = await ai.run(MODEL, {
-      messages: [{ role: "system", content: `${system}${correction}` }, ...history],
+      messages: [{ role: "system", content: `${system}${goalRules}${correction}` }, ...history],
       temperature: correction ? 0.45 : 0.72,
       max_tokens: 360,
       chat_template_kwargs: { enable_thinking: false },
@@ -1224,12 +1237,18 @@ ${detailedSettings || "\u672A\u8A2D\u5B9A"}
       reply: contract.fallback,
       speakerRole: contract.speakerRole,
       emotion: "neutral",
+      goalAchieved: false,
+      goalConfidence: 0,
+      goalEvidence: "",
       deltas: { trust: 0, interest: 0, stress: 0 }
     };
   }
   return {
     reply: sanitizeText(parsed.reply, 300) || "\u3082\u3046\u5C11\u3057\u5177\u4F53\u7684\u306B\u6559\u3048\u3066\u3044\u305F\u3060\u3051\u307E\u3059\u304B\u3002",
     emotion: ["positive", "curious", "neutral", "skeptical", "angry"].includes(parsed.emotion) ? parsed.emotion : "neutral",
+    goalAchieved: parsed.goalAchieved === true,
+    goalConfidence: clampNumber(parsed.goalConfidence, 0),
+    goalEvidence: sanitizeText(parsed.goalEvidence, 200),
     deltas: {
       trust: clampDelta(parsed.deltas?.trust),
       interest: clampDelta(parsed.deltas?.interest),
@@ -1347,7 +1366,7 @@ function parseModelResponse(output, action = "reply") {
       }
       const replyMatch = cleaned.match(/["“]?reply["”]?\s*[:：]\s*["“]([\s\S]*?)["”](?:\s*[,}]|$)/i);
       if (replyMatch) {
-        return { reply: replyMatch[1], emotion: "neutral", deltas: { trust: 0, interest: 0, stress: 0 } };
+        return { reply: replyMatch[1], emotion: "neutral", goalAchieved: false, goalConfidence: 0, goalEvidence: "", deltas: { trust: 0, interest: 0, stress: 0 } };
       }
       continue;
     }
@@ -1361,6 +1380,9 @@ function parseModelResponse(output, action = "reply") {
     return {
       reply: (plain || "\u3082\u3046\u5C11\u3057\u5177\u4F53\u7684\u306B\u6559\u3048\u3066\u3044\u305F\u3060\u3051\u307E\u3059\u304B\u3002").slice(0, 300),
       emotion: "neutral",
+      goalAchieved: false,
+      goalConfidence: 0,
+      goalEvidence: "",
       deltas: { trust: 0, interest: 0, stress: 0 }
     };
   }
