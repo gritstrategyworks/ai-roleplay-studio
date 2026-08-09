@@ -97,6 +97,7 @@
         <div class="panel quick-setup-panel">
           <div id="setupAIModeBanner" class="setup-mode-banner"><div><strong id="setupAIModeTitle">☁️ 通常モード</strong><span id="setupAIModeDescription">Cloudflare Workers AIで会話します。</span></div><button type="button" onclick="showScreen('settings')">変更</button></div>
           <div class="setup-intro"><div><div class="eyebrow">QUICK SETUP</div><h3>すぐにロープレを開始</h3><p>各項目は入力済みです。必要なところだけ変更して開始できます。</p></div></div>
+          <div class="roleplay-duration-setting"><div><label for="roleplayDurationSelect">ロープレ時間</label><p>5分を基本に、じっくり練習する場合は10分を選べます。設定時間を過ぎても会話は途切れません。</p></div><select id="roleplayDurationSelect" aria-label="ロープレ時間"><option value="300">5分（基本）</option><option value="600">10分（じっくり練習）</option></select></div>
           <div id="setupValidation" class="setup-validation" role="alert" hidden></div>
           <div class="quick-form-grid">
             <div class="field"><label for="productNameInput">① 商品・サービス名 <em>必須</em></label><input id="productNameInput" required placeholder="例：営業研修" oninput="updateSetupDraft()"></div>
