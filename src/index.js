@@ -793,6 +793,11 @@ var MODELS = Object.freeze({
     revision: "af1fe173321285b526dd3dd9b9d8f5000f324baf",
     library: "https://huggingface.co/Phreak87/gemma3-4b-it-q4f16_1-MLC-wasm/resolve/eb69d439a177714feeda310e04edfd1e6ce10932/gemma3-4b.wasm"
   },
+  "Qwen3-1.7B-q4f32_1-MLC": {
+    repo: "mlc-ai/Qwen3-1.7B-q4f32_1-MLC",
+    revision: "bddd4d584cabe19113f7e4ff46fd9e73b4d3dc89",
+    library: "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/025bcaf3780fa8254f5e5efd3bfea0a5397248f4/web-llm-models/v0_2_84/base/Qwen3-1.7B-q4f32_1_cs1k-webgpu.wasm"
+  },
   "Qwen3-4B-q4f32_1-MLC": {
     repo: "mlc-ai/Qwen3-4B-q4f32_1-MLC",
     revision: "b7e4eb1ba80728187fb5df44055cc1a7c32310e0",
