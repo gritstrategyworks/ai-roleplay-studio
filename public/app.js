@@ -139,8 +139,8 @@ function scenario(){return (SCENARIOS[state.category]||[]).find(s=>s.id===state.
 function avatar(id=state.avatarId){return AVATARS.find(a=>a.id===id)||AVATARS[0]}
 function persona(){return PERSONAS.find(p=>p.id===state.persona)||PERSONAS[1]}
 function difficulty(){return DIFFICULTIES.find(d=>d.id===state.difficulty)||DIFFICULTIES[1]}
-const AVATAR_ASSET_BASE='https://327d550e-ai-roleplay-studio.ai-roleplay-studio.workers.dev/assets/avatars';
-function avatarImage(id,emotion='neutral',thumb=false){return `${AVATAR_ASSET_BASE}/${id}/${emotion}${thumb?'-thumb':''}.webp`}
+const AVATAR_ASSET_BASE='assets/avatars/portraits';
+function avatarImage(id){return `${AVATAR_ASSET_BASE}/${id}.webp`}
 function getApiEndpoint(){const value=String(settings.apiEndpoint||'').trim();return value?value.replace(/\/$/,''):'/api/roleplay'}
 function isRoleplayActive(){return document.getElementById('screen-roleplay')?.classList.contains('active')}
 
