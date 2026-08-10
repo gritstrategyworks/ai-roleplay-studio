@@ -1,6 +1,6 @@
-const CACHE='ai-roleplay-studio-v1-23-cloud-avatar-mobile';
+const CACHE='ai-roleplay-studio-v1-24-embedded-avatar-mobile';
 const BASE=new URL('./',self.location.href);
-const CORE=['index.html','styles.css?v=1.23','auth.css?v=1.23','auth.js?v=1.23','app.js?v=1.23','scenario-design.js?v=1.23','manifest.webmanifest','assets/icon.svg'].map(path=>new URL(path,BASE).href);
+const CORE=['index.html','styles.css?v=1.24','auth.css?v=1.24','auth.js?v=1.24','app.js?v=1.24','scenario-design.js?v=1.24','manifest.webmanifest','assets/icon.svg'].map(path=>new URL(path,BASE).href);
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',event=>{
