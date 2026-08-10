@@ -409,12 +409,11 @@ updateSummary=function(){updateSummaryDiscoveryBase();const summary=document.get
 function openingPolicyForCategory(config=state.roleplayConfig){
   const scene=String(config?.deal?.scene||''),aiStarts=state.category==='support'||(state.category==='sales'&&/(クレーム|問い合わせ)/.test(scene));
   const guides={sales:'相手はあなたの挨拶を待っています。まず挨拶し、訪問目的を伝えてください。',manager:'部下は面談の開始を待っています。安心して話せる挨拶と面談目的から始めてください。',interview:'応募者は面接官からの挨拶を待っています。自己紹介と面接の進め方から始めてください。'};
-  const examples={sales:'本日はお時間をいただき、ありがとうございます。まず今回の訪問目的をご説明してもよろしいでしょうか。',manager:'今日は時間を取ってくれてありがとう。まず最近の状況を聞かせてもらえますか。',interview:'本日はお越しいただきありがとうございます。まず面接の流れをご説明します。'};
-  return {speaker:aiStarts?'ai':'user',guide:guides[state.category]||'',example:examples[state.category]||''};
+  return {speaker:aiStarts?'ai':'user',guide:guides[state.category]||''};
 }
 function showRoleplayStartGuide(policy){
   const list=document.getElementById('messageList'),row=document.createElement('div');row.className='message-row ai roleplay-start-guide';
-  row.innerHTML=`<div class="bubble"><strong>あなたから会話を始めます</strong><br><span>${escapeHtml(policy.guide)}</span><div class="quick-replies"><button type="button" onclick="insertPhrase('${escapeHtml(policy.example)}')">例文を入力</button></div></div>`;
+  row.innerHTML=`<div class="bubble"><strong>あなたから会話を始めます</strong><br><span>${escapeHtml(policy.guide)}</span></div>`;
   list.appendChild(row);document.getElementById('messageInput').placeholder='挨拶と目的から話してください';
   setVoiceState('idle','あなたから話してください');setTimeout(()=>document.getElementById('messageInput')?.focus(),80);
 }
@@ -444,6 +443,21 @@ probeAPI=async function(){const endpoint=getApiEndpoint();if(!settings.preferAI|
 const beginRoleplayModeBase=beginRoleplay;
 beginRoleplay=async function(){state.interaction='voice';return beginRoleplayModeBase()};
 const renderSetupModeBase=renderSetup;
-renderSetup=function(){renderSetupModeBase();renderAIModeSettings()};
+function upgradeAdvancedDatalistInputs(){
+  document.querySelectorAll('#advancedSettings input[list]').forEach(input=>{
+    const list=document.getElementById(input.getAttribute('list')),values=[...(list?.options||[])].map(option=>option.value).filter(Boolean),current=input.value;
+    const select=document.createElement('select');select.id=input.id;select.className=input.className;select.setAttribute('onchange','updateSetupDraft()');
+    const empty=document.createElement('option');empty.value='';empty.textContent='選択してください';select.appendChild(empty);
+    if(current&&!values.includes(current))values.unshift(current);
+    values.forEach(value=>{const option=document.createElement('option');option.value=value;option.textContent=value;select.appendChild(option)});
+    select.value=current;input.replaceWith(select);
+  });
+}
+function openPracticeMenu(){
+  showScreen('home');document.getElementById('navHome')?.classList.remove('active');document.getElementById('navStart')?.classList.add('active');
+  setTimeout(()=>document.querySelector('.category-grid')?.scrollIntoView({behavior:'smooth',block:'start'}),120);
+}
+document.getElementById('navStart').onclick=openPracticeMenu;
+renderSetup=function(){renderSetupModeBase();upgradeAdvancedDatalistInputs();renderAIModeSettings()};
 init=function(){setupSpeechRecognition();loadVoices();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();probeAPI();initBilling();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).catch(()=>{})};
 init();
