@@ -964,7 +964,14 @@ __name(roleContract, "roleContract");
 __name2(roleContract, "roleContract");
 function looksRoleReversed(category, reply) {
   const text = sanitizeText(reply, 300);
-  return roleContract(category).reversedPatterns.some((pattern) => pattern.test(text));
+  const selfRoleClaims = {
+    sales: [/(?:私|こちら|当社|弊社).{0,20}(?:提案|商品|サービス).{0,12}(?:します|いたします|紹介)/],
+    manager: [/(?:私|こちら).{0,12}(?:上司|管理職)/, /(?:評価|指導|目標を設定).{0,12}(?:します|しましょう)/],
+    interview: [/(?:私|こちら).{0,12}(?:面接官|採用担当)/, /(?:質問|選考|評価).{0,12}(?:します|始めます)/],
+    support: [/(?:私|こちら|当社|弊社).{0,20}(?:謝罪|調査|返金|交換|修理|対応).{0,12}(?:します|いたします|承ります)/]
+  };
+  return roleContract(category).reversedPatterns.some((pattern) => pattern.test(text))
+    || (selfRoleClaims[category] || []).some((pattern) => pattern.test(text));
 }
 __name(looksRoleReversed, "looksRoleReversed");
 __name2(looksRoleReversed, "looksRoleReversed");
@@ -1158,7 +1165,7 @@ async function createReply(ai, data) {
 \u30B7\u30CA\u30EA\u30AA: ${data.scenario.title}
 \u96E3\u6613\u5EA6: ${data.difficulty.label}
 \u73FE\u5728\u30D5\u30A7\u30FC\u30BA: ${data.phase}
-\u76EE\u7684: ${data.scenario.objective}
+\u5229\u7528\u8005\u5074\u306E\u8A13\u7DF4\u76EE\u6A19\uFF08AI\u304C\u9042\u884C\u3059\u308B\u76EE\u6A19\u3067\u306F\u306A\u3044\uFF09: ${data.scenario.objective}
 \u958B\u59CB\u524D\u304B\u3089\u5229\u7528\u8005\u304C\u77E5\u3063\u3066\u3044\u308B\u516C\u958B\u60C5\u5831: ${data.discovery.publicFacts || data.context || "\u7279\u306B\u306A\u3057"}
 AI\u3060\u3051\u304C\u77E5\u308B\u975E\u516C\u958B\u306E\u672C\u97F3\u30FB\u80CC\u666F: ${data.discovery.hiddenTruth || data.scenario.hiddenNeed}
 AI\u3060\u3051\u304C\u77E5\u308B\u5224\u65AD\u6761\u4EF6\u30FB\u8B72\u308C\u306A\u3044\u3053\u3068: ${data.discovery.hiddenConditions || "\u672A\u8A2D\u5B9A"}
@@ -1218,13 +1225,13 @@ ${detailedSettings || "\u672A\u8A2D\u5B9A"}
   __name(generateReply, "generateReply");
   __name2(generateReply, "generateReply");
   let parsed = await generateReply();
-  if (parsed.speakerRole && parsed.speakerRole !== contract.speakerRole || looksRoleReversed(data.category, parsed.reply)) {
+  if (parsed.speakerRole !== contract.speakerRole || looksRoleReversed(data.category, parsed.reply)) {
     parsed = await generateReply(`
 
 \u3010\u518D\u751F\u6210\u6307\u793A\u3011
 \u76F4\u524D\u306E\u751F\u6210\u306F\u5F79\u5272\u9055\u53CD\u3067\u3059\u3002\u5229\u7528\u8005\u306F\u300C${contract.userRole}\u300D\u3001\u3042\u306A\u305F\u306F\u300C${contract.aiRole}\u300D\u3067\u3059\u3002\u5229\u7528\u8005\u3078\u5F79\u5272\u3092\u9006\u5411\u304D\u306B\u8CEA\u554F\u305B\u305A\u3001\u3042\u306A\u305F\u306E\u5F79\u304B\u3089\u3060\u3051\u8FD4\u7B54\u3057\u3066\u304F\u3060\u3055\u3044\u3002`);
   }
-  if (parsed.speakerRole && parsed.speakerRole !== contract.speakerRole || looksRoleReversed(data.category, parsed.reply)) {
+  if (parsed.speakerRole !== contract.speakerRole || looksRoleReversed(data.category, parsed.reply)) {
     parsed = {
       reply: contract.fallback,
       speakerRole: contract.speakerRole,
@@ -1259,7 +1266,7 @@ async function createEvaluation(ai, data) {
 
 \u5834\u9762: ${data.scenario.title}
 \u5BFE\u8A71\u76F8\u624B: ${data.avatar.name}\uFF08${data.avatar.traits}\uFF09
-\u76EE\u7684: ${data.scenario.objective}
+\u5229\u7528\u8005\u5074\u306E\u8A13\u7DF4\u76EE\u6A19\uFF08AI\u304C\u9042\u884C\u3059\u308B\u76EE\u6A19\u3067\u306F\u306A\u3044\uFF09: ${data.scenario.objective}
 \u8A55\u4FA1\u9805\u76EE: ${rubric.join("\u3001")}
 \u958B\u59CB\u524D\u306E\u516C\u958B\u60C5\u5831: ${data.discovery.publicFacts || data.context || "\u7279\u306B\u306A\u3057"}
 \u76F8\u624B\u306E\u975E\u516C\u958B\u306E\u672C\u97F3\u30FB\u80CC\u666F: ${data.discovery.hiddenTruth || data.scenario.hiddenNeed}
