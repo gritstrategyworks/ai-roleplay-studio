@@ -1225,13 +1225,13 @@ ${detailedSettings || "\u672A\u8A2D\u5B9A"}
   __name(generateReply, "generateReply");
   __name2(generateReply, "generateReply");
   let parsed = await generateReply();
-  if (parsed.speakerRole !== contract.speakerRole || looksRoleReversed(data.category, parsed.reply)) {
+  if ((parsed.speakerRole && parsed.speakerRole !== contract.speakerRole) || looksRoleReversed(data.category, parsed.reply)) {
     parsed = await generateReply(`
 
 \u3010\u518D\u751F\u6210\u6307\u793A\u3011
 \u76F4\u524D\u306E\u751F\u6210\u306F\u5F79\u5272\u9055\u53CD\u3067\u3059\u3002\u5229\u7528\u8005\u306F\u300C${contract.userRole}\u300D\u3001\u3042\u306A\u305F\u306F\u300C${contract.aiRole}\u300D\u3067\u3059\u3002\u5229\u7528\u8005\u3078\u5F79\u5272\u3092\u9006\u5411\u304D\u306B\u8CEA\u554F\u305B\u305A\u3001\u3042\u306A\u305F\u306E\u5F79\u304B\u3089\u3060\u3051\u8FD4\u7B54\u3057\u3066\u304F\u3060\u3055\u3044\u3002`);
   }
-  if (parsed.speakerRole !== contract.speakerRole || looksRoleReversed(data.category, parsed.reply)) {
+  if ((parsed.speakerRole && parsed.speakerRole !== contract.speakerRole) || looksRoleReversed(data.category, parsed.reply)) {
     parsed = {
       reply: contract.fallback,
       speakerRole: contract.speakerRole,
@@ -1353,7 +1353,11 @@ function parseModelResponse(output, action = "reply") {
       for (const candidate of candidates) {
         if (!candidate || !candidate.startsWith("{") || !candidate.endsWith("}")) continue;
         try {
-          queue.unshift(JSON.parse(candidate));
+          const parsedCandidate = JSON.parse(candidate);
+          if (parsedCandidate && typeof parsedCandidate === "object" && (typeof parsedCandidate.reply === "string" || Array.isArray(parsedCandidate.scores))) {
+            return parsedCandidate;
+          }
+          queue.unshift(parsedCandidate);
         } catch {
         }
       }
