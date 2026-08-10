@@ -118,3 +118,7 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.92em;
   body.roleplay-active .meters{padding-bottom:5px}
   body.roleplay-active .voice-banner{display:none}
 }
+
+/* Keep the single online-AI option aligned with the full settings column. */
+.settings-grid .ai-mode-grid.cloud-only{grid-template-columns:1fr;width:100%}
+.settings-grid .ai-mode-grid.cloud-only .ai-mode-card{width:100%}
