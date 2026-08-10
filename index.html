@@ -17,8 +17,8 @@
   <title>AI ROLEPLAY STUDIO</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=1.22">
-  <link rel="stylesheet" href="auth.css?v=1.22">
+  <link rel="stylesheet" href="styles.css?v=1.23">
+  <link rel="stylesheet" href="auth.css?v=1.23">
 </head>
 <body class="auth-pending">
 <div id="authGate" class="auth-gate">
@@ -26,7 +26,7 @@
     <section class="auth-intro">
       <div class="auth-brand"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 8.2A4.2 4.2 0 0 1 10.2 4h3.6A4.2 4.2 0 0 1 18 8.2v3.1a4.2 4.2 0 0 1-4.2 4.2h-1.3L9 19v-3.5A4.2 4.2 0 0 1 6 11.3V8.2Z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M9 9h6M9 12h4" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span><span>AI ROLEPLAY STUDIO</span></div>
       <div><div class="eyebrow">AI音声ロールプレイ</div><h1>対話力を、<br>会話で磨く。</h1><p>アカウントで継続利用することも、ログインせずゲストとしてすぐ試すこともできます。</p></div>
-      <ul class="auth-features"><li>詳細設定と6種類のアバター</li><li>すぐ使える通常モードと、情報を外部に送らない社内情報モード</li><li>アカウントまたはゲストで利用</li></ul>
+      <ul class="auth-features"><li>詳細設定と6種類のアバター</li><li>待ち時間を抑えたオンラインAI会話・採点</li><li>アカウントまたはゲストで利用</li></ul>
     </section>
     <section class="auth-card">
       <div id="authLoading" class="auth-loading"><span class="auth-spinner"></span><strong id="authLoadingText">ログイン状態を確認しています</strong><p>安全な接続を準備しています。</p></div>
@@ -95,7 +95,7 @@
       <div class="page-header"><button class="back-btn" type="button" aria-label="戻る" onclick="showScreen('home')">←</button><div><div class="eyebrow">SETUP</div><h2 style="margin-bottom:0">トレーニング設定</h2></div></div>
       <div class="setup-layout">
         <div class="panel quick-setup-panel">
-          <div id="setupAIModeBanner" class="setup-mode-banner"><div><strong id="setupAIModeTitle">☁️ 通常モード</strong><span id="setupAIModeDescription">オンラインAIですぐに会話できます。</span></div><button type="button" onclick="showScreen('settings')">変更</button></div>
+          <div id="setupAIModeBanner" class="setup-mode-banner"><div><strong id="setupAIModeTitle">☁️ オンラインAI</strong><span id="setupAIModeDescription">クラウドAIで、待ち時間を抑えて会話・採点します。</span></div></div>
           <div class="setup-intro"><div><div class="eyebrow">QUICK SETUP</div><h3>すぐにロープレを開始</h3><p>各項目は入力済みです。必要なところだけ変更して開始できます。</p></div></div>
           <div id="setupValidation" class="setup-validation" role="alert" hidden></div>
           <div class="quick-form-grid">
@@ -189,7 +189,7 @@
           <article id="info-operator" class="info-section" hidden><h3>運営者</h3><dl class="legal-list"><div><dt>運営者名</dt><dd>Grit Strategy Works</dd></div><div><dt>サービス名</dt><dd>AI ROLEPLAY STUDIO</dd></div><div><dt>有料プラン</dt><dd>AI Roleplay Studio Premium・月額980円（税込）</dd></div><div><dt>提供状況</dt><dd>有料プランの申込み準備中</dd></div></dl><p>販売事業者の正式名称、運営責任者、所在地、電話番号、契約・請求に関する専用問い合わせ先は有料プランの申込み開始前に掲載します。</p></article>
           <article id="info-commerce" class="info-section" hidden><h3>特定商取引法に基づく表記</h3><div class="status-banner caution"><strong>有料プランは現在準備中です</strong><span>必要な情報を掲載したうえで申込みを開始します。</span></div><dl class="legal-list"><div><dt>運営者</dt><dd>Grit Strategy Works</dd></div><div><dt>販売事業者の正式名称・責任者</dt><dd>有料プランの申込み開始前に掲載</dd></div><div><dt>所在地・電話番号</dt><dd>有料プランの申込み開始前に掲載。法令上認められる場合は、請求に応じて申込み前に遅滞なく提供できる体制を整えます。</dd></div><div><dt>販売価格</dt><dd>AI Roleplay Studio Premium：月額980円（税込）</dd></div><div><dt>商品代金以外の負担</dt><dd>インターネット接続・通信に必要な費用は利用者負担です。</dd></div><div><dt>支払方法・支払時期</dt><dd>クレジットカード（Stripe）。申込み時に初回決済し、以後1か月ごとに自動更新します。</dd></div><div><dt>サービス提供時期</dt><dd>決済完了後、プレミアム機能を利用できます。</dd></div><div><dt>解約・返金</dt><dd>本ページ内の「解約方法」「返金方針」を参照してください。</dd></div></dl><p class="reference-links"><a href="https://www.no-trouble.caa.go.jp/what/mailorder/advertising.html" target="_blank" rel="noopener">消費者庁・特定商取引法ガイド</a></p></article>
           <article id="info-terms" class="info-section" hidden><h3>利用規約</h3><p class="policy-date">改定日：2026年8月6日</p><h4>1. 適用</h4><p>本規約は、Grit Strategy Worksが提供するAI ROLEPLAY STUDIOの利用条件を定めます。利用者は本規約に同意して本サービスを利用します。</p><h4>2. アカウント</h4><p>利用者は正確な情報でアカウントを作成し、パスワードとログイン端末を適切に管理します。第三者による不正利用を確認した場合は速やかにログアウトしてください。</p><h4>3. サービスの性質</h4><p>本サービスは対話練習を支援するもので、AIの応答・採点は参考情報です。正確性、完全性、特定目的への適合を保証するものではなく、採用・人事評価・契約・苦情処理などの最終判断は利用者が行います。</p><h4>4. 有料プラン</h4><p>Premiumは月額980円（税込）の1か月ごとの自動更新です。利用者が次回更新日前に解約しない限り契約は更新されます。価格や内容を変更する場合は、適用前にサイト上で案内します。</p><h4>5. 禁止事項</h4><p>法令違反、第三者の権利侵害、個人情報・機密情報の不適切な入力、サービスへの不正アクセス、過度な負荷、解析・転用による妨害を禁止します。</p><h4>6. 知的財産</h4><p>本サービスのプログラム、デザイン、画像等の権利は運営者または正当な権利者に帰属します。利用者が入力する内容の権利は利用者に留保されます。</p><h4>7. 変更・停止</h4><p>保守、障害、仕様改善、法令対応等によりサービス内容を変更または停止することがあります。重要な変更はサイト上で告知します。</p><h4>8. 準拠法</h4><p>本規約は日本法に準拠します。紛争が生じた場合は、法令に従い管轄裁判所を定めます。</p></article>
-          <article id="info-privacy" class="info-section" hidden><h3>プライバシーポリシー</h3><p class="policy-date">改定日：2026年8月6日</p><h4>取得・処理する情報</h4><p>ログイン用メールアドレス、ログイン状態を保つための情報、ロープレ設定、文字に変換された会話内容、採点結果、利用設定、接続状況に関する情報を処理する場合があります。パスワードは安全な方式で保護し、入力された文字列のまま保存しません。成績・設定・履歴は原則としてこの端末内に保存されます。音声入力では端末の音声認識機能を利用し、本サービスは録音データを保存しません。</p><h4>利用目的</h4><p>ロープレ応答・採点の提供、履歴表示、品質・安全性の維持、不正利用防止、問い合わせ対応、利用状況の分析、サービス改善、決済・契約管理、法令遵守のために利用します。</p><h4>外部サービス・委託</h4><p>通常モードのAI応答とサイト配信にCloudflareのクラウドサービス、利用状況の分析にGoogle Analytics、Premiumの決済・契約管理にStripeを利用します。Google AnalyticsはCookie等を使用してページ閲覧、端末・ブラウザ、参照元などの情報を収集する場合があります。社内情報モードでは選択した会話モデルをこの端末内で使用し、会話・採点・自社情報を外部AIサービスへ送信しません。初回準備に必要なデータを取得するときだけ外部通信が発生します。通常モードでブラウザの音声認識・読み上げ機能を利用する場合、それぞれの提供者の条件が適用されます。</p><h4>利用者による管理</h4><p>設定画面の「全データ削除」で端末内の成績・設定・履歴を削除できます。Cookieはブラウザ設定で無効化できます。入力内容には第三者の個人情報、営業秘密、要配慮情報を含めないでください。</p><h4>安全管理・開示等</h4><p>アクセス制御、通信の暗号化、必要最小限の処理等を行います。保有個人データの開示・訂正・利用停止等の窓口は、有料プランの申込み開始前に専用問い合わせ先とともに掲載します。</p><p class="reference-links"><a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener">Googleプライバシーポリシー</a> <a href="https://stripe.com/jp/privacy" target="_blank" rel="noopener">Stripeプライバシーポリシー</a> <a href="https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/" target="_blank" rel="noopener">個人情報保護委員会ガイドライン</a></p></article>
+          <article id="info-privacy" class="info-section" hidden><h3>プライバシーポリシー</h3><p class="policy-date">改定日：2026年8月10日</p><h4>取得・処理する情報</h4><p>ログイン用メールアドレス、ログイン状態を保つための情報、ロープレ設定、文字に変換された会話内容、採点結果、利用設定、接続状況に関する情報を処理する場合があります。パスワードは安全な方式で保護し、入力された文字列のまま保存しません。成績・設定・履歴は原則としてこの端末内に保存されます。音声入力では端末の音声認識機能を利用し、本サービスは録音データを保存しません。</p><h4>利用目的</h4><p>ロープレ応答・採点の提供、履歴表示、品質・安全性の維持、不正利用防止、問い合わせ対応、利用状況の分析、サービス改善、決済・契約管理、法令遵守のために利用します。</p><h4>外部サービス・委託</h4><p>AI応答とサイト配信にCloudflareのクラウドサービス、利用状況の分析にGoogle Analytics、Premiumの決済・契約管理にStripeを利用します。Google AnalyticsはCookie等を使用してページ閲覧、端末・ブラウザ、参照元などの情報を収集する場合があります。AIとの会話・採点に入力した内容は、応答生成のためCloudflare上のAI機能へ送信されます。ブラウザの音声認識・読み上げ機能を利用する場合、それぞれの提供者の条件が適用されます。</p><h4>利用者による管理</h4><p>設定画面の「全データ削除」で端末内の成績・設定・履歴を削除できます。Cookieはブラウザ設定で無効化できます。入力内容には第三者の個人情報、営業秘密、要配慮情報を含めないでください。</p><h4>安全管理・開示等</h4><p>アクセス制御、通信の暗号化、必要最小限の処理等を行います。保有個人データの開示・訂正・利用停止等の窓口は、有料プランの申込み開始前に専用問い合わせ先とともに掲載します。</p><p class="reference-links"><a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener">Googleプライバシーポリシー</a> <a href="https://stripe.com/jp/privacy" target="_blank" rel="noopener">Stripeプライバシーポリシー</a> <a href="https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/" target="_blank" rel="noopener">個人情報保護委員会ガイドライン</a></p></article>
           <article id="info-cancellation" class="info-section" hidden><h3>解約方法</h3><p>Premium契約者は、設定画面の「契約・支払いを管理」からStripeの契約管理画面を開き、次回更新日前までに解約できます。</p><p>解約後も支払済み期間の終了まではプレミアム機能を利用でき、期間終了後は自動的に無料プランへ切り替わります。</p></article>
           <article id="info-refund" class="info-section" hidden><h3>返金方針</h3><p>デジタルサービスの性質上、利用者都合による支払済み期間の途中解約について、日割り返金は行いません。</p><p>重複決済、当方の責めに帰すべき事由でサービスを提供できなかった場合、または法令上返金が必要な場合は、確認のうえ対応します。申請窓口は有料プランの申込み開始前に掲載します。</p></article>
           <article id="info-contact" class="info-section" hidden><h3>問い合わせ先</h3><p>お問い合わせ窓口を準備しています。受付を開始する際は、この画面でご案内します。</p><p class="legal-warning">契約・請求・個人情報に関するお問い合わせ先は、有料プランの申込み開始前に掲載します。</p></article>
@@ -201,19 +201,8 @@
       <div class="panel settings-grid">
         <section class="account-setting"><div><div class="eyebrow">ACCOUNT</div><h3 data-auth-account-title>ログイン中のアカウント</h3><p data-auth-email></p><small data-auth-session-note>この端末では30日間ログイン状態を保持します。</small></div><button class="ghost-btn compact-btn" type="button" data-auth-logout>ログアウト</button></section>
         <section class="ai-mode-section">
-          <div><div class="eyebrow">会話モード</div><h3>会話モード</h3><p class="help-text">入力する情報に合わせて、会話方法を選んでください。</p></div>
-          <div class="ai-mode-grid">
-            <button id="cloudModeCard" class="ai-mode-card" type="button" onclick="setAIMode('cloud')"><span class="mode-icon">☁️</span><strong>通常モード</strong><span>オンラインAIですぐに練習を始められます。</span><small>機密情報・個人情報は入力しないでください</small></button>
-            <button id="localModeCard" class="ai-mode-card" type="button" onclick="setAIMode('local')"><span class="mode-icon">🔒</span><strong>社内情報モード</strong><span>入力内容を外部へ送らず、この端末内で会話・採点します。</span><small>初回のみ会話用データの準備が必要です</small></button>
-          </div>
-        </section>
-        <section id="localAISettings" class="local-ai-settings" hidden>
-          <div class="local-mode-notice"><strong>この端末内で処理します</strong><span>入力内容を外部AIへ送信しません。音声会話は利用できないため、文字を入力して練習します。</span></div>
-          <div class="setting-row"><div><strong>端末対応状況</strong><p id="localSupportText">確認中です</p></div><span id="localSupportBadge" class="local-status-badge">確認中</span></div>
-          <div class="setting-row"><div><strong>会話モデル</strong><p>迷った場合は「軽快・おすすめ」を選んでください。高精度なモデルほど返答に時間がかかります。</p></div><select id="localModelSelect" class="setting-select" onchange="changeLocalModel(this.value)"><option value="Qwen3-1.7B-q4f32_1-MLC" selected>軽快・おすすめ</option><option value="Llama-3.2-3B-Instruct-q4f32_1-MLC">バランス</option><option value="Qwen3-4B-q4f32_1-MLC">高精度（時間がかかります）</option><option value="gemma-3-4b-it-q4f16_1-MLC">高精度（対応端末のみ）</option></select></div>
-          <div class="setting-row setting-row-stack"><div><strong>初回準備</strong><p id="localModelStatusDetail">準備状況を確認しています。</p></div><div class="local-model-progress"><i id="localModelProgressFill"></i></div><div class="local-model-actions"><span id="localModelStatus" class="local-status-badge">未準備</span><button id="localModelPrepareButton" class="primary-btn compact-btn" type="button" onclick="prepareLocalModel()">準備する</button><button class="ghost-btn compact-btn" type="button" onclick="deleteLocalModel()">端末から削除</button></div></div>
-          <div class="setting-row setting-row-stack"><div><strong>自社情報</strong><p>会社概要、商品、価格、対応方針などを入力します。この端末のブラウザ内だけに保存します。</p></div><textarea id="companyProfileInput" class="company-profile-input" maxlength="12000" placeholder="例：会社概要、商品・サービス、価格、営業方針、クレーム対応基準" oninput="changeCompanyProfile(this.value)"></textarea><p class="local-only-note">第三者の個人情報、パスワードや認証情報は入力しないでください。</p></div>
-          <div class="setting-row"><div><strong>社内情報モードの成績保存</strong><p>オフでは結果を画面表示するだけで、履歴へ保存しません。</p></div><button id="localHistorySwitch" class="switch" type="button" aria-label="社内情報モードの成績保存を切り替え" onclick="toggleSetting('localSaveHistory')"></button></div>
+          <div><div class="eyebrow">会話モード</div><h3>オンラインAI</h3><p class="help-text">返答速度と端末負荷を優先し、クラウドAIで会話・採点します。</p></div>
+          <div class="ai-mode-grid cloud-only"><div id="cloudModeCard" class="ai-mode-card selected static"><span class="mode-icon">☁️</span><strong>オンラインAI</strong><span>端末への大規模モデル読込みを行わず、すぐに練習を始められます。</span><small>機密情報・個人情報は入力しないでください</small></div></div>
         </section>
         <div id="billingSettingsRow" class="setting-row"></div>
         <div class="setting-row cloud-voice-setting"><div><strong>相手の音声読み上げ</strong><p>通常モードで端末標準音声を使って読み上げます。</p></div><button id="speechSwitch" class="switch on" type="button" aria-label="音声読み上げを切り替え" onclick="toggleSetting('speech')"></button></div>
@@ -223,7 +212,7 @@
         <div class="setting-row cloud-voice-setting"><div><strong>読み上げ速度</strong><p>端末標準音声に適用します。</p></div><div class="range-wrap"><input id="speechRateRange" type="range" min="0.8" max="1.2" step="0.05" value="1" oninput="changeSpeechRate(this.value)"><strong id="speechRateValue">1.00</strong></div></div>
         <div class="setting-row cloud-voice-setting"><div><strong>音声テスト</strong><p>現在選択中の端末音声でサンプルを読み上げます。</p></div><button class="ghost-btn" type="button" style="min-height:42px" onclick="previewCurrentVoice()">声を試す</button></div>
         <div class="setting-row"><div><strong>成績データを書き出す</strong><p>この端末に保存した全履歴をバックアップファイルとして保存します。</p></div><button class="ghost-btn" type="button" style="min-height:42px" onclick="exportAllHistory()">履歴を保存</button></div>
-        <div class="setting-row"><div><strong>会話データ</strong><p>この端末に保存された成績・設定・自社情報を削除します。会話用データは上の「端末から削除」から消去できます。</p></div><button class="danger-btn" type="button" style="min-height:42px" onclick="confirmResetData()">全データ削除</button></div>
+        <div class="setting-row"><div><strong>会話データ</strong><p>この端末に保存された成績・設定・履歴を削除します。</p></div><button class="danger-btn" type="button" style="min-height:42px" onclick="confirmResetData()">全データ削除</button></div>
       </div>
     </section>
   </main>
@@ -236,6 +225,6 @@
 <div id="toast" class="toast" role="status"></div>
 <div id="endModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="endModalTitle"><div class="modal"><h3 id="endModalTitle">ロープレを終了しますか？</h3><p class="lead" style="font-size:13px">ここまでの会話を採点し、改善ポイントを表示します。</p><div class="modal-actions"><button class="ghost-btn" type="button" onclick="closeEndModal()">続ける</button><button class="primary-btn" type="button" onclick="finishRoleplay()">終了して採点</button></div></div></div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-box"><div class="spinner"></div><strong>会話を振り返っています</strong><p style="color:#b9c7d9;font-size:13px">評価と改善ポイントを作成中です</p></div></div>
-<script src="auth.js?v=1.22" defer></script>
+<script src="auth.js?v=1.23" defer></script>
 </body>
 </html>
