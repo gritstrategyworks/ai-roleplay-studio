@@ -122,3 +122,32 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.92em;
 /* Keep the single online-AI option aligned with the full settings column. */
 .settings-grid .ai-mode-grid.cloud-only{grid-template-columns:1fr;width:100%}
 .settings-grid .ai-mode-grid.cloud-only .ai-mode-card{width:100%}
+
+
+/* Clear, user-controlled roleplay ending flow. */
+body.roleplay-active .composer{position:sticky;bottom:0;z-index:5}
+body.roleplay-active .composer-tools{align-items:center}
+body.roleplay-active .end-btn{margin-left:auto;border:1px solid #efb8b8;border-radius:10px;background:#fff3f3;color:#c93f3f;padding:8px 12px;box-shadow:0 3px 10px rgba(201,63,63,.08);white-space:nowrap}
+body.roleplay-active .end-btn:hover{background:#ffe8e8;border-color:#df8888}
+.end-modal{width:min(520px,100%);padding:26px}
+.end-modal-eyebrow{margin:0 0 7px;color:var(--orange-deep);font-size:10px;font-weight:900;letter-spacing:.16em}
+.end-modal h3{font-size:22px;line-height:1.45;margin-bottom:16px}
+.end-progress{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:14px;background:var(--navy-900);color:#fff}
+.end-progress strong{font-size:17px}
+.end-progress span{font-size:10px;color:#b9c7d9}
+.end-goal,.end-condition{display:grid;gap:5px;margin-top:11px;padding:13px 15px;border:1px solid var(--line);border-radius:13px;background:#f8fafc}
+.end-goal span,.end-condition span{color:var(--muted);font-size:10px;font-weight:800}
+.end-goal strong,.end-condition strong{font-size:13px;line-height:1.6}
+.end-condition{background:#fff8ee;border-color:#f3dfc9}
+.end-modal-note{margin:13px 1px 0;color:var(--muted);font-size:11px;line-height:1.7}
+.end-modal-actions{justify-content:stretch}
+.end-modal-actions button{flex:1}
+@media(max-width:650px){
+  body.roleplay-active .end-btn{padding:7px 9px;font-size:10px}
+  .end-modal{padding:20px 17px}
+  .end-modal h3{font-size:18px}
+  .end-progress{align-items:flex-start;flex-direction:column;gap:3px}
+  .end-progress strong{font-size:15px}
+  .end-modal-actions{display:grid;grid-template-columns:1fr}
+  .end-modal-actions button{width:100%}
+}
