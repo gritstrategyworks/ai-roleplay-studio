@@ -17,8 +17,8 @@
   <title>AI ROLEPLAY STUDIO</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=1.27">
-  <link rel="stylesheet" href="auth.css?v=1.27">
+  <link rel="stylesheet" href="styles.css?v=1.28">
+  <link rel="stylesheet" href="auth.css?v=1.28">
 </head>
 <body class="auth-pending">
 <div id="authGate" class="auth-gate">
@@ -158,7 +158,7 @@
           <div id="messageList" class="messages" aria-live="polite"></div>
           <div id="hintCard" class="hint-card">💡 <span id="hintText"></span></div>
           <div id="voiceBanner" class="voice-banner"><div><strong id="voiceBannerTitle">音声会話は停止中です</strong><span id="voiceBannerText">開始すると、AI発話後に自動でマイクが開きます。</span></div><button id="voiceSessionButton" class="voice-session-btn" type="button" onclick="toggleVoiceSession()">音声会話を開始</button></div>
-          <div class="composer"><div class="composer-row"><button id="micButton" class="mic-btn" type="button" aria-label="音声入力" onclick="toggleSpeechRecognition()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></svg></button><textarea id="messageInput" rows="1" maxlength="600" placeholder="声で話すか、文字を入力してください" oninput="autoResize(this)" onkeydown="handleInputKey(event)"></textarea><button id="sendButton" class="send-btn" type="button" aria-label="送信" onclick="sendUserMessage()"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg></button></div><div class="composer-tools"><div class="tool-buttons"><button id="hintButton" class="tool-btn" type="button" onclick="showHint()">💡 ヒント</button><button class="tool-btn" type="button" onclick="insertPhrase('本日のお時間について、まず確認させてください。')">挨拶</button><button class="tool-btn" type="button" onclick="insertPhrase('もう少し具体的に教えていただけますか。')">深掘り</button><button class="tool-btn" type="button" onclick="repeatLastAIMessage()">🔊 もう一度</button></div><button class="end-btn" type="button" onclick="requestEndRoleplay()">ロープレを終了</button></div></div>
+          <div class="composer"><div class="composer-row"><button id="micButton" class="mic-btn" type="button" aria-label="音声入力" onclick="toggleSpeechRecognition()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></svg></button><textarea id="messageInput" rows="1" maxlength="600" placeholder="声で話すか、文字を入力してください" oninput="autoResize(this)" onkeydown="handleInputKey(event)"></textarea><button id="sendButton" class="send-btn" type="button" aria-label="送信" onclick="sendUserMessage()"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg></button></div><div class="composer-tools"><div class="tool-buttons"><button id="hintButton" class="tool-btn" type="button" onclick="showHint()">💡 ヒント</button><button class="tool-btn" type="button" onclick="insertPhrase('本日のお時間について、まず確認させてください。')">挨拶</button><button class="tool-btn" type="button" onclick="insertPhrase('もう少し具体的に教えていただけますか。')">深掘り</button><button class="tool-btn" type="button" onclick="repeatLastAIMessage()">🔊 もう一度</button></div><button id="roleplayEndButton" class="end-btn" type="button" onclick="requestEndRoleplay()">ロープレを終了</button></div></div>
         </section>
       </div>
     </section>
@@ -223,8 +223,21 @@
 </div>
 
 <div id="toast" class="toast" role="status"></div>
-<div id="endModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="endModalTitle"><div class="modal"><h3 id="endModalTitle">ロープレを終了しますか？</h3><p class="lead" style="font-size:13px">ここまでの会話を採点し、改善ポイントを表示します。</p><div class="modal-actions"><button class="ghost-btn" type="button" onclick="closeEndModal()">続ける</button><button class="primary-btn" type="button" onclick="finishRoleplay()">終了して採点</button></div></div></div>
+<div id="endModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="endModalTitle">
+  <div class="modal end-modal">
+    <p class="end-modal-eyebrow">ROLEPLAY STATUS</p>
+    <h3 id="endModalTitle">この内容で終了して採点しますか？</h3>
+    <div class="end-progress" aria-live="polite">
+      <strong id="endProgressText">現在0ターン・約1分</strong>
+      <span>今回の会話状況</span>
+    </div>
+    <div class="end-goal"><span>今回のゴール</span><strong id="endGoalText">―</strong></div>
+    <div class="end-condition"><span>自然な終了の目安</span><strong id="endConditionText">―</strong></div>
+    <p class="end-modal-note">会話を続けることもできます。終了すると、AIが最後の一言を返した後に採点します。</p>
+    <div class="modal-actions end-modal-actions"><button id="continueRoleplayButton" class="ghost-btn" type="button" onclick="closeEndModal()">会話を続ける</button><button class="primary-btn" type="button" onclick="finishRoleplay()">終了して採点する</button></div>
+  </div>
+</div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-box"><div class="spinner"></div><strong>会話を振り返っています</strong><p style="color:#b9c7d9;font-size:13px">評価と改善ポイントを作成中です</p></div></div>
-<script src="auth.js?v=1.27" defer></script>
+<script src="auth.js?v=1.28" defer></script>
 </body>
 </html>
