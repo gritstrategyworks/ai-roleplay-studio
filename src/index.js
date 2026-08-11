@@ -639,6 +639,10 @@ async function onRequestPost5({ request, env }) {
       return json({ error: "Billing is not yet available.", code: "billing_unavailable" }, { status: 503 });
     }
     const { accountId, cookie, user } = await getBillingIdentity(request, env);
+    const requestBody = await readJson(request);
+    const checkoutRequestId = /^[A-Za-z0-9_-]{16,80}$/.test(String(requestBody.requestId || ""))
+      ? String(requestBody.requestId)
+      : crypto.randomUUID();
     const subscription = await getSubscription(env, accountId);
     if (hasPremiumAccess(subscription)) {
       return json({ error: "Subscription is already active.", code: "already_subscribed" }, { status: 409 });
@@ -654,6 +658,7 @@ async function onRequestPost5({ request, env }) {
     const form = new URLSearchParams({
       mode: "subscription",
       locale: "ja",
+      origin_context: "web",
       integration_identifier: STRIPE_INTEGRATION_IDENTIFIER,
       "line_items[0][price]": env.STRIPE_PRICE_ID,
       "line_items[0][quantity]": "1",
@@ -668,7 +673,7 @@ async function onRequestPost5({ request, env }) {
     const session = await stripeRequest(env, "/checkout/sessions", {
       method: "POST",
       body: form,
-      idempotencyKey: `checkout-${accountId}-${Math.floor(Date.now() / 600000)}`
+      idempotencyKey: `checkout-${accountId}-${checkoutRequestId}`
     });
     return json({ url: session.url }, { headers: cookie ? { "set-cookie": cookie } : {} });
   } catch (error) {
