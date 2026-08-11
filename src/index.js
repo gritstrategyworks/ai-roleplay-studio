@@ -572,14 +572,20 @@ async function upsertSubscription(env, values) {
 __name(upsertSubscription, "upsertSubscription");
 __name2(upsertSubscription, "upsertSubscription");
 var STRIPE_API = "https://api.stripe.com/v1";
+var STRIPE_API_VERSION = "2026-06-24.dahlia";
+var STRIPE_INTEGRATION_IDENTIFIER = "ai_roleplay_studio_qfjtmzra";
 async function stripeRequest(env, path, options = {}) {
   if (!env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY is not configured.");
+  const headers = new Headers({
+    authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+    "stripe-version": STRIPE_API_VERSION,
+    accept: "application/json"
+  });
+  if (options.body) headers.set("content-type", "application/x-www-form-urlencoded");
+  if (options.idempotencyKey) headers.set("idempotency-key", String(options.idempotencyKey).slice(0, 255));
   const response = await fetch(`${STRIPE_API}${path}`, {
     method: options.method || "GET",
-    headers: {
-      authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
-      ...options.body ? { "content-type": "application/x-www-form-urlencoded" } : {}
-    },
+    headers,
     body: options.body
   });
   const data = await response.json();
@@ -648,6 +654,7 @@ async function onRequestPost5({ request, env }) {
     const form = new URLSearchParams({
       mode: "subscription",
       locale: "ja",
+      integration_identifier: STRIPE_INTEGRATION_IDENTIFIER,
       "line_items[0][price]": env.STRIPE_PRICE_ID,
       "line_items[0][quantity]": "1",
       client_reference_id: accountId,
@@ -658,7 +665,11 @@ async function onRequestPost5({ request, env }) {
     });
     if (subscription?.stripe_customer_id) form.set("customer", subscription.stripe_customer_id);
     else if (user?.email) form.set("customer_email", user.email);
-    const session = await stripeRequest(env, "/checkout/sessions", { method: "POST", body: form });
+    const session = await stripeRequest(env, "/checkout/sessions", {
+      method: "POST",
+      body: form,
+      idempotencyKey: `checkout-${accountId}-${Math.floor(Date.now() / 600000)}`
+    });
     return json({ url: session.url }, { headers: cookie ? { "set-cookie": cookie } : {} });
   } catch (error) {
     return errorResponse(error);
@@ -682,7 +693,11 @@ async function onRequestPost6({ request, env }) {
       customer: subscription.stripe_customer_id,
       return_url: `${appUrl}/?billing=returned`
     });
-    const session = await stripeRequest(env, "/billing_portal/sessions", { method: "POST", body: form });
+    const session = await stripeRequest(env, "/billing_portal/sessions", {
+      method: "POST",
+      body: form,
+      idempotencyKey: `portal-${accountId}-${Math.floor(Date.now() / 60000)}`
+    });
     return json({ url: session.url });
   } catch (error) {
     return errorResponse(error);
@@ -699,7 +714,9 @@ async function onRequestGet2({ request, env }) {
       status: subscription?.status || "free",
       currentPeriodEnd: subscription?.current_period_end || null,
       canManage: Boolean(subscription?.stripe_customer_id),
-      billingAvailable: env.BILLING_ENABLED === "true" && Boolean(env.STRIPE_PAYMENT_LINK_URL || env.STRIPE_SECRET_KEY)
+      billingAvailable: env.BILLING_ENABLED === "true" && Boolean(
+        env.STRIPE_PAYMENT_LINK_URL || env.STRIPE_SECRET_KEY && env.STRIPE_PRICE_ID
+      )
     }, { headers: cookie ? { "set-cookie": cookie } : {} });
   } catch (error) {
     return errorResponse(error);
@@ -707,6 +724,44 @@ async function onRequestGet2({ request, env }) {
 }
 __name(onRequestGet2, "onRequestGet2");
 __name2(onRequestGet2, "onRequestGet");
+async function onRequestGetCheckoutSession({ request, env }) {
+  try {
+    assertSameOrigin(request);
+    if (env.BILLING_ENABLED !== "true") {
+      return json({ error: "Billing is not available.", code: "billing_unavailable" }, { status: 503 });
+    }
+    const { accountId } = await getBillingIdentity(request, env);
+    const sessionId = new URL(request.url).searchParams.get("session_id") || "";
+    if (!/^cs_(?:test_|live_)?[A-Za-z0-9]+$/.test(sessionId)) {
+      return json({ error: "Invalid Checkout Session.", code: "invalid_session" }, { status: 400 });
+    }
+    const checkout = await stripeRequest(
+      env,
+      `/checkout/sessions/${encodeURIComponent(sessionId)}?expand%5B%5D=subscription`
+    );
+    const referencedAccount = checkout.client_reference_id || checkout.metadata?.account_id;
+    if (!referencedAccount || referencedAccount !== accountId) {
+      return json({ error: "Checkout Session does not belong to this account.", code: "forbidden" }, { status: 403 });
+    }
+    if (checkout.status === "complete" && checkout.subscription) {
+      const subscription = typeof checkout.subscription === "object"
+        ? checkout.subscription
+        : await stripeRequest(env, `/subscriptions/${encodeURIComponent(checkout.subscription)}`);
+      await syncSubscription(env, subscription, accountId);
+    }
+    const stored = await getSubscription(env, accountId);
+    return json({
+      complete: checkout.status === "complete",
+      paymentStatus: checkout.payment_status || null,
+      premium: hasPremiumAccess(stored),
+      status: stored?.status || "free"
+    });
+  } catch (error) {
+    return errorResponse(error, "Checkout confirmation failed.");
+  }
+}
+__name(onRequestGetCheckoutSession, "onRequestGetCheckoutSession");
+__name2(onRequestGetCheckoutSession, "onRequestGet");
 function objectId(value) {
   return typeof value === "string" ? value : value?.id || null;
 }
@@ -747,7 +802,7 @@ async function onRequestPost7({ request, env }) {
       "SELECT event_id FROM stripe_events WHERE event_id = ?"
     ).bind(event.id).first();
     if (processed) return json({ received: true, duplicate: true });
-    if (event.type === "checkout.session.completed") {
+    if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
       const session = event.data.object;
       if (session.mode === "subscription" && session.subscription) {
         if (env.STRIPE_SECRET_KEY) {
@@ -1493,6 +1548,13 @@ var routes = [
     method: "GET",
     middlewares: [],
     modules: [onRequestGet2]
+  },
+  {
+    routePath: "/api/billing/checkout-session",
+    mountPath: "/api/billing",
+    method: "GET",
+    middlewares: [],
+    modules: [onRequestGetCheckoutSession]
   },
   {
     routePath: "/api/billing/webhook",
