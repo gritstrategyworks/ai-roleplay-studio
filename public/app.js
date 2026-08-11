@@ -152,10 +152,10 @@ function showScreen(name){
   document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
   document.getElementById(`screen-${name}`)?.classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
-  const navMap={home:'navHome',setup:'navStart',roleplay:'navStart',results:'navHistory',history:'navHistory',settings:'navSettings'};
+  const navMap={home:'navHome',lectures:'navLectures',setup:'navStart',roleplay:'navStart',results:'navHistory',history:'navHistory',settings:'navSettings'};
   if(navMap[name])document.getElementById(navMap[name])?.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
-  if(name==='home')renderHome();if(name==='history')renderHistory();if(name==='settings')renderSettings();
+  if(name==='home')renderHome();if(name==='lectures')renderLectures();if(name==='history')renderHistory();if(name==='settings')renderSettings();
 }
 
 function legacyStartSetup(category){
@@ -475,11 +475,69 @@ function upgradeAdvancedDatalistInputs(){
     select.value=current;input.replaceWith(select);
   });
 }
+
+const LECTURE_WATCHED_KEY='ai-roleplay-lecture-watched-v1';
+const LECTURE_CATEGORIES={
+  sales:{label:'営業・商談',icon:'💼',lead:'信頼構築からクロージングまで'},
+  manager:{label:'管理職面談',icon:'👔',lead:'本音を引き出し、行動を合意する'},
+  interview:{label:'採用面接',icon:'🎤',lead:'経験・価値観・適性を見極める'},
+  support:{label:'クレーム対応',icon:'🎧',lead:'感情を受け止め、解決へ導く'}
+};
+const LECTURES=[
+  {id:'1.1',category:'sales',youtubeId:'_3A0-YHuRtA',title:'初回訪問と信頼関係のつくり方',description:'第一印象を整え、相手が安心して話せる商談の土台を学びます。',scene:'初回訪問',goal:'信頼関係をつくる'},
+  {id:'1.2',category:'sales',youtubeId:'gfRxyRv2-64',title:'顧客ニーズを引き出す質問',description:'表面的な要望だけでなく、背景や判断条件を具体化する質問を学びます。',scene:'ヒアリング',goal:'ニーズを把握する'},
+  {id:'1.3',category:'sales',youtubeId:'TxjSl9AEDAo',title:'顧客課題に合った提案方法',description:'聞き取った課題と提案価値を結び付け、伝わる説明に変える方法を学びます。',scene:'商品説明',goal:'商品を提案する'},
+  {id:'1.4',category:'sales',youtubeId:'nA2jKEJYESI',title:'商談のクロージングと次回合意',description:'結論を急がず、次回の行動や契約に向けた合意を確認する方法を学びます。',scene:'クロージング',goal:'契約する'},
+  {id:'2.1',category:'manager',youtubeId:'jrK-OO1vEug',title:'部下が本音を話せる1on1',description:'部下が話しやすい場をつくり、考えや感情を引き出す進め方を学びます。',scene:'定期1on1',goal:'本音を引き出す'},
+  {id:'2.2',category:'manager',youtubeId:'aXK3YG7DP0s',title:'納得感のある評価フィードバック',description:'評価の根拠を具体的に伝え、本人の認識とすり合わせる方法を学びます。',scene:'評価フィードバック',goal:'課題を整理する'},
+  {id:'2.3',category:'manager',youtubeId:'UzvCi6ory34',title:'改善指導と行動目標の合意',description:'事実に基づいて課題を扱い、次の行動を本人と合意する方法を学びます。',scene:'改善指導',goal:'行動目標を合意する'},
+  {id:'2.4',category:'manager',youtubeId:'OmAPxT8b5K4',title:'キャリア・退職意向への対応',description:'本人の意向を決めつけずに確認し、今後の選択肢を整理する方法を学びます。',scene:'退職相談',goal:'退職意向を把握する'},
+  {id:'3.1',category:'interview',youtubeId:'u3CzEHceml4',title:'面接冒頭の緊張緩和と関係構築',description:'候補者が経験や考えを自然に話せる、面接冒頭の進め方を学びます。',scene:'一次面接',goal:'志望度を高める'},
+  {id:'3.2',category:'interview',youtubeId:'98zDjI2tLr4',title:'経験と実績を深掘りする質問',description:'実績の背景・本人の役割・行動を具体化する質問の組み立てを学びます。',scene:'一次面接',goal:'経験を深掘りする'},
+  {id:'3.3',category:'interview',youtubeId:'kCJYKdphJLU',title:'志望動機・価値観・適性の確認',description:'候補者の価値観を尊重しながら、自社や職務との一致を確認する方法を学びます。',scene:'二次面接',goal:'価値観を確認する'},
+  {id:'3.4',category:'interview',youtubeId:'Kqe4V5r5D7s',title:'面接の評価と自然な終了方法',description:'判断材料を整理し、候補者への案内を含めて面接を終える方法を学びます。',scene:'最終面接',goal:'採否判断の材料を得る'},
+  {id:'4.1',category:'support',youtubeId:'cnmpaEdzDzk',title:'最初の不満と感情の受け止め方',description:'反論を急がず、相手の不満と感情を受け止める初動対応を学びます。',scene:'初回受付',goal:'感情を落ち着かせる'},
+  {id:'4.2',category:'support',youtubeId:'-rNFPh5HVe8',title:'事実・影響・要望の整理',description:'発生した事実、相手への影響、希望する対応を切り分けて確認する方法を学びます。',scene:'事実確認',goal:'事実関係を整理する'},
+  {id:'4.3',category:'support',youtubeId:'oYSEczhYlLc',title:'解決策の提示と合意形成',description:'対応可能な範囲を明確にし、期限や次の連絡について合意する方法を学びます。',scene:'解決策提示',goal:'解決策に合意する'},
+  {id:'4.4',category:'support',youtubeId:'8FYA7sbuWlk',title:'強い要求とエスカレーション',description:'過度な要求には境界を示し、適切な担当者へ引き継ぐ判断を学びます。',scene:'エスカレーション',goal:'適切にエスカレーションする'}
+];
+let lectureCategoryFilter='sales';
+let activeLectureId='';
+function loadWatchedLectures(){try{return new Set(JSON.parse(localStorage.getItem(LECTURE_WATCHED_KEY)||'[]').filter(id=>LECTURES.some(item=>item.id===id)))}catch{return new Set()}}
+function saveWatchedLectures(watched){localStorage.setItem(LECTURE_WATCHED_KEY,JSON.stringify([...watched]))}
+function setLectureCategory(category){if(!LECTURE_CATEGORIES[category])return;lectureCategoryFilter=category;renderLectures()}
+function renderLectures(){
+  const tabs=document.getElementById('lectureCategoryTabs'),grid=document.getElementById('lectureGrid');if(!tabs||!grid)return;
+  const watched=loadWatchedLectures();
+  tabs.innerHTML=Object.entries(LECTURE_CATEGORIES).map(([key,value])=>`<button type="button" class="lecture-category-tab ${key===lectureCategoryFilter?'active':''}" aria-pressed="${key===lectureCategoryFilter}" onclick="setLectureCategory('${key}')"><span>${value.icon}</span><strong>${escapeHtml(value.label)}</strong><small>${escapeHtml(value.lead)}</small></button>`).join('');
+  grid.innerHTML=LECTURES.filter(item=>item.category===lectureCategoryFilter).map(item=>{const done=watched.has(item.id);return `<article class="lecture-card ${done?'watched':''}"><button class="lecture-thumbnail-button" type="button" onclick="openLecture('${item.id}')" aria-label="${escapeHtml(item.title)}を再生"><img src="https://i.ytimg.com/vi/${item.youtubeId}/hqdefault.jpg" alt="" loading="lazy"><span class="lecture-play-mark" aria-hidden="true">▶</span><span class="lecture-duration">約5分</span></button><div class="lecture-card-body"><div class="lecture-card-meta"><span>LESSON ${item.id}</span><span class="lecture-watched-badge">${done?'✓ 視聴済み':'未視聴'}</span></div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}</p><div class="lecture-card-actions"><button class="ghost-btn" type="button" onclick="openLecture('${item.id}')">動画を見る</button><button class="lecture-practice-link" type="button" onclick="startLecturePractice('${item.id}')">ロープレで試す →</button></div></div></article>`}).join('');
+  const count=watched.size;document.getElementById('lectureWatchedCount').textContent=count;document.getElementById('lectureProgressBar').style.width=`${Math.round(count/LECTURES.length*100)}%`;
+}
+function openLecture(id){
+  const lecture=LECTURES.find(item=>item.id===id);if(!lecture)return;activeLectureId=id;
+  document.getElementById('lectureModalCategory').textContent=`${LECTURE_CATEGORIES[lecture.category].icon} ${LECTURE_CATEGORIES[lecture.category].label}・LESSON ${lecture.id}`;
+  document.getElementById('lectureModalTitle').textContent=lecture.title;document.getElementById('lectureModalDescription').textContent=lecture.description;
+  document.getElementById('lecturePlayer').src=`https://www.youtube-nocookie.com/embed/${lecture.youtubeId}?rel=0&playsinline=1`;
+  updateLectureWatchedButton();document.getElementById('lectureModal').classList.add('show');document.body.classList.add('lecture-modal-open');document.querySelector('.lecture-modal-close')?.focus();
+}
+function closeLectureModal(){const modal=document.getElementById('lectureModal');if(!modal)return;modal.classList.remove('show');document.body.classList.remove('lecture-modal-open');document.getElementById('lecturePlayer').src='about:blank';activeLectureId=''}
+function updateLectureWatchedButton(){const button=document.getElementById('lectureWatchedButton');if(!button)return;const done=loadWatchedLectures().has(activeLectureId);button.textContent=done?'✓ 視聴済み':'視聴済みにする';button.classList.toggle('lecture-complete',done)}
+function toggleActiveLectureWatched(){if(!activeLectureId)return;const watched=loadWatchedLectures();if(watched.has(activeLectureId))watched.delete(activeLectureId);else watched.add(activeLectureId);saveWatchedLectures(watched);updateLectureWatchedButton();renderLectures()}
+function startActiveLecturePractice(){if(activeLectureId)startLecturePractice(activeLectureId)}
+function startLecturePractice(id){
+  const lecture=LECTURES.find(item=>item.id===id);if(!lecture)return;const watched=loadWatchedLectures();watched.add(id);saveWatchedLectures(watched);closeLectureModal();startSetup(lecture.category);
+  const scene=document.getElementById('dealSceneSelect'),goal=document.getElementById('roleplayGoalSelect');if(scene&&[...scene.options].some(option=>option.value===lecture.scene))scene.value=lecture.scene;if(goal&&[...goal.options].some(option=>option.value===lecture.goal))goal.value=lecture.goal;updateSetupDraft();toast(`「${lecture.title}」に合う設定を選びました`);
+}
+function initLectureFeature(){
+  document.getElementById('lectureModal')?.addEventListener('click',event=>{if(event.target.id==='lectureModal')closeLectureModal()});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.getElementById('lectureModal')?.classList.contains('show'))closeLectureModal()});
+}
+
 function openPracticeMenu(){
   showScreen('home');document.getElementById('navHome')?.classList.remove('active');document.getElementById('navStart')?.classList.add('active');
   setTimeout(()=>document.querySelector('.category-grid')?.scrollIntoView({behavior:'smooth',block:'start'}),120);
 }
 document.getElementById('navStart').onclick=openPracticeMenu;
 renderSetup=function(){renderSetupModeBase();upgradeAdvancedDatalistInputs();renderAIModeSettings()};
-init=function(){setupSpeechRecognition();loadVoices();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();probeAPI();initBilling();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).catch(()=>{})};
+init=function(){setupSpeechRecognition();loadVoices();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();initLectureFeature();probeAPI();initBilling();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).catch(()=>{})};
 init();
