@@ -107,6 +107,7 @@ const state = {
 
 let settings = loadSettings();
 let billingState = { loading:true, premium:false, status:'free', currentPeriodEnd:null, canManage:false, billingAvailable:false };
+let billingActionPending = false;
 let apiAvailable = false;
 let recognition = null;
 let isListening = false;
@@ -300,12 +301,98 @@ function changeApiEndpoint(value){settings.apiEndpoint=String(value||'').trim();
 async function testApiEndpoint(){changeApiEndpoint(document.getElementById('apiEndpointInput')?.value||'');toast('AI接続を確認しています');await probeAPI();toast(apiAvailable?'AIエンドポイントへ接続できました':'接続できません。URLとCORS設定を確認してください')}
 function togglePremiumPreview(){settings.premiumPreview=!settings.premiumPreview;saveSettings();toast(settings.premiumPreview?'プレミアム表示に切り替えました':'無料プラン表示に切り替えました')}
 function ensureBillingUI(){const heroActions=document.querySelector('.hero-actions');if(heroActions&&!document.getElementById('billingHeroButton')){const button=document.createElement('button');button.id='billingHeroButton';button.className='secondary-btn billing-action';button.type='button';heroActions.appendChild(button)}let settingsRow=document.getElementById('billingSettingsRow')||document.getElementById('premiumSwitch')?.closest('.setting-row');if(settingsRow&&!document.getElementById('billingStatusText')){settingsRow.id='billingSettingsRow';settingsRow.classList.add('billing-settings-row');settingsRow.innerHTML='<div><strong>プレミアムプラン</strong><p id="billingStatusText">契約状況を確認中です。</p></div><div class="billing-setting-actions"><span id="billingStatusBadge" class="billing-status-badge">...</span><button id="billingSettingsButton" class="primary-btn" type="button"></button></div>'}const banner=document.getElementById('planPreviewBanner');if(banner&&!document.getElementById('billingUpgradeButton')){const button=document.createElement('button');button.id='billingUpgradeButton';button.className='primary-btn';button.type='button';button.textContent='月額980円でアップグレード';button.onclick=startCheckout;banner.appendChild(button)}}
-function renderBilling(){ensureBillingUI();const premium=billingState.premium,available=billingState.billingAvailable;const statusLabels={free:'無料プラン',active:'プレミアム',trialing:'無料体験中',past_due:'お支払い要確認',canceled:'解約済み',unpaid:'支払い未完了'};const label=billingState.loading?'確認中':!available&&!premium?'決済準備中':statusLabels[billingState.status]||billingState.status;const actionLabel=premium?'契約を管理':available?'プレミアム 月額980円':'Premium 月額980円（準備中）';const action=premium?openBillingPortal:startCheckout;for(const button of [document.getElementById('billingHeroButton'),document.getElementById('billingSettingsButton'),document.getElementById('billingUpgradeButton')]){if(button){button.onclick=action;button.disabled=billingState.loading||(!premium&&!available)}}const heroButton=document.getElementById('billingHeroButton');if(heroButton)heroButton.textContent=actionLabel;const settingsButton=document.getElementById('billingSettingsButton');if(settingsButton)settingsButton.textContent=premium?'契約・支払いを管理':available?'月額980円で申し込む':'有料プラン準備中';const badge=document.getElementById('billingStatusBadge');if(badge){badge.textContent=label;badge.classList.toggle('premium',premium)}const text=document.getElementById('billingStatusText');if(text)text.textContent=premium?'詳細分析をご利用いただけます。':available?'詳細分析を月額980円（税込）でご利用いただけます。':'有料プランの申込みは現在準備中です。開始時にこの画面でお知らせします。';document.body.classList.toggle('free-plan-preview',!premium);const banner=document.getElementById('planPreviewBanner');if(banner){banner.hidden=premium;const strong=banner.querySelector('strong'),span=banner.querySelector('span');if(strong)strong.textContent='プレミアム分析';if(span)span.textContent='項目別スコア・改善ポイント・会話記録は月額980円のプレミアム機能です。'}}
+function renderBilling(){
+  ensureBillingUI();
+  const premium=billingState.premium,available=billingState.billingAvailable,status=billingState.status||'free';
+  const statusLabels={free:'無料プラン',active:'プレミアム',trialing:'無料体験中',past_due:'お支払い要確認',canceled:'解約済み',unpaid:'支払い未完了',incomplete:'申込み未完了',incomplete_expired:'申込み期限切れ',paused:'一時停止中'};
+  const label=billingState.loading?'確認中':!available&&!premium?'決済設定を確認してください':statusLabels[status]||status;
+  const needsPaymentAction=['past_due','unpaid','paused'].includes(status);
+  const manage=Boolean(billingState.canManage&&(premium||needsPaymentAction));
+  const action=manage?openBillingPortal:startCheckout;
+  const actionLabel=manage?(needsPaymentAction?'支払い方法を確認':'契約を管理'):available?'プレミアム 月額980円':'Premium 月額980円';
+  for(const button of [document.getElementById('billingHeroButton'),document.getElementById('billingSettingsButton'),document.getElementById('billingUpgradeButton')]){
+    if(!button)continue;
+    button.onclick=action;
+    button.disabled=billingState.loading||billingActionPending||(!manage&&!available);
+    button.setAttribute('aria-busy',String(billingActionPending));
+  }
+  const heroButton=document.getElementById('billingHeroButton');
+  if(heroButton)heroButton.textContent=billingActionPending?'処理中…':actionLabel;
+  const settingsButton=document.getElementById('billingSettingsButton');
+  if(settingsButton)settingsButton.textContent=billingActionPending?'処理中…':manage?(needsPaymentAction?'支払い方法を確認':'契約・支払いを管理'):available?'月額980円で申し込む':'決済設定を確認';
+  const badge=document.getElementById('billingStatusBadge');
+  if(badge){badge.textContent=label;badge.classList.toggle('premium',premium)}
+  const period=billingState.currentPeriodEnd?new Date(Number(billingState.currentPeriodEnd)*1000).toLocaleDateString('ja-JP'):null;
+  const text=document.getElementById('billingStatusText');
+  if(text)text.textContent=premium?(period?`プレミアム機能をご利用いただけます。現在の利用期間は${period}までです。`:'プレミアム機能をご利用いただけます。'):needsPaymentAction?'お支払い情報を確認するとプレミアム機能を再開できます。':available?'詳細分析を月額980円（税込）でご利用いただけます。いつでも次回更新日前に解約できます。':'決済設定を確認しています。';
+  document.body.classList.toggle('free-plan-preview',!premium);
+  const banner=document.getElementById('planPreviewBanner');
+  if(banner){
+    banner.hidden=premium;
+    const strong=banner.querySelector('strong'),span=banner.querySelector('span');
+    if(strong)strong.textContent=needsPaymentAction?'お支払いの確認が必要です':'プレミアム分析';
+    if(span)span.textContent=needsPaymentAction?'契約管理画面で支払い方法をご確認ください。':'項目別スコア・改善ポイント・会話記録は月額980円のプレミアム機能です。';
+  }
+}
 function applyPlanPreview(){renderBilling()}
 async function loadBillingStatus(){if(IS_GUEST_MODE){billingState={loading:false,premium:false,status:'free',currentPeriodEnd:null,canManage:false,billingAvailable:false};renderBilling();return billingState}try{const response=await fetch('/api/billing/status',{credentials:'same-origin',cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);billingState={loading:false,...await response.json()}}catch(error){console.warn('Billing status unavailable',error);billingState={loading:false,premium:false,status:'free',currentPeriodEnd:null,canManage:false,billingAvailable:false}}renderBilling();return billingState}
-async function startCheckout(){if(IS_GUEST_MODE){toast('プレミアム機能はアカウント作成後に利用できます');return}if(billingState.premium){openBillingPortal();return}if(!billingState.billingAvailable){toast('有料プランの申込みは現在準備中です');return}toast('安全なお支払い画面を開いています');try{const response=await fetch('/api/billing/checkout',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:'{}'});const data=await response.json();if(!response.ok||!data.url)throw new Error(data.error||('HTTP '+response.status));location.assign(data.url)}catch(error){console.error(error);toast('お支払い画面を開けませんでした')}}
-async function openBillingPortal(){toast('契約管理画面を開いています');try{const response=await fetch('/api/billing/portal',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:'{}'});const data=await response.json();if(!response.ok||!data.url)throw new Error(data.error||('HTTP '+response.status));location.assign(data.url)}catch(error){console.error(error);toast('契約管理画面を開けませんでした')}}
-async function initBilling(){const params=new URLSearchParams(location.search),checkout=params.get('checkout'),returned=params.get('billing');if(checkout==='cancelled')toast('お申し込みはキャンセルされました');if(checkout==='success'){toast('お支払いを確認中です');for(let attempt=0;attempt<8;attempt+=1){await loadBillingStatus();if(billingState.premium)break;await wait(1500)}toast(billingState.premium?'プレミアムプランが有効になりました':'お支払い反映に少し時間がかかっています')}else await loadBillingStatus();if(checkout||returned){history.replaceState({},'',location.pathname+location.hash);if(returned)toast('契約情報を更新しました')}}
+async function startCheckout(){
+  if(IS_GUEST_MODE){toast('プレミアム機能はアカウント作成後に利用できます');return}
+  if(billingState.premium){openBillingPortal();return}
+  if(!billingState.billingAvailable){toast('決済設定を確認中です。しばらくしてからお試しください');return}
+  if(billingActionPending)return;
+  billingActionPending=true;renderBilling();toast('Stripeの安全なお支払い画面を開いています');
+  try{
+    const requestId=globalThis.crypto?.randomUUID?.()||(`checkout-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    const response=await fetch('/api/billing/checkout',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({requestId})});
+    const data=await response.json();
+    if(!response.ok||!data.url)throw new Error(data.error||('HTTP '+response.status));
+    location.assign(data.url);
+  }catch(error){
+    console.error(error);toast('お支払い画面を開けませんでした。時間をおいて再度お試しください');
+    billingActionPending=false;renderBilling();
+  }
+}
+async function openBillingPortal(){
+  if(billingActionPending)return;
+  billingActionPending=true;renderBilling();toast('Stripeの契約管理画面を開いています');
+  try{
+    const response=await fetch('/api/billing/portal',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:'{}'});
+    const data=await response.json();
+    if(!response.ok||!data.url)throw new Error(data.error||('HTTP '+response.status));
+    location.assign(data.url);
+  }catch(error){
+    console.error(error);toast('契約管理画面を開けませんでした。時間をおいて再度お試しください');
+    billingActionPending=false;renderBilling();
+  }
+}
+async function confirmCheckoutSession(sessionId){
+  if(!sessionId)return null;
+  try{
+    const response=await fetch('/api/billing/checkout-session?session_id='+encodeURIComponent(sessionId),{credentials:'same-origin',cache:'no-store'});
+    if(!response.ok)return null;
+    return await response.json();
+  }catch{return null}
+}
+async function initBilling(){
+  const params=new URLSearchParams(location.search),checkout=params.get('checkout'),returned=params.get('billing'),sessionId=params.get('session_id');
+  if(checkout==='cancelled')toast('お申し込みはキャンセルされました。料金は発生していません');
+  if(checkout==='success'){
+    toast('お支払いと契約状態を確認しています');
+    await confirmCheckoutSession(sessionId);
+    for(let attempt=0;attempt<10;attempt+=1){
+      await loadBillingStatus();
+      if(billingState.premium)break;
+      await wait(1500);
+      if(attempt===3)await confirmCheckoutSession(sessionId);
+    }
+    toast(billingState.premium?'プレミアムプランが有効になりました':'契約情報の反映に少し時間がかかっています。設定画面から再確認できます');
+  }else await loadBillingStatus();
+  if(checkout||returned){
+    history.replaceState({},'',location.pathname+location.hash);
+    if(returned){await loadBillingStatus();toast('契約情報を更新しました')}
+  }
+}
 function downloadLatestReport(){const r=state.lastResult||loadHistory()[0];if(!r){toast('出力できる結果がありません');return}const lines=[`AI ROLEPLAY STUDIO トレーニング結果`,`日時: ${new Date(r.date).toLocaleString('ja-JP')}`,`カテゴリー: ${CATEGORY_LABELS[r.category]||r.category}`,`シナリオ: ${r.scenarioTitle}`,`相手: ${r.avatarName||''}`,`総合スコア: ${r.total}/100`,``,`項目別スコア`,...(r.scores||[]).map(x=>`${x.name}: ${x.score}`),``,`良かった点`,r.good||'',``,`改善ポイント`,r.improve||'',``,`次に使う一言`,r.nextPhrase||'',``,`相手の本音`,r.hiddenNeed||'',``,`会話記録`,...(r.conversation||[]).map(m=>`${m.role==='user'?'あなた':r.avatarName||'相手'}: ${m.text}`)];downloadText(`roleplay-report-${new Date(r.date).toISOString().slice(0,10)}.txt`,lines.join('\n'))}
 function exportAllHistory(){const h=loadHistory();if(!h.length){toast('出力できる履歴がありません');return}downloadText(`roleplay-history-${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(h,null,2),'application/json')}
 function downloadText(name,text,type='text/plain'){const blob=new Blob([text],{type:`${type};charset=utf-8`});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}

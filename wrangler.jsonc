@@ -19,7 +19,7 @@
   "ai": { "binding": "AI" },
   "vars": {
     "APP_URL": "https://ai-roleplay-studio.ai-roleplay-studio.workers.dev",
-    "BILLING_ENABLED": "false",
+    "BILLING_ENABLED": "true",
     "SIGNUP_ENABLED": "true",
     "STRIPE_PRICE_ID": "price_1U1JSkJYbwf4eLAfkVOYv6kq"
   }
