@@ -6,7 +6,7 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --keep-vars",
     "deploy:dry": "wrangler deploy --dry-run --keep-vars",
-    "check": "node --check app.js && node --check auth.js && node --check scenario-design.js && node --check src/index.js"
+    "check": "node --check public/app.js && node --check public/auth.js && node --check public/scenario-design.js && node --check src/index.js"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"

@@ -17,8 +17,8 @@
   <title>AI ROLEPLAY STUDIO</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=1.28">
-  <link rel="stylesheet" href="auth.css?v=1.28">
+  <link rel="stylesheet" href="styles.css?v=1.29">
+  <link rel="stylesheet" href="auth.css?v=1.29">
 </head>
 <body class="auth-pending">
 <div id="authGate" class="auth-gate">
@@ -72,7 +72,7 @@
           <div class="eyebrow" style="color:#ffad73">AI音声ロールプレイ</div>
           <h1>仕事の対話力を、<br>会話で磨く。</h1>
           <p class="lead">6種類のアバターから外見を選び、AIが顧客・部下・応募者・クレーム相手を演じます。声で話し、相手の表情と反応を見ながら練習し、終了後はAIコーチが具体的に採点します。</p>
-          <div class="hero-actions"><button class="secondary-btn" type="button" onclick="showScreen('history')">成績を見る</button></div>
+          <div class="hero-actions"><button class="primary-btn" type="button" onclick="showScreen('lectures')">レクチャーを見る</button><button class="secondary-btn" type="button" onclick="showScreen('history')">成績を見る</button></div>
         </div>
         <div class="hero-panel"><div class="hero-stat"><div class="num" id="homeTotalCount">0</div><div class="label">累計トレーニング</div></div><div class="hero-stat"><div class="num" id="homeAverage">--</div><div class="label">平均スコア</div></div><div class="hero-stat"><div class="num" id="homeBest">--</div><div class="label">ベストスコア</div></div><div class="hero-stat"><div class="num" id="homeStreak">0</div><div class="label">連続練習日</div></div></div>
       </div>
@@ -85,10 +85,26 @@
         <button class="category-card" style="--cat-bg:#fff6df;--card-glow:rgba(226,167,44,.15)" onclick="startSetup('support')"><span class="chevron">→</span><div class="cat-icon">🎧</div><h3>クレーム対応</h3><p>感情受容、事実確認、解決策、境界設定を実践。</p></button>
       </div>
 
+      <section class="lecture-home-banner" aria-label="レクチャー動画">
+        <div class="lecture-home-icon" aria-hidden="true">▶</div>
+        <div><div class="eyebrow">LECTURE</div><h2>5分で学んで、すぐ実践。</h2><p>営業・マネジメント・採用・クレーム対応の16講義を、ロープレ前に視聴できます。</p></div>
+        <button class="primary-btn" type="button" onclick="showScreen('lectures')">レクチャー一覧へ</button>
+      </section>
+
       <div id="homeAvatarStrip" hidden></div>
 
       <div class="section-head"><div><div class="eyebrow">RECENT</div><h2>直近のトレーニング</h2></div></div>
       <div id="recentResult" class="recent-card"><div class="empty-state" style="width:100%">まだ結果がありません。最初のロープレに挑戦しましょう。</div></div>
+    </section>
+
+    <section id="screen-lectures" class="screen">
+      <div class="page-header"><button class="back-btn" type="button" aria-label="戻る" onclick="showScreen('home')">←</button><div><div class="eyebrow">LECTURE</div><h2 style="margin-bottom:0">レクチャー動画</h2></div></div>
+      <section class="lecture-hero">
+        <div><span class="lecture-hero-kicker">学ぶ → 試す → 振り返る</span><h2>短い講義を、ロープレの成果につなげる。</h2><p>テーマを選んで約5分の動画を視聴し、その内容に合った設定でロープレを始められます。</p></div>
+        <div class="lecture-progress-card"><strong><span id="lectureWatchedCount">0</span><small>/16</small></strong><span>視聴済み</span><div class="lecture-progress-track"><i id="lectureProgressBar"></i></div></div>
+      </section>
+      <nav id="lectureCategoryTabs" class="lecture-category-tabs" aria-label="レクチャーカテゴリー"></nav>
+      <div id="lectureGrid" class="lecture-grid"></div>
     </section>
 
     <section id="screen-setup" class="screen">
@@ -189,7 +205,7 @@
           <article id="info-operator" class="info-section" hidden><h3>運営者</h3><dl class="legal-list"><div><dt>運営者名</dt><dd>Grit Strategy Works</dd></div><div><dt>サービス名</dt><dd>AI ROLEPLAY STUDIO</dd></div><div><dt>有料プラン</dt><dd>AI Roleplay Studio Premium・月額980円（税込）</dd></div><div><dt>提供状況</dt><dd>有料プランの申込み準備中</dd></div></dl><p>販売事業者の正式名称、運営責任者、所在地、電話番号、契約・請求に関する専用問い合わせ先は有料プランの申込み開始前に掲載します。</p></article>
           <article id="info-commerce" class="info-section" hidden><h3>特定商取引法に基づく表記</h3><div class="status-banner caution"><strong>有料プランは現在準備中です</strong><span>必要な情報を掲載したうえで申込みを開始します。</span></div><dl class="legal-list"><div><dt>運営者</dt><dd>Grit Strategy Works</dd></div><div><dt>販売事業者の正式名称・責任者</dt><dd>有料プランの申込み開始前に掲載</dd></div><div><dt>所在地・電話番号</dt><dd>有料プランの申込み開始前に掲載。法令上認められる場合は、請求に応じて申込み前に遅滞なく提供できる体制を整えます。</dd></div><div><dt>販売価格</dt><dd>AI Roleplay Studio Premium：月額980円（税込）</dd></div><div><dt>商品代金以外の負担</dt><dd>インターネット接続・通信に必要な費用は利用者負担です。</dd></div><div><dt>支払方法・支払時期</dt><dd>クレジットカード（Stripe）。申込み時に初回決済し、以後1か月ごとに自動更新します。</dd></div><div><dt>サービス提供時期</dt><dd>決済完了後、プレミアム機能を利用できます。</dd></div><div><dt>解約・返金</dt><dd>本ページ内の「解約方法」「返金方針」を参照してください。</dd></div></dl><p class="reference-links"><a href="https://www.no-trouble.caa.go.jp/what/mailorder/advertising.html" target="_blank" rel="noopener">消費者庁・特定商取引法ガイド</a></p></article>
           <article id="info-terms" class="info-section" hidden><h3>利用規約</h3><p class="policy-date">改定日：2026年8月6日</p><h4>1. 適用</h4><p>本規約は、Grit Strategy Worksが提供するAI ROLEPLAY STUDIOの利用条件を定めます。利用者は本規約に同意して本サービスを利用します。</p><h4>2. アカウント</h4><p>利用者は正確な情報でアカウントを作成し、パスワードとログイン端末を適切に管理します。第三者による不正利用を確認した場合は速やかにログアウトしてください。</p><h4>3. サービスの性質</h4><p>本サービスは対話練習を支援するもので、AIの応答・採点は参考情報です。正確性、完全性、特定目的への適合を保証するものではなく、採用・人事評価・契約・苦情処理などの最終判断は利用者が行います。</p><h4>4. 有料プラン</h4><p>Premiumは月額980円（税込）の1か月ごとの自動更新です。利用者が次回更新日前に解約しない限り契約は更新されます。価格や内容を変更する場合は、適用前にサイト上で案内します。</p><h4>5. 禁止事項</h4><p>法令違反、第三者の権利侵害、個人情報・機密情報の不適切な入力、サービスへの不正アクセス、過度な負荷、解析・転用による妨害を禁止します。</p><h4>6. 知的財産</h4><p>本サービスのプログラム、デザイン、画像等の権利は運営者または正当な権利者に帰属します。利用者が入力する内容の権利は利用者に留保されます。</p><h4>7. 変更・停止</h4><p>保守、障害、仕様改善、法令対応等によりサービス内容を変更または停止することがあります。重要な変更はサイト上で告知します。</p><h4>8. 準拠法</h4><p>本規約は日本法に準拠します。紛争が生じた場合は、法令に従い管轄裁判所を定めます。</p></article>
-          <article id="info-privacy" class="info-section" hidden><h3>プライバシーポリシー</h3><p class="policy-date">改定日：2026年8月10日</p><h4>取得・処理する情報</h4><p>ログイン用メールアドレス、ログイン状態を保つための情報、ロープレ設定、文字に変換された会話内容、採点結果、利用設定、接続状況に関する情報を処理する場合があります。パスワードは安全な方式で保護し、入力された文字列のまま保存しません。成績・設定・履歴は原則としてこの端末内に保存されます。音声入力では端末の音声認識機能を利用し、本サービスは録音データを保存しません。</p><h4>利用目的</h4><p>ロープレ応答・採点の提供、履歴表示、品質・安全性の維持、不正利用防止、問い合わせ対応、利用状況の分析、サービス改善、決済・契約管理、法令遵守のために利用します。</p><h4>外部サービス・委託</h4><p>AI応答とサイト配信にCloudflareのクラウドサービス、利用状況の分析にGoogle Analytics、Premiumの決済・契約管理にStripeを利用します。Google AnalyticsはCookie等を使用してページ閲覧、端末・ブラウザ、参照元などの情報を収集する場合があります。AIとの会話・採点に入力した内容は、応答生成のためCloudflare上のAI機能へ送信されます。ブラウザの音声認識・読み上げ機能を利用する場合、それぞれの提供者の条件が適用されます。</p><h4>利用者による管理</h4><p>設定画面の「全データ削除」で端末内の成績・設定・履歴を削除できます。Cookieはブラウザ設定で無効化できます。入力内容には第三者の個人情報、営業秘密、要配慮情報を含めないでください。</p><h4>安全管理・開示等</h4><p>アクセス制御、通信の暗号化、必要最小限の処理等を行います。保有個人データの開示・訂正・利用停止等の窓口は、有料プランの申込み開始前に専用問い合わせ先とともに掲載します。</p><p class="reference-links"><a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener">Googleプライバシーポリシー</a> <a href="https://stripe.com/jp/privacy" target="_blank" rel="noopener">Stripeプライバシーポリシー</a> <a href="https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/" target="_blank" rel="noopener">個人情報保護委員会ガイドライン</a></p></article>
+          <article id="info-privacy" class="info-section" hidden><h3>プライバシーポリシー</h3><p class="policy-date">改定日：2026年8月10日</p><h4>取得・処理する情報</h4><p>ログイン用メールアドレス、ログイン状態を保つための情報、ロープレ設定、文字に変換された会話内容、採点結果、利用設定、接続状況に関する情報を処理する場合があります。パスワードは安全な方式で保護し、入力された文字列のまま保存しません。成績・設定・履歴は原則としてこの端末内に保存されます。音声入力では端末の音声認識機能を利用し、本サービスは録音データを保存しません。</p><h4>利用目的</h4><p>ロープレ応答・採点の提供、履歴表示、品質・安全性の維持、不正利用防止、問い合わせ対応、利用状況の分析、サービス改善、決済・契約管理、法令遵守のために利用します。</p><h4>外部サービス・委託</h4><p>AI応答とサイト配信にCloudflareのクラウドサービス、利用状況の分析にGoogle Analytics、レクチャー動画の再生にYouTube、Premiumの決済・契約管理にStripeを利用します。Google AnalyticsはCookie等を使用してページ閲覧、端末・ブラウザ、参照元などの情報を収集する場合があります。AIとの会話・採点に入力した内容は、応答生成のためCloudflare上のAI機能へ送信されます。ブラウザの音声認識・読み上げ機能を利用する場合、それぞれの提供者の条件が適用されます。</p><h4>利用者による管理</h4><p>設定画面の「全データ削除」で端末内の成績・設定・履歴を削除できます。Cookieはブラウザ設定で無効化できます。入力内容には第三者の個人情報、営業秘密、要配慮情報を含めないでください。</p><h4>安全管理・開示等</h4><p>アクセス制御、通信の暗号化、必要最小限の処理等を行います。保有個人データの開示・訂正・利用停止等の窓口は、有料プランの申込み開始前に専用問い合わせ先とともに掲載します。</p><p class="reference-links"><a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener">Googleプライバシーポリシー</a> <a href="https://stripe.com/jp/privacy" target="_blank" rel="noopener">Stripeプライバシーポリシー</a> <a href="https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/" target="_blank" rel="noopener">個人情報保護委員会ガイドライン</a></p></article>
           <article id="info-cancellation" class="info-section" hidden><h3>解約方法</h3><p>Premium契約者は、設定画面の「契約・支払いを管理」からStripeの契約管理画面を開き、次回更新日前までに解約できます。</p><p>解約後も支払済み期間の終了まではプレミアム機能を利用でき、期間終了後は自動的に無料プランへ切り替わります。</p></article>
           <article id="info-refund" class="info-section" hidden><h3>返金方針</h3><p>デジタルサービスの性質上、利用者都合による支払済み期間の途中解約について、日割り返金は行いません。</p><p>重複決済、当方の責めに帰すべき事由でサービスを提供できなかった場合、または法令上返金が必要な場合は、確認のうえ対応します。申請窓口は有料プランの申込み開始前に掲載します。</p></article>
           <article id="info-contact" class="info-section" hidden><h3>問い合わせ先</h3><p>お問い合わせ窓口を準備しています。受付を開始する際は、この画面でご案内します。</p><p class="legal-warning">契約・請求・個人情報に関するお問い合わせ先は、有料プランの申込み開始前に掲載します。</p></article>
@@ -219,7 +235,13 @@
   <footer class="site-footer"><div><strong>AI ROLEPLAY STUDIO</strong><span>運営者：Grit Strategy Works</span></div><nav aria-label="フッターナビゲーション"><button onclick="showInformation('pricing')">料金</button><button onclick="showInformation('operator')">運営者</button><button onclick="showInformation('commerce')">特定商取引法に基づく表記</button><button onclick="showInformation('terms')">利用規約</button><button onclick="showInformation('privacy')">プライバシーポリシー</button><button onclick="showInformation('cancellation')">解約方法</button><button onclick="showInformation('refund')">返金方針</button><button onclick="showInformation('contact')">問い合わせ先</button></nav></footer>
 
 
-  <nav class="bottom-nav" aria-label="メインナビゲーション"><button id="navHome" class="nav-btn active" type="button" onclick="showScreen('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1v-9Z"/></svg>ホーム</button><button id="navStart" class="nav-btn" type="button" onclick="startSetup('sales')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4V8Z"/></svg>練習</button><button id="navHistory" class="nav-btn" type="button" onclick="showScreen('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>成績</button><button id="navSettings" class="nav-btn" type="button" onclick="showScreen('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.15.38.36.72.6 1 .29.33.68.53 1.1.6h.09v4h-.09a1.7 1.7 0 0 0-1.7.4Z"/></svg>設定</button></nav>
+  <nav class="bottom-nav" aria-label="メインナビゲーション">
+    <button id="navHome" class="nav-btn active" type="button" onclick="showScreen('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1v-9Z"/></svg>ホーム</button>
+    <button id="navLectures" class="nav-btn" type="button" onclick="showScreen('lectures')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m10 8 5 4-5 4V8Z"/></svg>講義</button>
+    <button id="navStart" class="nav-btn" type="button" onclick="startSetup('sales')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4V8Z"/></svg>練習</button>
+    <button id="navHistory" class="nav-btn" type="button" onclick="showScreen('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>成績</button>
+    <button id="navSettings" class="nav-btn" type="button" onclick="showScreen('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06-.06A1.7 1.7 0 0 0 19.4 9c.15.38.36.72.6 1 .29.33.68.53 1.1.6h.09v4h-.09a1.7 1.7 0 0 0-1.7.4Z"/></svg>設定</button>
+  </nav>
 </div>
 
 <div id="toast" class="toast" role="status"></div>
@@ -237,7 +259,16 @@
     <div class="modal-actions end-modal-actions"><button id="continueRoleplayButton" class="ghost-btn" type="button" onclick="closeEndModal()">会話を続ける</button><button class="primary-btn" type="button" onclick="finishRoleplay()">終了して採点する</button></div>
   </div>
 </div>
+<div id="lectureModal" class="modal-backdrop lecture-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="lectureModalTitle">
+  <div class="modal lecture-modal">
+    <div class="lecture-modal-head"><div><span id="lectureModalCategory" class="lecture-modal-category">営業・商談</span><h2 id="lectureModalTitle">レクチャー</h2></div><button class="lecture-modal-close" type="button" aria-label="動画を閉じる" onclick="closeLectureModal()">×</button></div>
+    <div class="lecture-player"><iframe id="lecturePlayer" title="レクチャー動画" src="about:blank" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+    <p id="lectureModalDescription" class="lecture-modal-description"></p>
+    <div class="lecture-modal-actions"><button id="lectureWatchedButton" class="ghost-btn" type="button" onclick="toggleActiveLectureWatched()">視聴済みにする</button><button class="primary-btn" type="button" onclick="startActiveLecturePractice()">この内容をロープレで練習する</button></div>
+    <p class="lecture-youtube-note">動画はYouTubeの限定公開プレーヤーで再生します。</p>
+  </div>
+</div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-box"><div class="spinner"></div><strong>会話を振り返っています</strong><p style="color:#b9c7d9;font-size:13px">評価と改善ポイントを作成中です</p></div></div>
-<script src="auth.js?v=1.28" defer></script>
+<script src="auth.js?v=1.29" defer></script>
 </body>
 </html>
