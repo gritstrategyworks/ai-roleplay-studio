@@ -343,7 +343,8 @@ async function startCheckout(){
   if(billingActionPending)return;
   billingActionPending=true;renderBilling();toast('Stripeの安全なお支払い画面を開いています');
   try{
-    const response=await fetch('/api/billing/checkout',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:'{}'});
+    const requestId=globalThis.crypto?.randomUUID?.()||(`checkout-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    const response=await fetch('/api/billing/checkout',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({requestId})});
     const data=await response.json();
     if(!response.ok||!data.url)throw new Error(data.error||('HTTP '+response.status));
     location.assign(data.url);
