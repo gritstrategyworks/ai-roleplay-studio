@@ -146,6 +146,13 @@ function avatarImage(id){return `${AVATAR_ASSET_BASE}/${id}.webp`}
 function getApiEndpoint(){const value=String(settings.apiEndpoint||'').trim();return value?value.replace(/\/$/,''):'/api/roleplay'}
 function isRoleplayActive(){return document.getElementById('screen-roleplay')?.classList.contains('active')}
 
+function syncRoleplayViewport(){
+  const height=window.visualViewport?.height||window.innerHeight;
+  document.documentElement.style.setProperty('--roleplay-viewport-height',`${Math.round(height)}px`);
+  if(!document.body.classList.contains('roleplay-active'))return;
+  requestAnimationFrame(()=>{const list=document.getElementById('messageList');if(list)list.scrollTop=list.scrollHeight});
+}
+
 function showScreen(name){
   document.body.classList.toggle('roleplay-active',name==='roleplay');
   if(name!=='roleplay'&&state.timerId&&isRoleplayActive()){clearInterval(state.timerId);state.timerId=null}
@@ -156,6 +163,7 @@ function showScreen(name){
   const navMap={home:'navHome',lectures:'navLectures',setup:'navStart',roleplay:'navStart',results:'navHistory',history:'navHistory',settings:'navSettings'};
   if(navMap[name])document.getElementById(navMap[name])?.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
+  if(name==='roleplay')syncRoleplayViewport();
   if(name==='home')renderHome();if(name==='lectures')renderLectures();if(name==='history')renderHistory();if(name==='settings')renderSettings();
 }
 
@@ -626,5 +634,5 @@ function openPracticeMenu(){
 }
 document.getElementById('navStart').onclick=openPracticeMenu;
 renderSetup=function(){renderSetupModeBase();upgradeAdvancedDatalistInputs();renderAIModeSettings()};
-init=function(){setupSpeechRecognition();loadVoices();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();initLectureFeature();probeAPI();initBilling();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).catch(()=>{})};
+init=function(){setupSpeechRecognition();loadVoices();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();initLectureFeature();syncRoleplayViewport();window.addEventListener('resize',syncRoleplayViewport,{passive:true});window.visualViewport?.addEventListener('resize',syncRoleplayViewport,{passive:true});window.visualViewport?.addEventListener('scroll',syncRoleplayViewport,{passive:true});probeAPI();initBilling();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).catch(()=>{})};
 init();
