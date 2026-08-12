@@ -7,6 +7,11 @@
   <meta name="description" content="AI顧客・部下・応募者と音声で会話し、対話力を反復練習できるロールプレイアプリ">
   <meta name="google-site-verification" content="zbpYn_l9DVdW1Ev0OZdQOJDWLreuTin9i0nqUele1Mo">
   <meta name="google-adsense-account" content="ca-pub-5840457424714744">
+  <link rel="canonical" href="https://roleplay.gritstrategyworks.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="AI ROLEPLAY STUDIO">
+  <meta property="og:description" content="AI顧客・部下・応募者と会話し、仕事の対話力を反復練習できるロールプレイアプリ">
+  <meta property="og:url" content="https://roleplay.gritstrategyworks.com/">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5840457424714744" crossorigin="anonymous"></script>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XH93D31BKJ"></script>
@@ -19,8 +24,8 @@
   <title>AI ROLEPLAY STUDIO</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=1.31">
-  <link rel="stylesheet" href="auth.css?v=1.31">
+  <link rel="stylesheet" href="styles.css?v=1.33">
+  <link rel="stylesheet" href="auth.css?v=1.33">
 </head>
 <body class="auth-pending">
 <div id="authGate" class="auth-gate">
@@ -28,7 +33,7 @@
     <section class="auth-intro">
       <div class="auth-brand"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 8.2A4.2 4.2 0 0 1 10.2 4h3.6A4.2 4.2 0 0 1 18 8.2v3.1a4.2 4.2 0 0 1-4.2 4.2h-1.3L9 19v-3.5A4.2 4.2 0 0 1 6 11.3V8.2Z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M9 9h6M9 12h4" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span><span>AI ROLEPLAY STUDIO</span></div>
       <div><div class="eyebrow">AI音声ロールプレイ</div><h1>対話力を、<br>会話で磨く。</h1><p>アカウントで継続利用することも、ログインせずゲストとしてすぐ試すこともできます。</p></div>
-      <ul class="auth-features"><li>詳細設定と6種類のアバター</li><li>待ち時間を抑えたオンラインAI会話・採点</li><li>アカウントまたはゲストで利用</li></ul>
+      <ul class="auth-features"><li>基本設定と6種類のアバター</li><li>待ち時間を抑えたオンラインAI会話</li><li>入門講義2本は無料、全講義と詳細設定はPremium</li></ul>
     </section>
     <section class="auth-card">
       <div id="authLoading" class="auth-loading"><span class="auth-spinner"></span><strong id="authLoadingText">ログイン状態を確認しています</strong><p>安全な接続を準備しています。</p></div>
@@ -63,6 +68,7 @@
       <div id="apiStatus" class="api-status" title="会話機能の利用状態"><span class="api-dot"></span><span id="apiStatusText">接続確認中</span></div>
       <div class="user-pill" title="ログイン中" data-auth-user-pill><span class="user-avatar">●</span><span data-auth-email></span></div>
       <button class="logout-btn" type="button" data-auth-logout>ログアウト</button>
+      <button class="icon-btn" type="button" aria-label="アプリを共有" title="アプリを共有" onclick="openShareModal()"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg></button>
       <button class="icon-btn" type="button" aria-label="設定" onclick="showScreen('settings')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.15.38.36.72.6 1 .29.33.68.53 1.1.6h.09v4h-.09a1.7 1.7 0 0 0-1.7.4Z"/></svg></button>
     </div>
   </header>
@@ -74,10 +80,20 @@
           <div class="eyebrow" style="color:#ffad73">AI音声ロールプレイ</div>
           <h1>仕事の対話力を、<br>会話で磨く。</h1>
           <p class="lead">6種類のアバターから外見を選び、AIが顧客・部下・応募者・クレーム相手を演じます。声で話し、相手の表情と反応を見ながら練習し、終了後はAIコーチが具体的に採点します。</p>
-          <div class="hero-actions"><button class="primary-btn" type="button" onclick="showScreen('lectures')">レクチャーを見る</button><button class="secondary-btn" type="button" onclick="showScreen('history')">成績を見る</button></div>
+          <div class="hero-actions"><button class="primary-btn" type="button" onclick="openPracticeMenu()">ロープレを実施</button><button class="secondary-btn" type="button" onclick="showScreen('lectures')">レクチャーを見る</button><button class="secondary-btn" type="button" onclick="showScreen('history')">成績を見る</button></div>
         </div>
         <div class="hero-panel"><div class="hero-stat"><div class="num" id="homeTotalCount">0</div><div class="label">累計トレーニング</div></div><div class="hero-stat"><div class="num" id="homeAverage">--</div><div class="label">平均スコア</div></div><div class="hero-stat"><div class="num" id="homeBest">--</div><div class="label">ベストスコア</div></div><div class="hero-stat"><div class="num" id="homeStreak">0</div><div class="label">連続練習日</div></div></div>
       </div>
+
+      <section id="developerPreviewPanel" class="developer-preview-panel" aria-labelledby="developerPreviewTitle" hidden>
+        <div class="developer-preview-copy"><div class="eyebrow">TEMPORARY DEVELOPER TOOL</div><h2 id="developerPreviewTitle">無料／Premium表示を試す <span id="developerPreviewBadge" class="developer-preview-badge">実契約どおり</span></h2><p id="developerPreviewDetail">実際のStripe契約状態を表示しています。</p></div>
+        <div class="developer-preview-controls">
+          <label for="developerCommandInput">秘密コマンド<input id="developerCommandInput" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="128" placeholder="開発者用コマンド" onkeydown="if(event.key==='Enter')setDeveloperPreviewMode('premium')"></label>
+          <div class="developer-preview-actions" role="group" aria-label="開発者テスト表示"><button type="button" data-developer-preview-mode="free" onclick="setDeveloperPreviewMode('free')">無料表示</button><button type="button" data-developer-preview-mode="premium" onclick="setDeveloperPreviewMode('premium')">Premium表示</button><button type="button" data-developer-preview-mode="actual" onclick="setDeveloperPreviewMode('actual')">実契約どおり</button></div>
+          <p id="developerPreviewStatus" class="developer-preview-status" role="status" hidden></p>
+        </div>
+        <p class="developer-preview-warning">試用期間だけの一時機能です。切替は4時間で自動終了し、課金・契約データは変更しません。</p>
+      </section>
 
       <div class="section-head"><div><div class="eyebrow">TRAINING</div><h2>ロープレを選ぶ</h2></div><p>仕事のさまざまな場面を、相手役を変えて練習できます。</p></div>
       <div class="category-grid">
@@ -89,9 +105,16 @@
 
       <section class="lecture-home-banner" aria-label="レクチャー動画">
         <div class="lecture-home-icon" aria-hidden="true">▶</div>
-        <div><div class="eyebrow">LECTURE</div><h2>5分で学んで、すぐ実践。</h2><p>営業・マネジメント・採用・クレーム対応の16講義を、ロープレ前に視聴できます。</p></div>
+        <div><div class="eyebrow">LECTURE</div><h2>5分で学んで、すぐ実践。</h2><p>入門講義2本は無料。Premiumでは営業・マネジメント・採用・クレーム対応の全16講義を視聴できます。</p></div>
         <button class="primary-btn" type="button" onclick="showScreen('lectures')">レクチャー一覧へ</button>
       </section>
+
+      <section class="share-home-card" aria-label="アプリを紹介">
+        <div><div class="eyebrow">SHARE</div><h2>このアプリを紹介する</h2><p>会社や研修担当者へ、公開リンクまたはQRコードで簡単に共有できます。</p></div>
+        <button class="secondary-btn" type="button" onclick="openShareModal()">リンク・QRを表示</button>
+      </section>
+
+      <aside id="freeAdPlacement" class="free-ad-placement" aria-label="広告" hidden></aside>
 
       <div id="homeAvatarStrip" hidden></div>
 
@@ -102,7 +125,7 @@
     <section id="screen-lectures" class="screen">
       <div class="page-header"><button class="back-btn" type="button" aria-label="戻る" onclick="showScreen('home')">←</button><div><div class="eyebrow">LECTURE</div><h2 style="margin-bottom:0">レクチャー動画</h2></div></div>
       <section class="lecture-hero">
-        <div><span class="lecture-hero-kicker">学ぶ → 試す → 振り返る</span><h2>短い講義を、ロープレの成果につなげる。</h2><p>テーマを選んで約5分の動画を視聴し、その内容に合った設定でロープレを始められます。</p></div>
+        <div><span class="lecture-hero-kicker">学ぶ → 試す → 振り返る</span><h2>短い講義を、ロープレの成果につなげる。</h2><p>入門2講義は無料です。Premiumでは全16講義を視聴し、その内容に合った設定でロープレを始められます。</p></div>
         <div class="lecture-progress-card"><strong><span id="lectureWatchedCount">0</span><small>/16</small></strong><span>視聴済み</span><div class="lecture-progress-track"><i id="lectureProgressBar"></i></div></div>
       </section>
       <nav id="lectureCategoryTabs" class="lecture-category-tabs" aria-label="レクチャーカテゴリー"></nav>
@@ -129,7 +152,7 @@
             <div class="field"><label for="roleplayDifficultySelect">⑪ 難易度 <em>必須</em></label><select id="roleplayDifficultySelect" onchange="updateSetupDraft()"><option value="easy">初級</option><option value="normal" selected>中級</option><option value="hard">上級</option></select></div>
             <div class="field"><label for="roleplayGoalSelect">⑫ 今回のゴール <em>必須</em></label><select id="roleplayGoalSelect" onchange="updateSetupDraft()"><option>信頼関係をつくる</option><option>ニーズを把握する</option><option>商品を提案する</option><option>見積提出につなげる</option><option>契約する</option><option>クレームを収束させる</option></select></div>
           </div>
-          <button id="advancedToggle" class="advanced-toggle" type="button" aria-expanded="false" onclick="toggleAdvancedSettings()"><span>詳細設定</span><span>研修担当者・上級者向け　⌄</span></button>
+          <button id="advancedToggle" class="advanced-toggle" type="button" aria-expanded="false" onclick="toggleAdvancedSettings()"><span>詳細設定 <small id="advancedPlanBadge" class="feature-plan-badge">Premium</small></span><span id="advancedToggleLabel">研修担当者・上級者向け　🔒</span></button>
           <section id="advancedSettings" class="advanced-settings" hidden>
             <div class="advanced-head"><strong>相手役の詳しい設定</strong><p>必要な場合だけ設定してください。入力した内容は、相手役の背景や受け答えに反映されます。</p></div>
             <div id="btobDetails" class="detail-grid">
@@ -203,11 +226,11 @@
           <button class="info-link" data-info="contact" onclick="showInformation('contact')">問い合わせ先</button>
         </nav>
         <div class="info-content">
-          <article id="info-pricing" class="info-section"><div class="status-banner success"><strong>プレミアムプラン申込み受付中</strong><span>Stripeの安全な決済画面でお申し込みいただけます。</span></div><h3>料金</h3><div class="pricing-card"><span>無料プラン</span><strong>0円</strong><p>基本設定、ロールプレイ、音声会話、総合評価を利用できます。</p></div><div class="pricing-card featured"><span>AI Roleplay Studio Premium</span><strong>月額980円（税込）</strong><p>項目別スコア、改善ポイント、次に使う一言、相手の本音、会話記録などの詳細分析を利用できます。1か月ごとの自動更新です。</p><button class="primary-btn" type="button" onclick="startCheckout()">月額980円で申し込む</button></div><p class="legal-warning">申込み時に初回決済が行われ、以後1か月ごとに自動更新されます。次回更新日前まで、設定画面の「契約・支払いを管理」からいつでも解約できます。</p></article>
+          <article id="info-pricing" class="info-section"><div class="status-banner success"><strong>プレミアムプラン申込み受付中</strong><span>Stripeの安全な決済画面でお申し込みいただけます。</span></div><h3>料金</h3><div class="pricing-card"><span>無料プラン</span><strong>0円</strong><p>基本設定、ロールプレイ、音声会話、総合評価、入門講義2本を利用できます。AdSense承認後は、ロープレ実施中を除く画面に広告が表示される場合があります。</p></div><div class="pricing-card featured"><span>AI Roleplay Studio Premium</span><strong>月額980円（税込）</strong><p>全16講義、研修担当者・上級者向けの詳細設定、項目別スコア、改善ポイント、次に使う一言、相手の本音、会話記録を利用できます。広告は表示されません。1か月ごとの自動更新です。</p><button class="primary-btn" type="button" onclick="startCheckout()">月額980円で申し込む</button></div><p class="legal-warning">申込み時に初回決済が行われ、以後1か月ごとに自動更新されます。次回更新日前まで、設定画面の「契約・支払いを管理」からいつでも解約できます。</p></article>
 <article id="info-operator" class="info-section" hidden><h3>運営者</h3><dl class="legal-list"><div><dt>運営者名</dt><dd>Grit Strategy Works</dd></div><div><dt>サービス名</dt><dd>AI ROLEPLAY STUDIO</dd></div><div><dt>有料プラン</dt><dd>AI Roleplay Studio Premium・月額980円（税込）</dd></div><div><dt>提供状況</dt><dd>申込み受付中</dd></div><div><dt>問い合わせ先</dt><dd><a href="mailto:gritstrategyworks@gmail.com">gritstrategyworks@gmail.com</a></dd></div></dl><p>販売事業者の氏名、運営責任者、所在地、電話番号は、法令に基づく請求があった場合に遅滞なく開示します。</p></article>
 <article id="info-commerce" class="info-section" hidden><h3>特定商取引法に基づく表記</h3><dl class="legal-list"><div><dt>販売事業者</dt><dd>Grit Strategy Works</dd></div><div><dt>運営責任者・所在地・電話番号</dt><dd>請求があった場合、法令に基づき遅滞なく開示します。</dd></div><div><dt>問い合わせ先</dt><dd><a href="mailto:gritstrategyworks@gmail.com">gritstrategyworks@gmail.com</a></dd></div><div><dt>販売価格</dt><dd>AI Roleplay Studio Premium：月額980円（税込）</dd></div><div><dt>商品代金以外の負担</dt><dd>インターネット接続・通信に必要な費用は利用者負担です。</dd></div><div><dt>支払方法・支払時期</dt><dd>Stripeの決済画面に表示される支払方法。申込み時に初回決済し、以後1か月ごとに自動更新します。</dd></div><div><dt>サービス提供時期</dt><dd>決済完了と契約状態の確認後、プレミアム機能を利用できます。</dd></div><div><dt>解約</dt><dd>設定画面からStripeの契約管理画面を開き、次回更新日前までいつでも解約できます。解約後も支払済み期間の終了まで利用できます。</dd></div><div><dt>返金</dt><dd>デジタルサービスの性質上、利用者都合による日割り返金は行いません。重複決済、サービスを提供できなかった場合、または法令上必要な場合は確認のうえ対応します。</dd></div></dl><p class="reference-links"><a href="https://www.no-trouble.caa.go.jp/what/mailorder/advertising.html" target="_blank" rel="noopener">消費者庁・特定商取引法ガイド</a></p></article>
 <article id="info-terms" class="info-section" hidden><h3>利用規約</h3><p class="policy-date">改定日：2026年8月11日</p><h4>1. 適用</h4><p>本規約は、Grit Strategy Worksが提供するAI ROLEPLAY STUDIOの利用条件を定めます。利用者は本規約に同意して本サービスを利用します。</p><h4>2. アカウント</h4><p>利用者は正確な情報でアカウントを作成し、パスワードとログイン端末を適切に管理します。第三者による不正利用を確認した場合は速やかにログアウトしてください。</p><h4>3. サービスの性質</h4><p>本サービスは対話練習を支援するもので、AIの応答・採点は参考情報です。正確性、完全性、特定目的への適合を保証するものではなく、採用・人事評価・契約・苦情処理などの最終判断は利用者が行います。</p><h4>4. 有料プラン</h4><p>Premiumは月額980円（税込）の1か月ごとの自動更新です。利用者が次回更新日前に解約しない限り契約は更新されます。価格や内容を変更する場合は、適用前にサイト上で案内します。</p><h4>5. 禁止事項</h4><p>法令違反、第三者の権利侵害、個人情報・機密情報の不適切な入力、サービスへの不正アクセス、過度な負荷、解析・転用による妨害を禁止します。</p><h4>6. 知的財産</h4><p>本サービスのプログラム、デザイン、画像等の権利は運営者または正当な権利者に帰属します。利用者が入力する内容の権利は利用者に留保されます。</p><h4>7. 変更・停止</h4><p>保守、障害、仕様改善、法令対応等によりサービス内容を変更または停止することがあります。重要な変更はサイト上で告知します。</p><h4>8. 準拠法</h4><p>本規約は日本法に準拠します。紛争が生じた場合は、法令に従い管轄裁判所を定めます。</p></article>
-          <article id="info-privacy" class="info-section" hidden><h3>プライバシーポリシー</h3><p class="policy-date">改定日：2026年8月11日</p><h4>取得・処理する情報</h4><p>ログイン用メールアドレス、ログイン状態を保つための情報、ロープレ設定、文字に変換された会話内容、採点結果、利用設定、接続状況に関する情報を処理する場合があります。パスワードは安全な方式で保護し、入力された文字列のまま保存しません。成績・設定・履歴は原則としてこの端末内に保存されます。音声入力では端末の音声認識機能を利用し、本サービスは録音データを保存しません。</p><h4>利用目的</h4><p>ロープレ応答・採点の提供、履歴表示、品質・安全性の維持、不正利用防止、問い合わせ対応、利用状況の分析、サービス改善、決済・契約管理、法令遵守のために利用します。</p><h4>外部サービス・委託</h4><p>AI応答とサイト配信にCloudflareのクラウドサービス、利用状況の分析にGoogle Analytics、レクチャー動画の再生にYouTube、Premiumの決済・契約管理にStripeを利用します。Google AnalyticsはCookie等を使用してページ閲覧、端末・ブラウザ、参照元などの情報を収集する場合があります。AIとの会話・採点に入力した内容は、応答生成のためCloudflare上のAI機能へ送信されます。ブラウザの音声認識・読み上げ機能を利用する場合、それぞれの提供者の条件が適用されます。</p><h4>利用者による管理</h4><p>設定画面の「全データ削除」で端末内の成績・設定・履歴を削除できます。Cookieはブラウザ設定で無効化できます。入力内容には第三者の個人情報、営業秘密、要配慮情報を含めないでください。</p><h4>安全管理・開示等</h4><p>アクセス制御、通信の暗号化、必要最小限の処理等を行います。保有個人データの開示・訂正・利用停止等の窓口は、有料プランの申込み開始前に専用問い合わせ先とともに掲載します。</p><p class="reference-links"><a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener">Googleプライバシーポリシー</a> <a href="https://stripe.com/jp/privacy" target="_blank" rel="noopener">Stripeプライバシーポリシー</a> <a href="https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/" target="_blank" rel="noopener">個人情報保護委員会ガイドライン</a></p></article>
+          <article id="info-privacy" class="info-section" hidden><h3>プライバシーポリシー</h3><p class="policy-date">改定日：2026年8月12日</p><h4>取得・処理する情報</h4><p>ログイン用メールアドレス、ログイン状態を保つための情報、ロープレ設定、文字に変換された会話内容、採点結果、利用設定、接続状況に関する情報を処理する場合があります。パスワードは安全な方式で保護し、入力された文字列のまま保存しません。成績・設定・履歴は原則としてこの端末内に保存されます。音声入力では端末の音声認識機能を利用し、本サービスは録音データを保存しません。</p><h4>利用目的</h4><p>ロープレ応答・採点の提供、履歴表示、品質・安全性の維持、不正利用防止、問い合わせ対応、利用状況の分析、サービス改善、決済・契約管理、広告の配信・効果測定、法令遵守のために利用します。</p><h4>外部サービス・委託</h4><p>AI応答とサイト配信にCloudflareのクラウドサービス、利用状況の分析と広告配信にGoogle Analytics・Google AdSense、レクチャー動画の再生にYouTube、Premiumの決済・契約管理にStripe、共有用QRコードの生成にQR Serverを利用します。GoogleのサービスはCookie等を使用してページ閲覧、端末・ブラウザ、参照元、広告に関する情報を収集する場合があります。QR Serverへ送信するのは公開中のアプリURLのみで、アカウント情報やロープレの会話内容は送信しません。AIとの会話・採点に入力した内容は、応答生成のためCloudflare上のAI機能へ送信されます。ブラウザの音声認識・読み上げ機能を利用する場合、それぞれの提供者の条件が適用されます。</p><h4>利用者による管理</h4><p>設定画面の「全データ削除」で端末内の成績・設定・履歴を削除できます。Cookieはブラウザ設定で無効化できます。入力内容には第三者の個人情報、営業秘密、要配慮情報を含めないでください。</p><h4>安全管理・開示等</h4><p>アクセス制御、通信の暗号化、必要最小限の処理等を行います。保有個人データの開示・訂正・利用停止等は、問い合わせ先に記載のメールアドレスで受け付けます。</p><p class="reference-links"><a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener">Googleプライバシーポリシー</a> <a href="https://stripe.com/jp/privacy" target="_blank" rel="noopener">Stripeプライバシーポリシー</a> <a href="https://goqr.me/privacy/" target="_blank" rel="noopener">QR Serverプライバシーポリシー</a> <a href="https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/" target="_blank" rel="noopener">個人情報保護委員会ガイドライン</a></p></article>
           <article id="info-cancellation" class="info-section" hidden><h3>解約方法</h3><p>Premium契約者は、設定画面の「契約・支払いを管理」からStripeの契約管理画面を開き、次回更新日前までに解約できます。</p><p>解約後も支払済み期間の終了まではプレミアム機能を利用でき、期間終了後は自動的に無料プランへ切り替わります。</p></article>
           <article id="info-refund" class="info-section" hidden><h3>返金方針</h3><p>デジタルサービスの性質上、利用者都合による支払済み期間の途中解約について、日割り返金は行いません。</p><p>重複決済、当方の責めに帰すべき事由でサービスを提供できなかった場合、または法令上返金が必要な場合は、確認のうえ対応します。申請窓口は有料プランの申込み開始前に掲載します。</p></article>
           <article id="info-contact" class="info-section" hidden><h3>問い合わせ先</h3><p>サービス、契約、請求、返金、個人情報に関するお問い合わせは、次のメールアドレスへご連絡ください。</p><p class="contact-address"><a href="mailto:gritstrategyworks@gmail.com">gritstrategyworks@gmail.com</a></p><p class="legal-warning">内容を確認のうえ、原則として5営業日以内を目安に返信します。</p></article>
@@ -223,6 +246,7 @@
           <div class="ai-mode-grid cloud-only"><div id="cloudModeCard" class="ai-mode-card selected static"><span class="mode-icon">☁️</span><strong>オンラインAI</strong><span>端末への大規模モデル読込みを行わず、すぐに練習を始められます。</span><small>機密情報・個人情報は入力しないでください</small></div></div>
         </section>
         <div id="billingSettingsRow" class="setting-row"></div>
+        <div class="setting-row"><div><strong>アプリを紹介する</strong><p>公開リンクまたはQRコードを会社・研修担当者へ共有します。</p></div><button class="ghost-btn" type="button" style="min-height:42px" onclick="openShareModal()">共有する</button></div>
         <div class="setting-row cloud-voice-setting"><div><strong>相手の音声読み上げ</strong><p>通常モードで端末標準音声を使って読み上げます。</p></div><button id="speechSwitch" class="switch on" type="button" aria-label="音声読み上げを切り替え" onclick="toggleSetting('speech')"></button></div>
         <div class="setting-row cloud-voice-setting"><div><strong>ハンズフリーを既定にする</strong><p>AIの発話が終わるたびに、自動でユーザーの音声を待ちます。</p></div><button id="handsFreeSwitch" class="switch on" type="button" aria-label="ハンズフリーを切り替え" onclick="toggleSetting('handsFree')"></button></div>
         <div class="setting-row cloud-voice-setting"><div><strong>音声認識後に自動送信</strong><p>話し終わったとき、認識結果を送信します。</p></div><button id="autoSendSwitch" class="switch on" type="button" aria-label="自動送信を切り替え" onclick="toggleSetting('autoSend')"></button></div>
@@ -240,7 +264,7 @@
   <nav class="bottom-nav" aria-label="メインナビゲーション">
     <button id="navHome" class="nav-btn active" type="button" onclick="showScreen('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1v-9Z"/></svg>ホーム</button>
     <button id="navLectures" class="nav-btn" type="button" onclick="showScreen('lectures')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m10 8 5 4-5 4V8Z"/></svg>講義</button>
-    <button id="navStart" class="nav-btn" type="button" onclick="startSetup('sales')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4V8Z"/></svg>練習</button>
+    <button id="navStart" class="nav-btn" type="button" onclick="startSetup('sales')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4V8Z"/></svg>ロープレ</button>
     <button id="navHistory" class="nav-btn" type="button" onclick="showScreen('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>成績</button>
     <button id="navSettings" class="nav-btn" type="button" onclick="showScreen('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06-.06A1.7 1.7 0 0 0 19.4 9c.15.38.36.72.6 1 .29.33.68.53 1.1.6h.09v4h-.09a1.7 1.7 0 0 0-1.7.4Z"/></svg>設定</button>
   </nav>
@@ -270,7 +294,30 @@
     <p class="lecture-youtube-note">動画はYouTubeの限定公開プレーヤーで再生します。</p>
   </div>
 </div>
+<div id="premiumUpsellModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="premiumUpsellTitle">
+  <div class="modal premium-upsell-modal">
+    <button class="modal-corner-close" type="button" aria-label="閉じる" onclick="closePremiumUpsell()">×</button>
+    <span class="premium-upsell-icon" aria-hidden="true">🔒</span>
+    <p class="end-modal-eyebrow">PREMIUM FEATURE</p>
+    <h3 id="premiumUpsellTitle">Premiumで利用できます</h3>
+    <p id="premiumUpsellDescription">実践的な研修に向けた機能です。</p>
+    <ul class="premium-upsell-list"><li>全16本のレクチャー動画</li><li>研修担当者・上級者向け詳細設定</li><li>項目別スコアと改善ポイント</li><li>広告なし</li></ul>
+    <div class="modal-actions"><button class="ghost-btn" type="button" onclick="closePremiumUpsell()">あとで</button><button class="primary-btn" type="button" onclick="openPremiumDetails()">料金と機能を見る</button></div>
+  </div>
+</div>
+<div id="shareModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+  <div class="modal share-modal">
+    <button class="modal-corner-close" type="button" aria-label="閉じる" onclick="closeShareModal()">×</button>
+    <p class="end-modal-eyebrow">SHARE APP</p>
+    <h3 id="shareModalTitle">AI ROLEPLAY STUDIOを紹介</h3>
+    <p>リンクを送るか、スマートフォンでQRコードを読み取ってください。</p>
+    <div class="share-qr-wrap"><img id="shareQrImage" alt="AI ROLEPLAY STUDIOの共有用QRコード" width="220" height="220"></div>
+    <label class="share-link-field">公開URL<input id="shareLinkInput" type="text" readonly value="https://roleplay.gritstrategyworks.com/"></label>
+    <div class="modal-actions share-modal-actions"><button class="ghost-btn" type="button" onclick="copyShareLink()">リンクをコピー</button><button class="primary-btn" type="button" onclick="shareApp()">共有する</button></div>
+    <p class="share-privacy-note">QRコード生成先へ送信するのは、この公開URLだけです。</p>
+  </div>
+</div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-box"><div class="spinner"></div><strong>会話を振り返っています</strong><p style="color:#b9c7d9;font-size:13px">評価と改善ポイントを作成中です</p></div></div>
-<script src="auth.js?v=1.31" defer></script>
+<script src="auth.js?v=1.33" defer></script>
 </body>
 </html>

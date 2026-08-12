@@ -4,7 +4,7 @@ const STORAGE_SCOPE = globalThis.AuthGate?.user?.id || 'guest';
 const IS_GUEST_MODE = globalThis.AuthGate?.isGuest === true;
 const APP_KEY = 'aiRoleplayStudio_history_v2:' + STORAGE_SCOPE;
 const SETTINGS_KEY = 'aiRoleplayStudio_settings_v2:' + STORAGE_SCOPE;
-const DEFAULT_SETTINGS = { preferAI:true, aiMode:'cloud', speech:true, handsFree:true, autoSend:true, ttsEngine:'browser', voiceURI:'auto', kokoroVoice:'auto', speechRate:1, apiEndpoint:'', premiumPreview:true };
+const DEFAULT_SETTINGS = { preferAI:true, aiMode:'cloud', speech:true, handsFree:true, autoSend:true, ttsEngine:'browser', voiceURI:'auto', kokoroVoice:'auto', speechRate:1, apiEndpoint:'' };
 const CATEGORY_LABELS = { sales:'営業・商談', manager:'管理職面談', interview:'採用面接', support:'クレーム対応' };
 const EMOTIONS = ['neutral','positive','curious','skeptical','angry'];
 const KOKORO_MODEL = 'onnx-community/Kokoro-82M-v1.0-ONNX';
@@ -106,7 +106,11 @@ const state = {
 };
 
 let settings = loadSettings();
-let billingState = { loading:true, premium:false, status:'free', currentPeriodEnd:null, canManage:false, billingAvailable:false };
+const EMPTY_DEVELOPER_PREVIEW={available:false,mode:'actual',expiresAt:null};
+let billingState = { loading:true, premium:false, subscriptionPremium:false, status:'free', currentPeriodEnd:null, canManage:false, billingAvailable:false, developerPreview:{...EMPTY_DEVELOPER_PREVIEW} };
+const APP_SHARE_URL='https://roleplay.gritstrategyworks.com/';
+const FREE_LECTURE_IDS=new Set(['1.1','1.2']);
+const ADSENSE_SLOT_ID=''; // AdSense承認後に作成したレスポンシブ広告ユニットIDを設定する。
 let billingActionPending = false;
 let apiAvailable = false;
 let recognition = null;
@@ -303,36 +307,36 @@ function changeTtsEngine(value){settings.ttsEngine=value;saveSettings();updateVo
 function changeSettingsVoice(value){settings.voiceURI=value;saveSettings()}
 function changeKokoroVoice(value){settings.kokoroVoice=value;saveSettings()}
 function changeSpeechRate(value){settings.speechRate=Number(value);saveSettings();document.getElementById('speechRateValue').textContent=Number(value).toFixed(2)}
-function renderSettings(){document.getElementById('aiSwitch').classList.toggle('on',settings.preferAI);document.getElementById('speechSwitch').classList.toggle('on',settings.speech);document.getElementById('handsFreeSwitch').classList.toggle('on',settings.handsFree);document.getElementById('autoSendSwitch').classList.toggle('on',settings.autoSend);document.getElementById('premiumSwitch')?.classList.toggle('on',settings.premiumPreview);const endpointInput=document.getElementById('apiEndpointInput');if(endpointInput)endpointInput.value=settings.apiEndpoint||'';document.getElementById('settingsTtsEngineSelect').value=settings.ttsEngine;document.getElementById('speechRateRange').value=settings.speechRate;document.getElementById('speechRateValue').textContent=Number(settings.speechRate).toFixed(2);refreshVoiceSelects();refreshKokoroVoiceSelects();document.getElementById('settingsVoiceSelect').value=settings.voiceURI;document.getElementById('settingsKokoroVoiceSelect').value=settings.kokoroVoice;updateVoiceFieldVisibility();renderKokoroStatus();renderApiStatus();applyPlanPreview()}
+function renderSettings(){document.getElementById('aiSwitch').classList.toggle('on',settings.preferAI);document.getElementById('speechSwitch').classList.toggle('on',settings.speech);document.getElementById('handsFreeSwitch').classList.toggle('on',settings.handsFree);document.getElementById('autoSendSwitch').classList.toggle('on',settings.autoSend);const endpointInput=document.getElementById('apiEndpointInput');if(endpointInput)endpointInput.value=settings.apiEndpoint||'';document.getElementById('settingsTtsEngineSelect').value=settings.ttsEngine;document.getElementById('speechRateRange').value=settings.speechRate;document.getElementById('speechRateValue').textContent=Number(settings.speechRate).toFixed(2);refreshVoiceSelects();refreshKokoroVoiceSelects();document.getElementById('settingsVoiceSelect').value=settings.voiceURI;document.getElementById('settingsKokoroVoiceSelect').value=settings.kokoroVoice;updateVoiceFieldVisibility();renderKokoroStatus();renderApiStatus();applyPlanPreview()}
 function toggleSetting(key){settings[key]=!settings[key];saveSettings();toast(settings[key]?'オンにしました':'オフにしました');if(key==='preferAI')probeAPI()}
 function changeApiEndpoint(value){settings.apiEndpoint=String(value||'').trim();try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings))}catch{}apiAvailable=false;renderApiStatus()}
 async function testApiEndpoint(){changeApiEndpoint(document.getElementById('apiEndpointInput')?.value||'');toast('AI接続を確認しています');await probeAPI();toast(apiAvailable?'AIエンドポイントへ接続できました':'接続できません。URLとCORS設定を確認してください')}
-function togglePremiumPreview(){settings.premiumPreview=!settings.premiumPreview;saveSettings();toast(settings.premiumPreview?'プレミアム表示に切り替えました':'無料プラン表示に切り替えました')}
 function ensureBillingUI(){const heroActions=document.querySelector('.hero-actions');if(heroActions&&!document.getElementById('billingHeroButton')){const button=document.createElement('button');button.id='billingHeroButton';button.className='secondary-btn billing-action';button.type='button';heroActions.appendChild(button)}let settingsRow=document.getElementById('billingSettingsRow')||document.getElementById('premiumSwitch')?.closest('.setting-row');if(settingsRow&&!document.getElementById('billingStatusText')){settingsRow.id='billingSettingsRow';settingsRow.classList.add('billing-settings-row');settingsRow.innerHTML='<div><strong>プレミアムプラン</strong><p id="billingStatusText">契約状況を確認中です。</p></div><div class="billing-setting-actions"><span id="billingStatusBadge" class="billing-status-badge">...</span><button id="billingSettingsButton" class="primary-btn" type="button"></button></div>'}const banner=document.getElementById('planPreviewBanner');if(banner&&!document.getElementById('billingUpgradeButton')){const button=document.createElement('button');button.id='billingUpgradeButton';button.className='primary-btn';button.type='button';button.textContent='月額980円でアップグレード';button.onclick=startCheckout;banner.appendChild(button)}}
 function renderBilling(){
   ensureBillingUI();
   const premium=billingState.premium,available=billingState.billingAvailable,status=billingState.status||'free';
+  const preview=billingState.developerPreview||EMPTY_DEVELOPER_PREVIEW,previewActive=preview.available&&preview.mode!=='actual';
   const statusLabels={free:'無料プラン',active:'プレミアム',trialing:'無料体験中',past_due:'お支払い要確認',canceled:'解約済み',unpaid:'支払い未完了',incomplete:'申込み未完了',incomplete_expired:'申込み期限切れ',paused:'一時停止中'};
-  const label=billingState.loading?'確認中':!available&&!premium?'決済設定を確認してください':statusLabels[status]||status;
+  const label=billingState.loading?'確認中':previewActive?`開発テスト：${preview.mode==='premium'?'Premium':'無料'}`:!available&&!premium?'決済設定を確認してください':statusLabels[status]||status;
   const needsPaymentAction=['past_due','unpaid','paused'].includes(status);
-  const manage=Boolean(billingState.canManage&&(premium||needsPaymentAction));
-  const action=manage?openBillingPortal:startCheckout;
-  const actionLabel=manage?(needsPaymentAction?'支払い方法を確認':'契約を管理'):available?'プレミアム 月額980円':'Premium 月額980円';
+  const manage=Boolean(billingState.canManage&&(billingState.subscriptionPremium||needsPaymentAction));
+  const action=previewActive?focusDeveloperPreviewPanel:manage?openBillingPortal:startCheckout;
+  const actionLabel=previewActive?'テストモードを解除':manage?(needsPaymentAction?'支払い方法を確認':'契約を管理'):available?'プレミアム 月額980円':'Premium 月額980円';
   for(const button of [document.getElementById('billingHeroButton'),document.getElementById('billingSettingsButton'),document.getElementById('billingUpgradeButton')]){
     if(!button)continue;
     button.onclick=action;
-    button.disabled=billingState.loading||billingActionPending||(!manage&&!available);
+    button.disabled=billingState.loading||billingActionPending||(!previewActive&&!manage&&!available);
     button.setAttribute('aria-busy',String(billingActionPending));
   }
   const heroButton=document.getElementById('billingHeroButton');
   if(heroButton)heroButton.textContent=billingActionPending?'処理中…':actionLabel;
   const settingsButton=document.getElementById('billingSettingsButton');
-  if(settingsButton)settingsButton.textContent=billingActionPending?'処理中…':manage?(needsPaymentAction?'支払い方法を確認':'契約・支払いを管理'):available?'月額980円で申し込む':'決済設定を確認';
+  if(settingsButton)settingsButton.textContent=billingActionPending?'処理中…':previewActive?'テストモードを解除':manage?(needsPaymentAction?'支払い方法を確認':'契約・支払いを管理'):available?'月額980円で申し込む':'決済設定を確認';
   const badge=document.getElementById('billingStatusBadge');
   if(badge){badge.textContent=label;badge.classList.toggle('premium',premium)}
   const period=billingState.currentPeriodEnd?new Date(Number(billingState.currentPeriodEnd)*1000).toLocaleDateString('ja-JP'):null;
   const text=document.getElementById('billingStatusText');
-  if(text)text.textContent=premium?(period?`プレミアム機能をご利用いただけます。現在の利用期間は${period}までです。`:'プレミアム機能をご利用いただけます。'):needsPaymentAction?'お支払い情報を確認するとプレミアム機能を再開できます。':available?'詳細分析を月額980円（税込）でご利用いただけます。いつでも次回更新日前に解約できます。':'決済設定を確認しています。';
+  if(text)text.textContent=previewActive?`開発者テストで${preview.mode==='premium'?'Premium':'無料'}表示にしています。実際の契約情報は変更されません。`:premium?(period?`プレミアム機能をご利用いただけます。現在の利用期間は${period}までです。`:'プレミアム機能をご利用いただけます。'):needsPaymentAction?'お支払い情報を確認するとプレミアム機能を再開できます。':available?'詳細分析を月額980円（税込）でご利用いただけます。いつでも次回更新日前に解約できます。':'決済設定を確認しています。';
   document.body.classList.toggle('free-plan-preview',!premium);
   const banner=document.getElementById('planPreviewBanner');
   if(banner){
@@ -341,12 +345,92 @@ function renderBilling(){
     if(strong)strong.textContent=needsPaymentAction?'お支払いの確認が必要です':'プレミアム分析';
     if(span)span.textContent=needsPaymentAction?'契約管理画面で支払い方法をご確認ください。':'項目別スコア・改善ポイント・会話記録は月額980円のプレミアム機能です。';
   }
+  refreshPremiumAccessUI();
+  renderLectures();
+  renderAdPlacement();
+  renderDeveloperPreviewPanel();
+}
+function hasPremiumFeatures(){return !billingState.loading&&billingState.premium}
+function canAccessLecture(id){return FREE_LECTURE_IDS.has(id)||hasPremiumFeatures()}
+function requestPremiumFeature(title,description){
+  if(billingState.loading){toast('契約状況を確認しています。少しお待ちください');return false}
+  const modal=document.getElementById('premiumUpsellModal');
+  document.getElementById('premiumUpsellTitle').textContent=title||'Premiumで利用できます';
+  document.getElementById('premiumUpsellDescription').textContent=description||'実践的な研修に向けた機能です。';
+  modal?.classList.add('show');
+  modal?.querySelector('.modal-corner-close')?.focus();
+  return false;
+}
+function closePremiumUpsell(){document.getElementById('premiumUpsellModal')?.classList.remove('show')}
+function openPremiumDetails(){closePremiumUpsell();showInformation('pricing')}
+function refreshPremiumAccessUI(){
+  const toggle=document.getElementById('advancedToggle'),section=document.getElementById('advancedSettings'),label=document.getElementById('advancedToggleLabel'),badge=document.getElementById('advancedPlanBadge');
+  if(!toggle||!section)return;
+  toggle.classList.toggle('is-loading',billingState.loading);
+  toggle.classList.toggle('is-locked',!billingState.loading&&!billingState.premium);
+  if(billingState.loading){label.textContent='契約状況を確認中';badge.textContent='確認中'}
+  else if(billingState.premium){label.textContent=`研修担当者・上級者向け　${state.advancedOpen?'⌃':'⌄'}`;badge.textContent='Premium'}
+  else{state.advancedOpen=false;section.hidden=true;toggle.setAttribute('aria-expanded','false');label.textContent='研修担当者・上級者向け　🔒';badge.textContent='Premium'}
+}
+function openShareModal(){
+  const modal=document.getElementById('shareModal'),input=document.getElementById('shareLinkInput'),image=document.getElementById('shareQrImage');
+  if(input)input.value=APP_SHARE_URL;
+  if(image&&!image.src)image.src=`https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=16&data=${encodeURIComponent(APP_SHARE_URL)}`;
+  modal?.classList.add('show');
+  modal?.querySelector('.modal-corner-close')?.focus();
+}
+function closeShareModal(){document.getElementById('shareModal')?.classList.remove('show')}
+async function copyShareLink(){
+  try{await navigator.clipboard.writeText(APP_SHARE_URL);toast('公開リンクをコピーしました')}
+  catch{const input=document.getElementById('shareLinkInput');input?.select();document.execCommand('copy');toast('公開リンクをコピーしました')}
+}
+async function shareApp(){
+  if(navigator.share){try{await navigator.share({title:'AI ROLEPLAY STUDIO',text:'AIで仕事の対話力を練習できるロールプレイアプリです。',url:APP_SHARE_URL});return}catch(error){if(error?.name==='AbortError')return}}
+  await copyShareLink();
+}
+function renderAdPlacement(){
+  const placement=document.getElementById('freeAdPlacement');if(!placement)return;
+  const show=Boolean(ADSENSE_SLOT_ID&&!billingState.loading&&!billingState.premium);
+  placement.hidden=!show;
+  if(!show||placement.dataset.loaded==='true')return;
+  placement.innerHTML=`<span class="ad-label">広告</span><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5840457424714744" data-ad-slot="${ADSENSE_SLOT_ID}" data-ad-format="auto" data-full-width-responsive="true"></ins>`;
+  try{(window.adsbygoogle=window.adsbygoogle||[]).push({});placement.dataset.loaded='true'}catch(error){console.warn('AdSense slot could not be initialized',error)}
+}
+function renderDeveloperPreviewPanel(){
+  const panel=document.getElementById('developerPreviewPanel');if(!panel)return;
+  const preview=billingState.developerPreview||EMPTY_DEVELOPER_PREVIEW;
+  panel.hidden=billingState.loading||!preview.available;
+  if(panel.hidden)return;
+  const active=preview.mode!=='actual',label=preview.mode==='premium'?'Premium表示':preview.mode==='free'?'無料表示':'実契約どおり';
+  panel.classList.toggle('is-active',active);
+  panel.classList.toggle('is-premium',preview.mode==='premium');
+  const badge=document.getElementById('developerPreviewBadge'),detail=document.getElementById('developerPreviewDetail');
+  if(badge)badge.textContent=label;
+  if(detail){const expires=preview.expiresAt?new Date(Number(preview.expiresAt)*1000).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';detail.textContent=active?`現在は${label}です。${expires?expires+'まで有効。':''}Stripeの契約は変更しません。`:'実際のStripe契約状態を表示しています。'}
+  panel.querySelectorAll('[data-developer-preview-mode]').forEach(button=>{button.classList.toggle('selected',button.dataset.developerPreviewMode===preview.mode);button.disabled=Boolean(billingActionPending)});
+}
+function focusDeveloperPreviewPanel(){showScreen('home');setTimeout(()=>{document.getElementById('developerPreviewPanel')?.scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('developerCommandInput')?.focus()},100)}
+async function setDeveloperPreviewMode(mode){
+  const input=document.getElementById('developerCommandInput'),status=document.getElementById('developerPreviewStatus'),command=input?.value||'';
+  if(!command){if(status){status.hidden=false;status.textContent='秘密コマンドを入力してください。'}input?.focus();return}
+  if(billingActionPending)return;
+  billingActionPending=true;renderBilling();if(status){status.hidden=false;status.textContent='切り替えています…'}
+  try{
+    const response=await fetch('/api/developer/preview',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'content-type':'application/json'},body:JSON.stringify({command,mode})});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.error||'切り替えられませんでした。');
+    if(input)input.value='';
+    if(status){status.hidden=false;status.textContent=mode==='actual'?'実契約どおりの表示に戻しました。':`${mode==='premium'?'Premium':'無料'}表示に切り替えました。`}
+    await loadBillingStatus();toast(mode==='actual'?'開発者テストを終了しました':`開発者テスト：${mode==='premium'?'Premium':'無料'}表示`);
+  }catch(error){if(status){status.hidden=false;status.textContent=error.message||'切り替えられませんでした。'}toast(error.message||'切り替えられませんでした。')}
+  finally{billingActionPending=false;renderBilling()}
 }
 function applyPlanPreview(){renderBilling()}
-async function loadBillingStatus(){if(IS_GUEST_MODE){billingState={loading:false,premium:false,status:'free',currentPeriodEnd:null,canManage:false,billingAvailable:false};renderBilling();return billingState}try{const response=await fetch('/api/billing/status',{credentials:'same-origin',cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);billingState={loading:false,...await response.json()}}catch(error){console.warn('Billing status unavailable',error);billingState={loading:false,premium:false,status:'free',currentPeriodEnd:null,canManage:false,billingAvailable:false}}renderBilling();return billingState}
+async function loadBillingStatus(){if(IS_GUEST_MODE){billingState={loading:false,premium:false,subscriptionPremium:false,status:'free',currentPeriodEnd:null,canManage:false,billingAvailable:false,developerPreview:{...EMPTY_DEVELOPER_PREVIEW}};renderBilling();return billingState}try{const response=await fetch('/api/billing/status',{credentials:'same-origin',cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);billingState={loading:false,...await response.json()};billingState.developerPreview={...EMPTY_DEVELOPER_PREVIEW,...billingState.developerPreview}}catch(error){console.warn('Billing status unavailable',error);billingState={loading:false,premium:false,subscriptionPremium:false,status:'free',currentPeriodEnd:null,canManage:false,billingAvailable:false,developerPreview:{...EMPTY_DEVELOPER_PREVIEW}}}renderBilling();return billingState}
 async function startCheckout(){
   if(IS_GUEST_MODE){toast('プレミアム機能はアカウント作成後に利用できます');return}
-  if(billingState.premium){openBillingPortal();return}
+  if(billingState.developerPreview?.mode!=='actual'){focusDeveloperPreviewPanel();toast('実契約モードへ戻してからお申し込みください');return}
+  if(billingState.subscriptionPremium){openBillingPortal();return}
   if(!billingState.billingAvailable){toast('決済設定を確認中です。しばらくしてからお試しください');return}
   if(billingActionPending)return;
   billingActionPending=true;renderBilling();toast('Stripeの安全なお支払い画面を開いています');
@@ -390,11 +474,11 @@ async function initBilling(){
     await confirmCheckoutSession(sessionId);
     for(let attempt=0;attempt<10;attempt+=1){
       await loadBillingStatus();
-      if(billingState.premium)break;
+      if(billingState.subscriptionPremium)break;
       await wait(1500);
       if(attempt===3)await confirmCheckoutSession(sessionId);
     }
-    toast(billingState.premium?'プレミアムプランが有効になりました':'契約情報の反映に少し時間がかかっています。設定画面から再確認できます');
+    toast(billingState.subscriptionPremium?'プレミアムプランが有効になりました':'契約情報の反映に少し時間がかかっています。設定画面から再確認できます');
   }else await loadBillingStatus();
   if(checkout||returned){
     history.replaceState({},'',location.pathname+location.hash);
@@ -447,13 +531,13 @@ function inputValue(id){return document.getElementById(id)?.value?.trim?.()||''}
 function customerAppearance(){const c=state.roleplayConfig?.customer||{};return CUSTOMER_APPEARANCES.find(x=>x.gender===c.gender&&x.ageGroup===c.ageGroup)||CUSTOMER_APPEARANCES[1]}
 function roleplayAvatarPayload(){const appearance=customerAppearance(),legacy=avatar(appearance.assetId),age={young:'20〜30代程度',middle:'40〜50代程度',older:'60代以上程度'}[appearance.ageGroup],counterpartRole={sales:'顧客・商談相手',manager:'面談を受ける部下・社員',interview:'応募者・候補者',support:'問い合わせ・苦情を伝える顧客'}[state.category]||'会話相手';return {...legacy,name:appearance.label,age,industry:'',role:counterpartRole,traits:'',description:'外見のみを表すアバター。性格・価値観・態度・話し方はアバターから推測しない。'}}
 function sanitizeAvatarReferences(value){let text=String(value??'');const replacement=customerAppearance().label||'会話相手';for(const item of AVATARS)text=text.split(item.name).join(replacement);return text}
-function collectRoleplayConfig(){const old=state.roleplayConfig||defaultRoleplayConfig(),customer=old.customer||{};return {product:{name:inputValue('productNameInput'),target:inputValue('salesTargetSelect')||'btob',type:inputValue('productTypeSelect')||'intangible',price:inputValue('priceInput'),description:inputValue('productDescriptionInput'),benefits:inputValue('productBenefitsInput')},customer:{gender:customer.gender||'male',ageGroup:customer.ageGroup||'middle',needs:inputValue('customerNeedsInput'),scenarioMode:['auto','guided','manual'].includes(customer.scenarioMode)?customer.scenarioMode:'auto',hiddenDirection:inputValue('hiddenDirectionInput'),hiddenTruth:inputValue('hiddenTruthInput'),hiddenConditions:inputValue('hiddenConditionsInput'),hiddenProfile:customer.hiddenProfile||null},deal:{scene:inputValue('dealSceneSelect'),attitude:inputValue('customerAttitudeSelect'),difficulty:inputValue('roleplayDifficultySelect'),goal:inputValue('roleplayGoalSelect')},advancedEnabled:Boolean(state.advancedOpen),advanced:Object.fromEntries(DETAIL_IDS.map(id=>[id.replace(/(Input|Select)$/,''),inputValue(id)]))}}
+function collectRoleplayConfig(){const old=state.roleplayConfig||defaultRoleplayConfig(),customer=old.customer||{},premium=hasPremiumFeatures();return {product:{name:inputValue('productNameInput'),target:inputValue('salesTargetSelect')||'btob',type:inputValue('productTypeSelect')||'intangible',price:inputValue('priceInput'),description:inputValue('productDescriptionInput'),benefits:inputValue('productBenefitsInput')},customer:{gender:customer.gender||'male',ageGroup:customer.ageGroup||'middle',needs:inputValue('customerNeedsInput'),scenarioMode:premium&&['auto','guided','manual'].includes(customer.scenarioMode)?customer.scenarioMode:'auto',hiddenDirection:premium?inputValue('hiddenDirectionInput'):'',hiddenTruth:premium?inputValue('hiddenTruthInput'):'',hiddenConditions:premium?inputValue('hiddenConditionsInput'):'',hiddenProfile:customer.hiddenProfile||null},deal:{scene:inputValue('dealSceneSelect'),attitude:inputValue('customerAttitudeSelect'),difficulty:inputValue('roleplayDifficultySelect'),goal:inputValue('roleplayGoalSelect')},advancedEnabled:Boolean(premium&&state.advancedOpen),advanced:premium?Object.fromEntries(DETAIL_IDS.map(id=>[id.replace(/(Input|Select)$/,''),inputValue(id)])): {}}}
 function populateRoleplayConfig(c){const v={productNameInput:c.product?.name,salesTargetSelect:c.product?.target,productTypeSelect:c.product?.type,priceInput:c.product?.price,productDescriptionInput:c.product?.description,productBenefitsInput:c.product?.benefits,customerNeedsInput:c.customer?.needs,hiddenDirectionInput:c.customer?.hiddenDirection,hiddenTruthInput:c.customer?.hiddenTruth,hiddenConditionsInput:c.customer?.hiddenConditions,dealSceneSelect:c.deal?.scene,customerAttitudeSelect:c.deal?.attitude,roleplayDifficultySelect:c.deal?.difficulty,roleplayGoalSelect:c.deal?.goal};Object.entries(v).forEach(([id,x])=>{const e=document.getElementById(id);if(e&&x!=null)e.value=x});DETAIL_IDS.forEach(id=>{const e=document.getElementById(id);if(e)e.value=c.advanced?.[id.replace(/(Input|Select)$/,'')]||''});renderScenarioDesign()}
 function renderAdvancedTarget(){const b=inputValue('salesTargetSelect')!=='btoc';document.getElementById('btobDetails').hidden=!b;document.getElementById('btocDetails').hidden=b}
 function updateSetupDraft(targetChanged=false){if(!document.getElementById('productNameInput'))return;state.roleplayConfig=collectRoleplayConfig();try{localStorage.setItem(ROLEPLAY_DRAFT_KEY,JSON.stringify(state.roleplayConfig))}catch{}if(targetChanged)renderAdvancedTarget();updateSummary()}
 function renderCustomerAvatars(){const g=document.getElementById('customerAvatarGrid');if(!g)return;const c=state.roleplayConfig.customer;g.innerHTML=CUSTOMER_APPEARANCES.map(a=>`<button type="button" class="customer-avatar-card ${a.gender===c.gender&&a.ageGroup===c.ageGroup?'selected':''}" onclick="selectCustomerAvatar('${a.gender}','${a.ageGroup}')"><span class="customer-avatar-check">✓</span><img src="${avatarImage(a.assetId,'positive',true)}" alt="${a.label}"><strong>${a.label}</strong></button>`).join('')}
 function selectCustomerAvatar(gender,ageGroup){state.roleplayConfig=collectRoleplayConfig();state.roleplayConfig.customer={...state.roleplayConfig.customer,gender,ageGroup};state.avatarId=customerAppearance().assetId;renderCustomerAvatars();updateSetupDraft()}
-function toggleAdvancedSettings(){state.advancedOpen=!state.advancedOpen;document.getElementById('advancedSettings').hidden=!state.advancedOpen;document.getElementById('advancedToggle').setAttribute('aria-expanded',state.advancedOpen);updateSetupDraft()}
+function toggleAdvancedSettings(){if(!hasPremiumFeatures())return requestPremiumFeature('詳細設定はPremium機能です','研修担当者・上級者向けに、役職・決裁条件・相手の本音などを細かく設計できます。');state.advancedOpen=!state.advancedOpen;document.getElementById('advancedSettings').hidden=!state.advancedOpen;document.getElementById('advancedToggle').setAttribute('aria-expanded',state.advancedOpen);refreshPremiumAccessUI();updateSetupDraft()}
 function startSetup(){state.category='sales';state.scenarioId='sales_discovery';state.mode='practice';state.interaction='voice';try{state.roleplayConfig={...defaultRoleplayConfig(),...JSON.parse(localStorage.getItem(ROLEPLAY_DRAFT_KEY)||'{}')}}catch{state.roleplayConfig=defaultRoleplayConfig()}state.advancedOpen=Boolean(state.roleplayConfig.advancedEnabled);state.avatarId=customerAppearance().assetId;populateRoleplayConfig(state.roleplayConfig);renderSetup();showScreen('setup')}
 function renderSetup(){renderCustomerAvatars();renderAdvancedTarget();document.getElementById('advancedSettings').hidden=!state.advancedOpen;updateSummary()}
 function updateSummary(){if(!document.getElementById('summaryProduct'))return;const c=collectRoleplayConfig(),a=customerAppearance();document.getElementById('summaryAvatar').src=avatarImage(a.assetId,'positive',true);document.getElementById('summaryName').textContent=a.label;document.getElementById('summaryRole').textContent=`${c.product.target==='btob'?'BtoB':'BtoC'}・${c.product.type==='tangible'?'有形商材':'無形商材'}`;document.getElementById('summaryProduct').textContent=c.product.name||'未入力';document.getElementById('summaryScene').textContent=c.deal.scene;document.getElementById('summaryAttitude').textContent=c.deal.attitude;document.getElementById('summaryDifficulty').textContent={easy:'初級',normal:'中級',hard:'上級'}[c.deal.difficulty];document.getElementById('summaryGoal').textContent=c.deal.goal}
@@ -472,7 +556,7 @@ support:{title:'クレーム対応設定',labels:['商品・案件名','顧客�
 function setCategoryOptions(id,items){document.getElementById(id).innerHTML=items.map(x=>`<option>${escapeHtml(x)}</option>`).join('')}
 function applyCategorySetup(cat){const s=CATEGORY_SETUP_SCHEMAS[cat],ids=['productNameInput','salesTargetSelect','productTypeSelect','priceInput','productDescriptionInput','productBenefitsInput',null,'dealSceneSelect','customerAttitudeSelect','roleplayDifficultySelect','roleplayGoalSelect'];document.querySelector('#screen-setup .page-header h2').textContent=s.title;ids.forEach((id,i)=>{const l=id?document.querySelector(`label[for="${id}"]`):document.querySelector('#customerAvatarGrid').closest('.field').querySelector('label');if(l)l.innerHTML=`${i+1} ${s.labels[i]} <span class="optional-tag">変更可</span>`});setCategoryOptions('salesTargetSelect',s.target);setCategoryOptions('productTypeSelect',s.type);setCategoryOptions('dealSceneSelect',s.scene);setCategoryOptions('roleplayGoalSelect',s.goal);const tenureInput=document.getElementById('priceInput');if(tenureInput){tenureInput.readOnly=false;tenureInput.classList.remove('fixed-field')}const sales=cat==='sales';document.getElementById('btobDetails').hidden=!sales;document.getElementById('btocDetails').hidden=true;document.getElementById('commonSalesDetails').hidden=!sales;const b=document.getElementById('categoryDetails');b.hidden=sales;if(!sales)b.innerHTML=s.details.map((x,i)=>`<div class="field"><label>${x}</label><input id="categoryDetail${i}" placeholder="選択または自由入力" oninput="updateSetupDraft()"></div>`).join('')}
 function categoryDraftKey(){return ROLEPLAY_DRAFT_KEY+'_'+state.category}
-function collectCategoryConfig(){const c=collectRoleplayConfig();c.category=state.category;c.advanced={...c.advanced,...Object.fromEntries([...document.querySelectorAll('#categoryDetails input')].map((e,i)=>[CATEGORY_SETUP_SCHEMAS[state.category].details[i],e.value.trim()]))};return c}
+function collectCategoryConfig(){const c=collectRoleplayConfig();c.category=state.category;if(hasPremiumFeatures())c.advanced={...c.advanced,...Object.fromEntries([...document.querySelectorAll('#categoryDetails input')].map((e,i)=>[CATEGORY_SETUP_SCHEMAS[state.category].details[i],e.value.trim()]))};else c.advanced={};return c}
 const populateBase=populateRoleplayConfig;
 populateRoleplayConfig=function(c){populateBase(c);[...document.querySelectorAll('#categoryDetails input')].forEach((e,i)=>e.value=c.advanced?.[CATEGORY_SETUP_SCHEMAS[state.category].details[i]]||'')}
 startSetup=function(cat='sales'){state.category=CATEGORY_SETUP_SCHEMAS[cat]?cat:'sales';state.scenarioId=SCENARIOS[state.category][0].id;state.mode='practice';state.interaction='voice';state.roleplayConfig=defaultRoleplayConfig();state.roleplayConfig.category=state.category;state.advancedOpen=false;applyCategorySetup(state.category);try{state.roleplayConfig={...state.roleplayConfig,...JSON.parse(localStorage.getItem(categoryDraftKey())||'{}')}}catch{}if(state.category==='manager'&&state.roleplayConfig.product?.price==='5分（固定）')state.roleplayConfig.product.price='3年';state.avatarId=customerAppearance().assetId;populateRoleplayConfig(state.roleplayConfig);renderSetup();showScreen('setup')}
@@ -550,7 +634,7 @@ renderResults=function(result){renderResultsDiscoveryBase(result);const score=cl
 function isLocalMode(){return false}
 function setAIMode(){settings.aiMode='cloud';saveSettings();probeAPI()}
 function renderAIModeSettings(){document.body.classList.remove('local-ai-mode');document.getElementById('cloudModeCard')?.classList.add('selected');const title=document.getElementById('setupAIModeTitle'),description=document.getElementById('setupAIModeDescription');if(title)title.textContent='☁️ オンラインAI';if(description)description.textContent='クラウドAIで、待ち時間を抑えて会話・採点します。';document.getElementById('micButton')?.classList.remove('hidden')}
-renderSettings=function(){document.getElementById('speechSwitch')?.classList.toggle('on',settings.speech);document.getElementById('handsFreeSwitch')?.classList.toggle('on',settings.handsFree);document.getElementById('autoSendSwitch')?.classList.toggle('on',settings.autoSend);document.getElementById('premiumSwitch')?.classList.toggle('on',settings.premiumPreview);const endpointInput=document.getElementById('apiEndpointInput');if(endpointInput)endpointInput.value=settings.apiEndpoint||'';const rate=document.getElementById('speechRateRange');if(rate)rate.value=settings.speechRate;const rateValue=document.getElementById('speechRateValue');if(rateValue)rateValue.textContent=Number(settings.speechRate).toFixed(2);refreshVoiceSelects();const voice=document.getElementById('settingsVoiceSelect');if(voice)voice.value=settings.voiceURI;renderAIModeSettings();renderApiStatus();applyPlanPreview()};
+renderSettings=function(){document.getElementById('speechSwitch')?.classList.toggle('on',settings.speech);document.getElementById('handsFreeSwitch')?.classList.toggle('on',settings.handsFree);document.getElementById('autoSendSwitch')?.classList.toggle('on',settings.autoSend);const endpointInput=document.getElementById('apiEndpointInput');if(endpointInput)endpointInput.value=settings.apiEndpoint||'';const rate=document.getElementById('speechRateRange');if(rate)rate.value=settings.speechRate;const rateValue=document.getElementById('speechRateValue');if(rateValue)rateValue.textContent=Number(settings.speechRate).toFixed(2);refreshVoiceSelects();const voice=document.getElementById('settingsVoiceSelect');if(voice)voice.value=settings.voiceURI;renderAIModeSettings();renderApiStatus();applyPlanPreview()};
 resolvedTtsEngine=function(){return'browser'};
 refreshKokoroVoiceSelects=function(){};
 updateVoiceFieldVisibility=function(){};
@@ -605,11 +689,12 @@ function renderLectures(){
   const tabs=document.getElementById('lectureCategoryTabs'),grid=document.getElementById('lectureGrid');if(!tabs||!grid)return;
   const watched=loadWatchedLectures();
   tabs.innerHTML=Object.entries(LECTURE_CATEGORIES).map(([key,value])=>`<button type="button" class="lecture-category-tab ${key===lectureCategoryFilter?'active':''}" aria-pressed="${key===lectureCategoryFilter}" onclick="setLectureCategory('${key}')"><span>${value.icon}</span><strong>${escapeHtml(value.label)}</strong><small>${escapeHtml(value.lead)}</small></button>`).join('');
-  grid.innerHTML=LECTURES.filter(item=>item.category===lectureCategoryFilter).map(item=>{const done=watched.has(item.id);return `<article class="lecture-card ${done?'watched':''}"><button class="lecture-thumbnail-button" type="button" onclick="openLecture('${item.id}')" aria-label="${escapeHtml(item.title)}を再生"><img src="https://i.ytimg.com/vi/${item.youtubeId}/hqdefault.jpg" alt="" loading="lazy"><span class="lecture-play-mark" aria-hidden="true">▶</span><span class="lecture-duration">約5分</span></button><div class="lecture-card-body"><div class="lecture-card-meta"><span>LESSON ${item.id}</span><span class="lecture-watched-badge">${done?'✓ 視聴済み':'未視聴'}</span></div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}</p><div class="lecture-card-actions"><button class="ghost-btn" type="button" onclick="openLecture('${item.id}')">動画を見る</button><button class="lecture-practice-link" type="button" onclick="startLecturePractice('${item.id}')">ロープレで試す →</button></div></div></article>`}).join('');
+  grid.innerHTML=LECTURES.filter(item=>item.category===lectureCategoryFilter).map(item=>{const done=watched.has(item.id),locked=!canAccessLecture(item.id);return `<article class="lecture-card ${done?'watched':''} ${locked?'premium-locked':''}"><button class="lecture-thumbnail-button" type="button" onclick="openLecture('${item.id}')" aria-label="${escapeHtml(item.title)}${locked?'はPremium講義です':'を再生'}"><img src="https://i.ytimg.com/vi/${item.youtubeId}/hqdefault.jpg" alt="" loading="lazy"><span class="lecture-play-mark" aria-hidden="true">${locked?'🔒':'▶'}</span><span class="lecture-duration">${locked?'Premium':'約5分'}</span></button><div class="lecture-card-body"><div class="lecture-card-meta"><span>LESSON ${item.id}</span><span class="lecture-watched-badge">${locked?'🔒 Premium':done?'✓ 視聴済み':'未視聴'}</span></div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}</p><div class="lecture-card-actions"><button class="ghost-btn" type="button" onclick="openLecture('${item.id}')">${locked?'Premiumで見る':'動画を見る'}</button><button class="lecture-practice-link" type="button" onclick="startLecturePractice('${item.id}')">ロープレで試す →</button></div></div></article>`}).join('');
   const count=watched.size;document.getElementById('lectureWatchedCount').textContent=count;document.getElementById('lectureProgressBar').style.width=`${Math.round(count/LECTURES.length*100)}%`;
 }
 function openLecture(id){
   const lecture=LECTURES.find(item=>item.id===id);if(!lecture)return;activeLectureId=id;
+  if(!canAccessLecture(id)){activeLectureId='';return requestPremiumFeature('この講義はPremiumで視聴できます','入門講義2本は無料です。Premiumでは営業・マネジメント・採用・クレーム対応の全16講義を利用できます。')}
   document.getElementById('lectureModalCategory').textContent=`${LECTURE_CATEGORIES[lecture.category].icon} ${LECTURE_CATEGORIES[lecture.category].label}・LESSON ${lecture.id}`;
   document.getElementById('lectureModalTitle').textContent=lecture.title;document.getElementById('lectureModalDescription').textContent=lecture.description;
   document.getElementById('lecturePlayer').src=`https://www.youtube-nocookie.com/embed/${lecture.youtubeId}?rel=0&playsinline=1`;
@@ -620,12 +705,14 @@ function updateLectureWatchedButton(){const button=document.getElementById('lect
 function toggleActiveLectureWatched(){if(!activeLectureId)return;const watched=loadWatchedLectures();if(watched.has(activeLectureId))watched.delete(activeLectureId);else watched.add(activeLectureId);saveWatchedLectures(watched);updateLectureWatchedButton();renderLectures()}
 function startActiveLecturePractice(){if(activeLectureId)startLecturePractice(activeLectureId)}
 function startLecturePractice(id){
-  const lecture=LECTURES.find(item=>item.id===id);if(!lecture)return;const watched=loadWatchedLectures();watched.add(id);saveWatchedLectures(watched);closeLectureModal();startSetup(lecture.category);
+  const lecture=LECTURES.find(item=>item.id===id);if(!lecture)return;if(!canAccessLecture(id))return requestPremiumFeature('この講義連動ロープレはPremium機能です','入門講義2本は無料です。Premiumでは全16講義の内容に合わせたロープレを始められます。');const watched=loadWatchedLectures();watched.add(id);saveWatchedLectures(watched);closeLectureModal();startSetup(lecture.category);
   const scene=document.getElementById('dealSceneSelect'),goal=document.getElementById('roleplayGoalSelect');if(scene&&[...scene.options].some(option=>option.value===lecture.scene))scene.value=lecture.scene;if(goal&&[...goal.options].some(option=>option.value===lecture.goal))goal.value=lecture.goal;updateSetupDraft();toast(`「${lecture.title}」に合う設定を選びました`);
 }
 function initLectureFeature(){
   document.getElementById('lectureModal')?.addEventListener('click',event=>{if(event.target.id==='lectureModal')closeLectureModal()});
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.getElementById('lectureModal')?.classList.contains('show'))closeLectureModal()});
+  document.getElementById('premiumUpsellModal')?.addEventListener('click',event=>{if(event.target.id==='premiumUpsellModal')closePremiumUpsell()});
+  document.getElementById('shareModal')?.addEventListener('click',event=>{if(event.target.id==='shareModal')closeShareModal()});
+  document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;if(document.getElementById('lectureModal')?.classList.contains('show'))closeLectureModal();else if(document.getElementById('premiumUpsellModal')?.classList.contains('show'))closePremiumUpsell();else if(document.getElementById('shareModal')?.classList.contains('show'))closeShareModal()});
 }
 
 function openPracticeMenu(){
@@ -633,6 +720,6 @@ function openPracticeMenu(){
   setTimeout(()=>document.querySelector('.category-grid')?.scrollIntoView({behavior:'smooth',block:'start'}),120);
 }
 document.getElementById('navStart').onclick=openPracticeMenu;
-renderSetup=function(){renderSetupModeBase();upgradeAdvancedDatalistInputs();renderAIModeSettings()};
+renderSetup=function(){renderSetupModeBase();upgradeAdvancedDatalistInputs();renderAIModeSettings();refreshPremiumAccessUI()};
 init=function(){setupSpeechRecognition();loadVoices();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();initLectureFeature();syncRoleplayViewport();window.addEventListener('resize',syncRoleplayViewport,{passive:true});window.visualViewport?.addEventListener('resize',syncRoleplayViewport,{passive:true});window.visualViewport?.addEventListener('scroll',syncRoleplayViewport,{passive:true});probeAPI();initBilling();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).catch(()=>{})};
 init();
