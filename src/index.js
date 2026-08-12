@@ -10,8 +10,11 @@ var AUTH_COOKIE_NAME = "__Host-roleplay_session";
 var LOCAL_AUTH_COOKIE_NAME = "roleplay_session";
 var GUEST_COOKIE_NAME = "__Host-roleplay_guest";
 var LOCAL_GUEST_COOKIE_NAME = "roleplay_guest";
+var DEVELOPER_PREVIEW_COOKIE_NAME = "__Host-roleplay_dev_preview";
+var LOCAL_DEVELOPER_PREVIEW_COOKIE_NAME = "roleplay_dev_preview";
 var SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 var GUEST_TTL_SECONDS = 60 * 60 * 24;
+var DEVELOPER_PREVIEW_TTL_SECONDS = 60 * 60 * 4;
 var PASSWORD_ITERATIONS = 1e5;
 function toBase64Url(bytes) {
   let value = "";
@@ -60,6 +63,11 @@ function guestCookieNameFor(request) {
 }
 __name(guestCookieNameFor, "guestCookieNameFor");
 __name2(guestCookieNameFor, "guestCookieNameFor");
+function developerPreviewCookieNameFor(request) {
+  return new URL(request.url).protocol === "https:" ? DEVELOPER_PREVIEW_COOKIE_NAME : LOCAL_DEVELOPER_PREVIEW_COOKIE_NAME;
+}
+__name(developerPreviewCookieNameFor, "developerPreviewCookieNameFor");
+__name2(developerPreviewCookieNameFor, "developerPreviewCookieNameFor");
 function normalizeEmail(value) {
   return String(value || "").trim().toLowerCase();
 }
@@ -176,6 +184,81 @@ function clearGuestCookie(request) {
 }
 __name(clearGuestCookie, "clearGuestCookie");
 __name2(clearGuestCookie, "clearGuestCookie");
+function readDeveloperPreviewToken(request) {
+  const cookies = parseCookies(request);
+  return cookies[DEVELOPER_PREVIEW_COOKIE_NAME] || cookies[LOCAL_DEVELOPER_PREVIEW_COOKIE_NAME] || null;
+}
+__name(readDeveloperPreviewToken, "readDeveloperPreviewToken");
+__name2(readDeveloperPreviewToken, "readDeveloperPreviewToken");
+function buildDeveloperPreviewCookie(token, request) {
+  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  return developerPreviewCookieNameFor(request) + "=" + token + "; Path=/; HttpOnly; SameSite=Strict; Max-Age=" + DEVELOPER_PREVIEW_TTL_SECONDS + secure;
+}
+__name(buildDeveloperPreviewCookie, "buildDeveloperPreviewCookie");
+__name2(buildDeveloperPreviewCookie, "buildDeveloperPreviewCookie");
+function clearDeveloperPreviewCookie(request) {
+  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  return developerPreviewCookieNameFor(request) + "=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0" + secure;
+}
+__name(clearDeveloperPreviewCookie, "clearDeveloperPreviewCookie");
+__name2(clearDeveloperPreviewCookie, "clearDeveloperPreviewCookie");
+function developerEmailSet(env) {
+  return new Set(String(env.DEVELOPER_EMAILS || "").split(/[;,\n]/).map(normalizeEmail).filter(Boolean));
+}
+__name(developerEmailSet, "developerEmailSet");
+__name2(developerEmailSet, "developerEmailSet");
+function isDeveloperUser(user, env) {
+  return Boolean(user?.id && developerEmailSet(env).has(normalizeEmail(user.email)));
+}
+__name(isDeveloperUser, "isDeveloperUser");
+__name2(isDeveloperUser, "isDeveloperUser");
+async function verifyDeveloperPreviewCommand(provided, expected) {
+  const values = [String(provided || ""), String(expected || "")];
+  const digests = await Promise.all(values.map((value) => crypto.subtle.digest("SHA-256", encoder.encode(value))));
+  return Boolean(expected) && equalBytes(new Uint8Array(digests[0]), new Uint8Array(digests[1]));
+}
+__name(verifyDeveloperPreviewCommand, "verifyDeveloperPreviewCommand");
+__name2(verifyDeveloperPreviewCommand, "verifyDeveloperPreviewCommand");
+async function createDeveloperPreviewToken(request, env, user, mode) {
+  const now = Math.floor(Date.now() / 1e3);
+  const expiresAt = now + DEVELOPER_PREVIEW_TTL_SECONDS;
+  const payload = toBase64Url(encoder.encode(JSON.stringify({
+    version: 1,
+    role: "developer-preview",
+    userId: user.id,
+    mode,
+    issuedAt: now,
+    expiresAt,
+    nonce: generateSessionToken()
+  })));
+  const signature = toBase64Url(await hmac("developer-preview:" + payload, env.AUTH_PEPPER));
+  return { token: payload + "." + signature, mode, expiresAt };
+}
+__name(createDeveloperPreviewToken, "createDeveloperPreviewToken");
+__name2(createDeveloperPreviewToken, "createDeveloperPreviewToken");
+async function getDeveloperPreview(request, env, user) {
+  if (!env.AUTH_PEPPER || !isDeveloperUser(user, env)) return null;
+  const token = readDeveloperPreviewToken(request);
+  if (!token || token.length > 1024) return null;
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+  const expected = await hmac("developer-preview:" + parts[0], env.AUTH_PEPPER);
+  const actual = fromBase64Url(parts[1]);
+  if (actual.length !== expected.length || !equalBytes(actual, expected)) return null;
+  try {
+    const payload = JSON.parse(decoder.decode(fromBase64Url(parts[0])));
+    const now = Math.floor(Date.now() / 1e3);
+    if (payload.version !== 1 || payload.role !== "developer-preview" || payload.userId !== user.id) return null;
+    if (!new Set(["free", "premium"]).has(payload.mode)) return null;
+    if (!Number.isInteger(payload.issuedAt) || !Number.isInteger(payload.expiresAt)) return null;
+    if (payload.issuedAt > now + 60 || payload.expiresAt <= now || payload.expiresAt - payload.issuedAt !== DEVELOPER_PREVIEW_TTL_SECONDS) return null;
+    return { mode: payload.mode, expiresAt: payload.expiresAt };
+  } catch {
+    return null;
+  }
+}
+__name(getDeveloperPreview, "getDeveloperPreview");
+__name2(getDeveloperPreview, "getDeveloperPreview");
 async function createGuestSession(request, env) {
   if (!env.AUTH_PEPPER) throw new Error("AUTH_PEPPER is not configured.");
   const now = Math.floor(Date.now() / 1e3);
@@ -429,6 +512,7 @@ async function onRequestPost3({ request, env }) {
       headers: { "set-cookie": clearSessionCookie(request) }
     });
     response.headers.append("set-cookie", clearGuestCookie(request));
+    response.headers.append("set-cookie", clearDeveloperPreviewCookie(request));
     return response;
   } catch (error) {
     return errorResponse(error, "\u30ED\u30B0\u30A2\u30A6\u30C8\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002");
@@ -712,16 +796,26 @@ __name(onRequestPost6, "onRequestPost6");
 __name2(onRequestPost6, "onRequestPost");
 async function onRequestGet2({ request, env }) {
   try {
-    const { accountId, cookie } = await getBillingIdentity(request, env);
+    const { accountId, cookie, user } = await getBillingIdentity(request, env);
     const subscription = await getSubscription(env, accountId);
+    const subscriptionPremium = hasPremiumAccess(subscription);
+    const developerAvailable = isDeveloperUser(user, env) && Boolean(env.DEVELOPER_PREVIEW_COMMAND);
+    const developerPreview = developerAvailable ? await getDeveloperPreview(request, env, user) : null;
+    const premium = developerPreview?.mode === "premium" ? true : developerPreview?.mode === "free" ? false : subscriptionPremium;
     return json({
-      premium: hasPremiumAccess(subscription),
+      premium,
+      subscriptionPremium,
       status: subscription?.status || "free",
       currentPeriodEnd: subscription?.current_period_end || null,
       canManage: Boolean(subscription?.stripe_customer_id),
       billingAvailable: env.BILLING_ENABLED === "true" && Boolean(
         env.STRIPE_PAYMENT_LINK_URL || env.STRIPE_SECRET_KEY && env.STRIPE_PRICE_ID
-      )
+      ),
+      developerPreview: {
+        available: developerAvailable,
+        mode: developerPreview?.mode || "actual",
+        expiresAt: developerPreview?.expiresAt || null
+      }
     }, { headers: cookie ? { "set-cookie": cookie } : {} });
   } catch (error) {
     return errorResponse(error);
@@ -729,6 +823,45 @@ async function onRequestGet2({ request, env }) {
 }
 __name(onRequestGet2, "onRequestGet2");
 __name2(onRequestGet2, "onRequestGet");
+async function onRequestPostDeveloperPreview(context) {
+  const { request, env } = context;
+  try {
+    assertSameOrigin(request);
+    const user = context.data?.user;
+    if (context.data?.auth?.guest || !isDeveloperUser(user, env) || !env.DEVELOPER_PREVIEW_COMMAND) {
+      return json({ error: "この機能は利用できません。", code: "not_found" }, { status: 404 });
+    }
+    if (!env.AUTH_PEPPER || !env.BILLING_DB) throw new Error("Developer preview dependencies are not configured.");
+    const body = await readJson(request, 2048);
+    const mode = String(body.mode || "");
+    if (!new Set(["free", "premium", "actual"]).has(mode)) {
+      return json({ error: "切替モードが正しくありません。", code: "invalid_mode" }, { status: 400 });
+    }
+    const rate = await isRateLimited(request, env, user.email, "developer-preview", 5, 600);
+    if (rate.limited) {
+      return json({ error: "入力回数が多すぎます。10分後にお試しください。", code: "rate_limited" }, { status: 429 });
+    }
+    const verified = await verifyDeveloperPreviewCommand(body.command, env.DEVELOPER_PREVIEW_COMMAND);
+    if (!verified) {
+      await recordRateLimit(env, rate);
+      return json({ error: "秘密コマンドが一致しません。", code: "invalid_command" }, { status: 403 });
+    }
+    await env.BILLING_DB.prepare("DELETE FROM auth_rate_limits WHERE rate_key = ?").bind(rate.key).run();
+    if (mode === "actual") {
+      return json({ ok: true, mode: "actual", expiresAt: null }, {
+        headers: { "set-cookie": clearDeveloperPreviewCookie(request) }
+      });
+    }
+    const preview = await createDeveloperPreviewToken(request, env, user, mode);
+    return json({ ok: true, mode: preview.mode, expiresAt: preview.expiresAt }, {
+      headers: { "set-cookie": buildDeveloperPreviewCookie(preview.token, request) }
+    });
+  } catch (error) {
+    return errorResponse(error, "テストモードを切り替えられませんでした。");
+  }
+}
+__name(onRequestPostDeveloperPreview, "onRequestPostDeveloperPreview");
+__name2(onRequestPostDeveloperPreview, "onRequestPost");
 async function onRequestGetCheckoutSession({ request, env }) {
   try {
     assertSameOrigin(request);
@@ -1063,6 +1196,46 @@ async function onRequestOptions() {
 }
 __name(onRequestOptions, "onRequestOptions");
 __name2(onRequestOptions, "onRequestOptions");
+async function contextHasPremiumAccess(context) {
+  if (context.data?.auth?.guest || !context.data?.user?.id) return false;
+  const developerPreview = await getDeveloperPreview(context.request, context.env, context.data.user);
+  if (developerPreview?.mode === "premium") return true;
+  if (developerPreview?.mode === "free") return false;
+  if (!context.env.BILLING_DB) return false;
+  const subscription = await getSubscription(context.env, context.data.user.id);
+  return hasPremiumAccess(subscription);
+}
+__name(contextHasPremiumAccess, "contextHasPremiumAccess");
+__name2(contextHasPremiumAccess, "contextHasPremiumAccess");
+function removePremiumOnlyRoleplaySettings(data) {
+  if (data.scenario) data.scenario.hiddenNeed = "";
+  if (data.promptSettings && typeof data.promptSettings === "object") {
+    data.promptSettings.knownIssue = "";
+    data.promptSettings.constraints = "";
+  }
+  if (data.roleplayConfig && typeof data.roleplayConfig === "object") {
+    data.roleplayConfig.advancedEnabled = false;
+    data.roleplayConfig.advanced = {};
+    if (data.roleplayConfig.customer && typeof data.roleplayConfig.customer === "object") {
+      data.roleplayConfig.customer.scenarioMode = "auto";
+      data.roleplayConfig.customer.hiddenDirection = "";
+      data.roleplayConfig.customer.hiddenTruth = "";
+      data.roleplayConfig.customer.hiddenConditions = "";
+      data.roleplayConfig.customer.hiddenProfile = null;
+    }
+  }
+  data.discovery = {
+    mode: "auto",
+    publicFacts: "",
+    hiddenTruth: "",
+    hiddenConditions: "",
+    revealPolicy: "",
+    successCriteria: []
+  };
+  return data;
+}
+__name(removePremiumOnlyRoleplaySettings, "removePremiumOnlyRoleplaySettings");
+__name2(removePremiumOnlyRoleplaySettings, "removePremiumOnlyRoleplaySettings");
 async function onRequestPost8(context) {
   try {
     if (!context.env.AI) {
@@ -1072,17 +1245,15 @@ async function onRequestPost8(context) {
     if (!body || !["reply", "evaluate"].includes(body.action)) {
       return Response.json({ error: "Invalid action." }, { status: 400, headers: HEADERS });
     }
-    if (body.action === "evaluate") {
-      const { accountId } = await getBillingIdentity(context.request, context.env);
-      const subscription = await getSubscription(context.env, accountId);
-      if (!hasPremiumAccess(subscription)) {
-        return Response.json(
-          { error: "Premium subscription required.", code: "premium_required" },
-          { status: 402, headers: HEADERS }
-        );
-      }
+    const premium = await contextHasPremiumAccess(context);
+    if (body.action === "evaluate" && !premium) {
+      return Response.json(
+        { error: "Premium subscription required.", code: "premium_required" },
+        { status: 402, headers: HEADERS }
+      );
     }
     const data = sanitizePayload(body);
+    if (!premium) removePremiumOnlyRoleplaySettings(data);
     const result = data.action === "reply" ? await createReply(context.env.AI, data) : await createEvaluation(context.env.AI, data);
     return Response.json(result, { headers: HEADERS });
   } catch (error) {
@@ -1532,6 +1703,13 @@ var routes = [
     method: "GET",
     middlewares: [],
     modules: [onRequestGet]
+  },
+  {
+    routePath: "/api/developer/preview",
+    mountPath: "/api/developer",
+    method: "POST",
+    middlewares: [],
+    modules: [onRequestPostDeveloperPreview]
   },
   {
     routePath: "/api/billing/checkout",
@@ -2090,4 +2268,3 @@ export {
   index_default as default
 };
 //# sourceMappingURL=index.js.map
-

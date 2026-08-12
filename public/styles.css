@@ -212,3 +212,43 @@ body.roleplay-active .end-btn:hover{background:#ffe8e8;border-color:#df8888}
   }
   body.roleplay-active .bottom-nav{display:none}
 }
+
+/* Premium access, app sharing, and plan-aware lecture states. */
+.feature-plan-badge{display:inline-flex;margin-left:7px;padding:3px 7px;border-radius:999px;background:#fff0e5;color:var(--orange-deep);font-size:9px;font-weight:900;vertical-align:middle}
+.advanced-toggle.is-locked{border-color:#ead8c7;background:#fffaf5;color:#7a5a42}
+.advanced-toggle.is-locked:hover{border-color:var(--orange);background:#fff6ed}
+.advanced-toggle.is-loading{cursor:progress;opacity:.72}
+.lecture-card.premium-locked{border-color:#e5d9cf;background:#fffdfb}
+.lecture-card.premium-locked .lecture-thumbnail-button img{filter:grayscale(.35) brightness(.55)}
+.lecture-card.premium-locked .lecture-play-mark{padding-left:0;background:rgba(7,17,31,.86);font-size:20px}
+.lecture-card.premium-locked .lecture-watched-badge{background:#fff0e5;color:var(--orange-deep)}
+.share-home-card{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:0 0 34px;padding:22px 26px;border:1px solid #d9e4ef;border-radius:22px;background:#fff;box-shadow:var(--shadow-sm)}
+.share-home-card h2{margin:3px 0 5px;font-size:20px}.share-home-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.7}.share-home-card .secondary-btn{white-space:nowrap;background:#eef4fb}
+.premium-upsell-modal,.share-modal{position:relative;width:min(500px,100%)}
+.modal-corner-close{position:absolute;right:14px;top:14px;width:38px;height:38px;border:0;border-radius:12px;background:#edf2f7;color:var(--ink);font-size:22px}
+.premium-upsell-icon{display:grid;place-items:center;width:58px;height:58px;margin-bottom:15px;border-radius:18px;background:#fff2e8;font-size:26px}
+.premium-upsell-modal h3,.share-modal h3{padding-right:38px;font-size:22px}.premium-upsell-modal>p,.share-modal>p{color:var(--muted);line-height:1.7}
+.premium-upsell-list{display:grid;gap:8px;margin:17px 0;padding:16px 16px 16px 38px;border-radius:15px;background:#f7f9fc;color:#3f5064;font-size:12px;line-height:1.5}
+.share-qr-wrap{width:244px;max-width:100%;margin:18px auto;padding:12px;border:1px solid var(--line);border-radius:18px;background:#fff}.share-qr-wrap img{width:220px;aspect-ratio:1;margin:auto;border-radius:8px;background:#f2f5f8}
+.share-link-field{display:grid;gap:7px;color:var(--muted);font-size:10px;font-weight:800}.share-link-field input{font-size:12px;background:#f7f9fb}
+.share-privacy-note{margin:13px 0 0!important;font-size:9px!important;text-align:center}
+.free-ad-placement{position:relative;min-height:90px;margin:0 0 30px;padding:18px 10px 8px;border:1px solid #e4e9ef;border-radius:16px;background:#fff;text-align:center;overflow:hidden}.free-ad-placement[hidden]{display:none}.ad-label{position:absolute;top:5px;left:50%;transform:translateX(-50%);color:#98a4b2;font-size:8px;letter-spacing:.08em}
+@media(max-width:650px){
+  .share-home-card{align-items:flex-start;flex-direction:column;padding:18px}.share-home-card .secondary-btn{width:100%}
+  .premium-upsell-modal,.share-modal{max-height:calc(100dvh - 28px);overflow:auto;padding:20px 17px calc(20px + env(safe-area-inset-bottom))}
+  .premium-upsell-modal .modal-actions,.share-modal-actions{display:grid;grid-template-columns:1fr}.premium-upsell-modal .modal-actions button,.share-modal-actions button{width:100%}
+  .hero-actions .primary-btn,.hero-actions .secondary-btn{flex:1 1 150px}
+}
+
+/* Temporary server-authorized developer preview. Remove after the trial period. */
+.developer-preview-panel{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,.85fr);gap:18px 28px;align-items:center;margin:-7px 0 28px;padding:20px 22px;border:1px dashed #74869a;border-radius:20px;background:linear-gradient(135deg,#f7f9fc,#eef4fb);box-shadow:var(--shadow-sm)}
+.developer-preview-panel[hidden]{display:none}
+.developer-preview-panel:before{content:"DEV";position:absolute;right:16px;top:-10px;padding:4px 9px;border-radius:999px;background:#35465a;color:#fff;font-size:8px;font-weight:900;letter-spacing:.16em}
+.developer-preview-panel.is-active{border-style:solid;border-color:#e2a15e;background:linear-gradient(135deg,#fff9f1,#f6f9fc)}
+.developer-preview-panel.is-premium{border-color:#b88aef;background:linear-gradient(135deg,#fbf7ff,#f3f7ff)}
+.developer-preview-copy h2{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:3px 0 5px;font-size:18px}.developer-preview-copy p{margin:0;color:var(--muted);font-size:11px;line-height:1.65}
+.developer-preview-badge{display:inline-flex;padding:5px 8px;border-radius:999px;background:#e7edf4;color:#3d5168;font-size:9px;font-weight:900}.developer-preview-panel.is-active .developer-preview-badge{background:#fff0df;color:#a95513}.developer-preview-panel.is-premium .developer-preview-badge{background:#eee4ff;color:#6d3eb4}
+.developer-preview-controls{display:grid;gap:9px}.developer-preview-controls label{display:grid;gap:5px;color:#526479;font-size:9px;font-weight:900}.developer-preview-controls input{width:100%;min-height:42px;padding:0 12px;border:1px solid #cfd9e5;border-radius:11px;background:#fff;font-size:13px}
+.developer-preview-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.developer-preview-actions button{min-height:38px;padding:0 9px;border:1px solid #cbd6e2;border-radius:10px;background:#fff;color:#3c5068;font-size:10px;font-weight:900}.developer-preview-actions button:hover,.developer-preview-actions button.selected{border-color:#ff9a4f;background:#fff3e8;color:#a94d0c}.developer-preview-actions button:disabled{cursor:progress;opacity:.6}
+.developer-preview-status{margin:0;color:#9a531a;font-size:10px;font-weight:800}.developer-preview-warning{grid-column:1/-1;margin:0;padding-top:10px;border-top:1px solid rgba(87,107,132,.15);color:#738195;font-size:9px;line-height:1.6}
+@media(max-width:760px){.developer-preview-panel{grid-template-columns:1fr;margin:0 0 24px;padding:18px}.developer-preview-warning{grid-column:auto}.developer-preview-actions{grid-template-columns:1fr}.developer-preview-actions button{min-height:42px}}

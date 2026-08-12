@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ai-roleplay-studio",
   "main": "src/index.js",
-  "compatibility_date": "2026-07-31",
+  "compatibility_date": "2026-08-12",
   "compatibility_flags": ["global_fetch_strictly_public"],
   "assets": {
     "directory": "./public",
@@ -18,8 +18,9 @@
   ],
   "ai": { "binding": "AI" },
   "vars": {
-    "APP_URL": "https://ai-roleplay-studio.ai-roleplay-studio.workers.dev",
+    "APP_URL": "https://roleplay.gritstrategyworks.com",
     "BILLING_ENABLED": "true",
+    "DEVELOPER_EMAILS": "gritstrategyworks@gmail.com",
     "SIGNUP_ENABLED": "true",
     "STRIPE_PRICE_ID": "price_1U1JSkJYbwf4eLAfkVOYv6kq"
   }
