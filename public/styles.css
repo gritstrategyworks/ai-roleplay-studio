@@ -173,3 +173,42 @@ body.roleplay-active .end-btn:hover{background:#ffe8e8;border-color:#df8888}
 .contact-address{margin:14px 0;padding:14px 16px;border-radius:12px;background:#eef6ff;font-weight:800;overflow-wrap:anywhere}
 .billing-action[aria-busy="true"]{cursor:progress}
 @media(max-width:700px){.pricing-card.featured .primary-btn{width:100%}}
+
+/* Keep the mobile roleplay composer inside the visible viewport. */
+@media(max-width:650px){
+  body.roleplay-active{
+    height:var(--roleplay-viewport-height,100dvh);
+    min-height:0;
+    overflow:hidden;
+  }
+  body.roleplay-active main{
+    height:calc(var(--roleplay-viewport-height,100dvh) - 68px);
+    min-height:0;
+    padding:8px 8px max(8px,env(safe-area-inset-bottom));
+  }
+  body.roleplay-active #screen-roleplay,
+  body.roleplay-active .roleplay-shell,
+  body.roleplay-active .conversation-panel{
+    min-height:0;
+    overflow:hidden;
+  }
+  body.roleplay-active .conversation-panel{
+    display:flex;
+    flex-direction:column;
+  }
+  body.roleplay-active .messages{
+    flex:1 1 0;
+    height:0;
+    min-height:0;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  body.roleplay-active .composer{
+    position:relative;
+    bottom:auto;
+    flex:0 0 auto;
+  }
+  body.roleplay-active .bottom-nav{display:none}
+}
