@@ -1,4 +1,4 @@
-﻿var __defProp = Object.defineProperty;
+var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
 // deploy-v25-role-contract-20260807/functions.js
@@ -16,6 +16,7 @@ var SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 var GUEST_TTL_SECONDS = 60 * 60 * 24;
 var DEVELOPER_PREVIEW_TTL_SECONDS = 60 * 60 * 4;
 var PASSWORD_ITERATIONS = 1e5;
+var PASSWORD_RESET_TTL_SECONDS = 60 * 30;
 function toBase64Url(bytes) {
   let value = "";
   for (const byte of new Uint8Array(bytes)) value += String.fromCharCode(byte);
@@ -572,6 +573,93 @@ async function onRequestPost4({ request, env }) {
 }
 __name(onRequestPost4, "onRequestPost4");
 __name2(onRequestPost4, "onRequestPost");
+async function ensurePasswordResetTable(env) {
+  await env.BILLING_DB.prepare(`
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      token_hash TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL,
+      used_at INTEGER
+    )
+  `).run();
+  await env.BILLING_DB.prepare("CREATE INDEX IF NOT EXISTS idx_password_reset_user ON password_reset_tokens(user_id)").run();
+}
+async function sendPasswordResetEmail(env, email, resetUrl) {
+  if (!env.RESEND_API_KEY || !env.PASSWORD_RESET_FROM) throw new Error("Password reset email is not configured.");
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
+    body: JSON.stringify({
+      from: env.PASSWORD_RESET_FROM,
+      to: [email],
+      subject: "【AI ROLEPLAY STUDIO】パスワード再設定",
+      html: `<div style="font-family:sans-serif;line-height:1.8;color:#17263a"><h2>パスワード再設定</h2><p>以下のボタンから30分以内に新しいパスワードを設定してください。</p><p><a href="${resetUrl}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#f47c2c;color:#fff;text-decoration:none;font-weight:bold">パスワードを再設定する</a></p><p>このリンクは一度だけ使用できます。心当たりがない場合は、このメールを無視してください。</p></div>`
+    })
+  });
+  if (!response.ok) throw new Error(`Resend API returned ${response.status}.`);
+}
+async function onRequestPostPasswordResetRequest({ request, env }) {
+  const generic = { ok: true, message: "入力されたメールアドレスが登録されている場合、パスワード再設定メールを送信しました。" };
+  try {
+    assertSameOrigin(request);
+    if (!env.BILLING_DB || !env.AUTH_PEPPER) throw new Error("Password reset is not configured.");
+    const body = await readJson(request);
+    const email = normalizeEmail(body.email);
+    if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(generic);
+    const rate = await isRateLimited(request, env, email, "password-reset-request", 3, 900);
+    if (rate.limited) return json(generic);
+    await recordRateLimit(env, rate);
+    const user = await env.BILLING_DB.prepare("SELECT id, email FROM users WHERE email = ? COLLATE NOCASE").bind(email).first();
+    if (!user) return json(generic);
+    await ensurePasswordResetTable(env);
+    const token = generateSessionToken();
+    const tokenHash = await hashSessionToken(token);
+    const now = Math.floor(Date.now() / 1e3);
+    await env.BILLING_DB.batch([
+      env.BILLING_DB.prepare("DELETE FROM password_reset_tokens WHERE user_id = ? OR expires_at <= ?").bind(user.id, now),
+      env.BILLING_DB.prepare("INSERT INTO password_reset_tokens (token_hash, user_id, created_at, expires_at, used_at) VALUES (?, ?, ?, ?, NULL)").bind(tokenHash, user.id, now, now + PASSWORD_RESET_TTL_SECONDS)
+    ]);
+    const appUrl = String(env.APP_URL || new URL(request.url).origin).replace(/\/$/, "");
+    const resetUrl = `${appUrl}/?reset_token=${encodeURIComponent(token)}`;
+    try {
+      await sendPasswordResetEmail(env, user.email, resetUrl);
+    } catch (error) {
+      await env.BILLING_DB.prepare("DELETE FROM password_reset_tokens WHERE token_hash = ?").bind(tokenHash).run();
+      console.error("password reset email failed", error);
+    }
+    return json(generic);
+  } catch (error) {
+    if (error instanceof Response) return error;
+    console.error("password reset request failed", error);
+    return json(generic);
+  }
+}
+async function onRequestPostPasswordResetConfirm({ request, env }) {
+  try {
+    assertSameOrigin(request);
+    if (!env.BILLING_DB || !env.AUTH_PEPPER) throw new Error("Password reset is not configured.");
+    const body = await readJson(request);
+    const token = String(body.token || "");
+    const validation = validateCredentials("reset@example.com", body.password, { registration: true });
+    if (!validation.valid || token.length < 32 || token.length > 256) return json({ error: "再設定リンクが無効か、有効期限が切れています。", code: "invalid_reset_token" }, { status: 400 });
+    await ensurePasswordResetTable(env);
+    const tokenHash = await hashSessionToken(token);
+    const now = Math.floor(Date.now() / 1e3);
+    const reset = await env.BILLING_DB.prepare("SELECT token_hash, user_id FROM password_reset_tokens WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?").bind(tokenHash, now).first();
+    if (!reset) return json({ error: "再設定リンクが無効か、有効期限が切れています。", code: "invalid_reset_token" }, { status: 400 });
+    const consumed = await env.BILLING_DB.prepare("UPDATE password_reset_tokens SET used_at = ? WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?").bind(now, tokenHash, now).run();
+    if (Number(consumed?.meta?.changes || 0) !== 1) return json({ error: "再設定リンクが無効か、有効期限が切れています。", code: "invalid_reset_token" }, { status: 400 });
+    const password = await hashPassword(validation.password, env.AUTH_PEPPER);
+    await env.BILLING_DB.batch([
+      env.BILLING_DB.prepare("UPDATE users SET password_hash = ?, password_salt = ?, password_iterations = ?, updated_at = ? WHERE id = ?").bind(password.hash, password.salt, password.iterations, now, reset.user_id),
+      env.BILLING_DB.prepare("DELETE FROM auth_sessions WHERE user_id = ?").bind(reset.user_id)
+    ]);
+    return json({ ok: true, message: "パスワードを変更しました。新しいパスワードでログインしてください。" });
+  } catch (error) {
+    return errorResponse(error, "パスワードを変更できませんでした。");
+  }
+}
 async function onRequestGet({ request, env }) {
   try {
     const session = await getSessionUser(request, env);
@@ -1639,6 +1727,8 @@ var PUBLIC_API_PATHS = /* @__PURE__ */ new Set([
   "/api/auth/logout",
   "/api/auth/register",
   "/api/auth/session",
+  "/api/auth/password-reset/request",
+  "/api/auth/password-reset/confirm",
   "/api/billing/webhook"
 ]);
 async function onRequest2(context) {
@@ -1703,6 +1793,20 @@ var routes = [
     method: "GET",
     middlewares: [],
     modules: [onRequestGet]
+  },
+  {
+    routePath: "/api/auth/password-reset/request",
+    mountPath: "/api/auth",
+    method: "POST",
+    middlewares: [],
+    modules: [onRequestPostPasswordResetRequest]
+  },
+  {
+    routePath: "/api/auth/password-reset/confirm",
+    mountPath: "/api/auth",
+    method: "POST",
+    middlewares: [],
+    modules: [onRequestPostPasswordResetConfirm]
   },
   {
     routePath: "/api/developer/preview",
