@@ -15,6 +15,9 @@
   const passwordInput = document.getElementById('authPassword');
   const confirmField = document.getElementById('authConfirmField');
   const confirmInput = document.getElementById('authPasswordConfirm');
+  const resetCommandField = document.getElementById('authResetCommandField');
+  const resetCommandInput = document.getElementById('authResetCommand');
+  const resetToggle = document.getElementById('authResetToggle');
   const agreementField = document.getElementById('authAgreementField');
   const agreementInput = document.getElementById('authAgreement');
   const submitButton = document.getElementById('authSubmit');
@@ -37,24 +40,32 @@
     emailInput.disabled = busy;
     passwordInput.disabled = busy;
     confirmInput.disabled = busy;
+    resetCommandInput.disabled = busy;
+    resetToggle.disabled = busy;
     agreementInput.disabled = busy;
     guestButton.disabled = busy;
     if (busy && message) setStatus(message, 'loading');
   }
 
   function setMode(mode) {
-    authMode = mode === 'register' && signupEnabled ? 'register' : 'login';
+    authMode = mode === 'reset' ? 'reset' : (mode === 'register' && signupEnabled ? 'register' : 'login');
     const registering = authMode === 'register';
-    loginTab.classList.toggle('active', !registering);
+    const resetting = authMode === 'reset';
+    loginTab.classList.toggle('active', !registering && !resetting);
     registerTab.classList.toggle('active', registering);
-    confirmField.hidden = !registering;
+    confirmField.hidden = !registering && !resetting;
+    resetCommandField.hidden = !resetting;
     agreementField.hidden = !registering;
-    confirmInput.required = registering;
+    confirmInput.required = registering || resetting;
+    resetCommandInput.required = resetting;
     agreementInput.required = registering;
-    passwordInput.autocomplete = registering ? 'new-password' : 'current-password';
-    submitButton.textContent = registering ? '無料アカウントを作成' : 'ログイン';
-    document.getElementById('authPanelTitle').textContent = registering ? 'アカウントを作成' : 'おかえりなさい';
-    document.getElementById('authPanelLead').textContent = registering
+    passwordInput.autocomplete = registering || resetting ? 'new-password' : 'current-password';
+    submitButton.textContent = resetting ? '新しいパスワードを設定' : (registering ? '無料アカウントを作成' : 'ログイン');
+    resetToggle.textContent = resetting ? 'ログインへ戻る' : 'パスワードを忘れた場合';
+    document.getElementById('authPanelTitle').textContent = resetting ? 'パスワードを再設定' : (registering ? 'アカウントを作成' : 'おかえりなさい');
+    document.getElementById('authPanelLead').textContent = resetting
+      ? '登録済みの開発者メール、秘密コマンド、新しいパスワードを入力してください。'
+      : registering
       ? 'メールアドレスとパスワードで、利用を開始できます。'
       : '登録したメールアドレスでログインしてください。';
     setStatus('', '');
@@ -100,8 +111,8 @@
     loading.hidden = false;
     panel.hidden = true;
     document.getElementById('authLoadingText').textContent = 'アプリを準備しています';
-    await loadScript('scenario-design.js?v=1.33');
-    await loadScript('app.js?v=1.33');
+    await loadScript('scenario-design.js?v=1.34');
+    await loadScript('app.js?v=1.34');
     appLoaded = true;
     loadedUserId = currentUser.id;
     setUserLabels(currentUser);
@@ -159,7 +170,7 @@
     event.preventDefault();
     const email = emailInput.value.trim();
     const password = passwordInput.value;
-    if (authMode === 'register') {
+    if (authMode === 'register' || authMode === 'reset') {
       if (password.length < 10) {
         setStatus('パスワードは10文字以上で入力してください。', 'error');
         return;
@@ -168,17 +179,19 @@
         setStatus('確認用パスワードが一致しません。', 'error');
         return;
       }
-      if (!agreementInput.checked) {
+      if (authMode === 'register' && !agreementInput.checked) {
         setStatus('利用規約とプライバシーポリシーへの同意が必要です。', 'error');
         return;
       }
     }
 
-    setBusy(true, authMode === 'register' ? 'アカウントを作成しています…' : 'ログインしています…');
+    setBusy(true, authMode === 'reset' ? 'パスワードを再設定しています…' : (authMode === 'register' ? 'アカウントを作成しています…' : 'ログインしています…'));
     try {
-      const data = await requestAuth('/api/auth/' + authMode, { email: email, password: password });
+      const path = authMode === 'reset' ? '/api/auth/password-reset' : '/api/auth/' + authMode;
+      const data = await requestAuth(path, { email: email, password: password, command: resetCommandInput.value });
       passwordInput.value = '';
       confirmInput.value = '';
+      resetCommandInput.value = '';
       await unlock(data);
     } catch (error) {
       setStatus(error.message, 'error');
@@ -262,6 +275,7 @@
   form.addEventListener('submit', submitAuth);
   loginTab.addEventListener('click', function () { setMode('login'); });
   registerTab.addEventListener('click', function () { setMode('register'); });
+  resetToggle.addEventListener('click', function () { setMode(authMode === 'reset' ? 'login' : 'reset'); });
   guestButton.addEventListener('click', enterGuest);
   document.querySelectorAll('[data-auth-logout]').forEach(function (button) {
     button.addEventListener('click', logout);
