@@ -61,3 +61,4 @@ body.auth-pending{overflow:auto;background:#07111f}
 .account-setting small{display:block;margin-top:4px;color:var(--muted)}
 @media(max-width:800px){.auth-gate{padding:20px}.auth-layout{grid-template-columns:1fr}.auth-intro{display:none}.auth-card{min-height:auto}.user-pill{display:none}.logout-btn{padding:0 9px}.top-actions{gap:5px}}
 @media(max-width:480px){.auth-card{padding:24px 18px;border-radius:22px}.auth-heading h2{font-size:26px}.account-setting{align-items:flex-start;flex-direction:column}.account-setting .ghost-btn{width:100%}}
+.auth-text-button{display:block;margin:12px auto 0;border:0;background:transparent;color:#315d8a;text-decoration:underline;cursor:pointer;font:inherit;font-size:13px}.auth-text-button:disabled{opacity:.55;cursor:wait}
