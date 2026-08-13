@@ -1,6 +1,6 @@
-const CACHE='ai-roleplay-studio-v1-37-handsfree-compat';
+const CACHE='ai-roleplay-studio-v1-38-email-reset';
 const BASE=new URL('./',self.location.href);
-const CORE=['index.html','styles.css?v=1.37','auth.css?v=1.37','auth.js?v=1.37','app.js?v=1.37','scenario-design.js?v=1.37','manifest.webmanifest','assets/icon.svg'].map(path=>new URL(path,BASE).href);
+const CORE=['index.html','styles.css?v=1.38','auth.css?v=1.38','auth.js?v=1.38','app.js?v=1.38','scenario-design.js?v=1.38','manifest.webmanifest','assets/icon.svg'].map(path=>new URL(path,BASE).href);
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',event=>{

@@ -233,5 +233,49 @@ test('developer can preview free and Premium without changing the subscription',
   });
   assert.equal(response.status, 404);
 
+  // Password reset sends a single-use link without revealing whether an account exists.
+  env.RESEND_API_KEY = 're_test_key';
+  env.PASSWORD_RESET_FROM = 'AI Roleplay Studio <no-reply@example.com>';
+  const nativeFetch = globalThis.fetch;
+  let resetUrl = '';
+  globalThis.fetch = async (url, init) => {
+    if (String(url) === 'https://api.resend.com/emails') {
+      const payload = JSON.parse(init.body);
+      resetUrl = payload.html.match(/href="([^"]+)/)?.[1] || '';
+      return Response.json({ id: 'email-test' });
+    }
+    return nativeFetch(url, init);
+  };
+  try {
+    response = await request(env, '/api/auth/password-reset/request', {
+      method: 'POST', body: { email: developerEmail }
+    });
+    assert.equal(response.status, 200);
+    assert.match((await response.json()).message, /登録されている場合/);
+    assert.match(resetUrl, /reset_token=/);
+
+    const resetToken = new URL(resetUrl).searchParams.get('reset_token');
+    response = await request(env, '/api/auth/password-reset/confirm', {
+      method: 'POST', body: { token: resetToken, password: 'new-local-password-67890' }
+    });
+    assert.equal(response.status, 200);
+
+    response = await request(env, '/api/auth/password-reset/confirm', {
+      method: 'POST', body: { token: resetToken, password: 'another-password-67890' }
+    });
+    assert.equal(response.status, 400);
+
+    response = await request(env, '/api/auth/login', {
+      method: 'POST', body: { email: developerEmail, password: 'local-password-12345' }
+    });
+    assert.equal(response.status, 401);
+    response = await request(env, '/api/auth/login', {
+      method: 'POST', body: { email: developerEmail, password: 'new-local-password-67890' }
+    });
+    assert.equal(response.status, 200);
+  } finally {
+    globalThis.fetch = nativeFetch;
+  }
+
   database.close();
 });

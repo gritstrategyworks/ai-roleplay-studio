@@ -24,8 +24,8 @@
   <title>AI ROLEPLAY STUDIO</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=1.37">
-  <link rel="stylesheet" href="auth.css?v=1.37">
+  <link rel="stylesheet" href="styles.css?v=1.38">
+  <link rel="stylesheet" href="auth.css?v=1.38">
 </head>
 <body class="auth-pending">
 <div id="authGate" class="auth-gate">
@@ -44,7 +44,6 @@
           <label class="auth-field">メールアドレス<input id="authEmail" type="email" inputmode="email" autocomplete="email" maxlength="254" required placeholder="name@example.com"></label>
           <label class="auth-field">パスワード<input id="authPassword" type="password" autocomplete="current-password" minlength="10" maxlength="128" required placeholder="10文字以上"></label>
           <label id="authConfirmField" class="auth-field" hidden>パスワード（確認）<input id="authPasswordConfirm" type="password" autocomplete="new-password" minlength="10" maxlength="128" placeholder="もう一度入力"></label>
-          <label id="authResetCommandField" class="auth-field" hidden>秘密コマンド<input id="authResetCommand" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="128" placeholder="開発者用コマンド"></label>
           <label id="authAgreementField" class="auth-agreement" hidden><input id="authAgreement" type="checkbox"> <span>利用規約とプライバシーポリシーに同意します。</span></label>
           <div id="authStatus" class="auth-status" role="alert" hidden></div>
           <button id="authSubmit" class="primary-btn auth-submit" type="submit">ログイン</button>
@@ -320,6 +319,6 @@
   </div>
 </div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-box"><div class="spinner"></div><strong>会話を振り返っています</strong><p style="color:#b9c7d9;font-size:13px">評価と改善ポイントを作成中です</p></div></div>
-<script src="auth.js?v=1.37" defer></script>
+<script src="auth.js?v=1.38" defer></script>
 </body>
 </html>
