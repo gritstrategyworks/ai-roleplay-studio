@@ -95,3 +95,6 @@ npm run dev
 
 - Kokoro-82M / kokoro-js: Apache License 2.0
 - 詳細は `THIRD_PARTY_NOTICES.md` を確認してください。
+## デプロイ
+
+`main` ブランチへの更新はCloudflare Workers Buildsから本番環境へデプロイされます。
