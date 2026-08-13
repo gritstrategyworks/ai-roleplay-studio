@@ -252,3 +252,36 @@ body.roleplay-active .end-btn:hover{background:#ffe8e8;border-color:#df8888}
 .developer-preview-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.developer-preview-actions button{min-height:38px;padding:0 9px;border:1px solid #cbd6e2;border-radius:10px;background:#fff;color:#3c5068;font-size:10px;font-weight:900}.developer-preview-actions button:hover,.developer-preview-actions button.selected{border-color:#ff9a4f;background:#fff3e8;color:#a94d0c}.developer-preview-actions button:disabled{cursor:progress;opacity:.6}
 .developer-preview-status{margin:0;color:#9a531a;font-size:10px;font-weight:800}.developer-preview-warning{grid-column:1/-1;margin:0;padding-top:10px;border-top:1px solid rgba(87,107,132,.15);color:#738195;font-size:9px;line-height:1.6}
 @media(max-width:760px){.developer-preview-panel{grid-template-columns:1fr;margin:0 0 24px;padding:18px}.developer-preview-warning{grid-column:auto}.developer-preview-actions{grid-template-columns:1fr}.developer-preview-actions button{min-height:42px}}
+
+/* Mobile conversation view: prioritize the message history like a messaging app. */
+@media(max-width:650px){
+  body.roleplay-active .roleplay-shell{grid-template-rows:64px minmax(0,1fr);gap:6px}
+  body.roleplay-active .customer-panel{grid-template-columns:58px minmax(0,1fr);grid-template-rows:32px 32px;height:64px;border-radius:14px}
+  body.roleplay-active .customer-top{grid-column:2;grid-row:1;padding:7px 9px 0;align-items:center}
+  body.roleplay-active .customer-role{display:none}
+  body.roleplay-active .avatar-stage{height:64px}
+  body.roleplay-active .avatar-stage #avatarImage{height:62px;border-radius:9px 9px 0 0}
+  body.roleplay-active .emotion-label,body.roleplay-active .meters .meter-row:nth-child(n+2){display:none}
+  body.roleplay-active .meters{grid-column:2;grid-row:2;padding:1px 9px 7px;gap:0}
+  body.roleplay-active .meter-row{grid-template-columns:30px 1fr 22px}
+  body.roleplay-active .conversation-panel{border-radius:14px;background:#8fb7c8}
+  body.roleplay-active .conversation-head{padding:6px 10px;background:#f7fafb;border-bottom-color:rgba(22,42,70,.12)}
+  body.roleplay-active .messages{padding:12px 9px 18px;background:linear-gradient(180deg,#91b9c9 0,#a9c8d2 100%);scroll-padding-bottom:16px}
+  body.roleplay-active .message{margin-bottom:10px}
+  body.roleplay-active .message>div{max-width:88%}
+  body.roleplay-active .bubble{max-width:100%;padding:9px 12px;border:0;border-radius:16px;font-size:13px;line-height:1.55;box-shadow:0 1px 3px rgba(23,48,62,.18)}
+  body.roleplay-active .message.ai .bubble{border:0;border-bottom-left-radius:4px;background:#fff}
+  body.roleplay-active .message.user .bubble{border-bottom-right-radius:4px;color:#183143;background:#9bea72}
+  body.roleplay-active .bubble-meta{color:#3e6171;text-align:right;font-size:9px}
+  body.roleplay-active .voice-banner{display:none}
+  body.roleplay-active .composer{padding:7px 8px max(7px,env(safe-area-inset-bottom));background:#f7f8f9}
+  body.roleplay-active .composer-tools{display:none}
+  body.roleplay-active .composer-row{grid-template-columns:40px minmax(0,1fr) 40px;gap:7px;align-items:end}
+  body.roleplay-active .mic-btn,body.roleplay-active .send-btn{height:40px;border-radius:50%}
+  body.roleplay-active #messageInput{min-height:40px;max-height:96px;border:0;border-radius:20px;padding:9px 13px;background:#fff;box-shadow:inset 0 0 0 1px #d9e1e5;font-size:16px}
+}
+@media(max-width:650px){
+  body.roleplay-active main{display:flex;flex-direction:column}
+  body.roleplay-active #screen-roleplay{flex:1 1 0;height:auto}
+  body.roleplay-active .roleplay-shell{height:100%}
+}
