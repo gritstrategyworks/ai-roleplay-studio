@@ -72,7 +72,7 @@ const HEADERS = {
 export async function onRequestGet(context) {
   return Response.json({
     ok: true,
-    service: 'AI Roleplay Studio API',
+    service: 'AI Business Roleplay Studio API',
     aiConfigured: Boolean(context.env.AI),
     model: context.env.AI ? MODEL : null,
   }, { headers: HEADERS });

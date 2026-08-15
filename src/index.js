@@ -593,8 +593,8 @@ async function sendPasswordResetEmail(env, email, resetUrl) {
     body: JSON.stringify({
       from: env.PASSWORD_RESET_FROM,
       to: [email],
-      subject: "【AI ROLEPLAY STUDIO】パスワード再設定",
-      html: `<div style="font-family:sans-serif;line-height:1.8;color:#17263a"><h2>パスワード再設定</h2><p>以下のボタンから30分以内に新しいパスワードを設定してください。</p><p><a href="${resetUrl}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#f47c2c;color:#fff;text-decoration:none;font-weight:bold">パスワードを再設定する</a></p><p>このリンクは一度だけ使用できます。心当たりがない場合は、このメールを無視してください。</p></div>`
+      subject: "【AIビジネスロールプレイスタジオ】パスワード再設定",
+      html: `<div style="font-family:sans-serif;line-height:1.8;color:#17263a"><h2>パスワード再設定</h2><p>以下のボタンから30分以内に新しいパスワードを設定してください。</p><p><a href="${resetUrl}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#f47c2c;color:#fff;text-decoration:none;font-weight:bold">パスワードを再設定する</a></p><p>このリンクは一度だけ使用できます。心当たりがない場合は、このメールを無視してください。</p><p style="color:#6b7788;font-size:12px">AIビジネスロールプレイスタジオ</p></div>`
     })
   });
   if (!response.ok) throw new Error(`Resend API returned ${response.status}.`);
@@ -1265,7 +1265,7 @@ var HEADERS = {
 async function onRequestGet3(context) {
   return Response.json({
     ok: true,
-    service: "AI Roleplay Studio API",
+    service: "AI Business Roleplay Studio API",
     aiConfigured: Boolean(context.env.AI),
     model: context.env.AI ? MODEL : null
   }, { headers: HEADERS });

@@ -11,7 +11,7 @@ const [html, robots, sitemap, manifest, worker] = await Promise.all([
 ]);
 
 test('home page exposes complete search and social metadata', () => {
-  assert.match(html, /<title>AIロープレ研修｜/);
+  assert.match(html, /<title>AIビジネスロールプレイスタジオ｜/);
   assert.match(html, /<meta name="description" content="[^"]{60,}"/);
   assert.match(html, /<link rel="canonical" href="https:\/\/roleplay\.gritstrategyworks\.com\/">/);
   assert.match(html, /<meta property="og:image" content="https:\/\/roleplay\.gritstrategyworks\.com\/assets\/og-image\.png">/);
@@ -27,7 +27,7 @@ test('structured data describes the web application', () => {
 test('crawler discovery files and preview image are publishable', async () => {
   assert.match(robots, /Sitemap: https:\/\/roleplay\.gritstrategyworks\.com\/sitemap\.xml/);
   assert.match(sitemap, /<loc>https:\/\/roleplay\.gritstrategyworks\.com\/<\/loc>/);
-  assert.match(manifest, /AI実践ロープレ研修/);
-  assert.match(worker, /v1-43-roleplay-timing/);
+  assert.match(manifest, /AIビジネスロールプレイスタジオ/);
+  assert.match(worker, /v1-44-business-onboarding/);
   assert.ok((await stat(new URL('../public/assets/og-image.png', import.meta.url))).size > 10_000);
 });

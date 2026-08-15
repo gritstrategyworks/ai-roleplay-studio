@@ -62,3 +62,40 @@ body.auth-pending{overflow:auto;background:#07111f}
 @media(max-width:800px){.auth-gate{padding:20px}.auth-layout{grid-template-columns:1fr}.auth-intro{display:none}.auth-card{min-height:auto}.user-pill{display:none}.logout-btn{padding:0 9px}.top-actions{gap:5px}}
 @media(max-width:480px){.auth-card{padding:24px 18px;border-radius:22px}.auth-heading h2{font-size:26px}.account-setting{align-items:flex-start;flex-direction:column}.account-setting .ghost-btn{width:100%}}
 .auth-text-button{display:block;margin:12px auto 0;border:0;background:transparent;color:#315d8a;text-decoration:underline;cursor:pointer;font:inherit;font-size:13px}.auth-text-button:disabled{opacity:.55;cursor:wait}
+
+/* Logged-out service guide */
+.auth-gate{display:block;overflow-x:hidden}
+.auth-layout{min-height:calc(100vh - clamp(40px,10vw,128px));margin:0 auto}
+.auth-showcase{width:min(1080px,100%);margin:clamp(54px,8vw,96px) auto 0;padding-bottom:clamp(30px,5vw,64px);scroll-margin-top:24px}
+.auth-showcase-heading{max-width:780px;margin:0 auto 34px;text-align:center}
+.auth-showcase-heading .eyebrow,.auth-score-heading .eyebrow{color:#ffad73}
+.auth-showcase-heading h2,.auth-score-heading h2{margin:10px 0 14px;color:#fff;font-size:clamp(28px,4vw,46px);line-height:1.25}
+.auth-showcase-heading p{margin:0;color:#bfd0e4;font-size:15px;line-height:1.9}
+.mobile-only{display:none}
+.auth-step-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.auth-step-grid article{position:relative;min-width:0;padding:28px 24px;border:1px solid rgba(255,255,255,.13);border-radius:22px;background:rgba(255,255,255,.075)}
+.auth-step-grid h3{margin:14px 0 8px;color:#fff;font-size:19px}
+.auth-step-grid p{margin:0;color:#bdd0e5;font-size:13px;line-height:1.75}
+.auth-step-number{position:absolute;top:18px;right:20px;color:rgba(255,255,255,.18);font-size:42px;font-weight:900}
+.auth-step-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;color:#fff;background:linear-gradient(135deg,#ff8b38,#ff6d18);font-size:23px;font-weight:900}
+.auth-showcase-actions,.plan-comparison-actions{display:flex;justify-content:center;gap:12px;margin-top:26px}
+.auth-showcase-actions a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.auth-score-sample,.auth-plan-comparison{position:relative;margin-top:clamp(56px,8vw,90px);padding:clamp(24px,4vw,48px);border:1px solid rgba(255,255,255,.14);border-radius:28px;background:#f8fafc;color:var(--ink);box-shadow:0 28px 70px rgba(0,0,0,.2)}
+.sample-label{position:absolute;top:-14px;left:24px;padding:7px 13px;border-radius:999px;color:#fff;background:var(--orange);font-size:11px;font-weight:900}
+.auth-score-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:28px}
+.auth-score-heading h2{max-width:680px;color:var(--ink);font-size:clamp(24px,3.3vw,38px)}
+.sample-score{display:grid;grid-template-columns:auto auto;align-items:end;min-width:135px;color:var(--orange);text-align:center}
+.sample-score strong{font-size:64px;line-height:.9}.sample-score span{font-weight:900}.sample-score em{grid-column:1/-1;margin-top:8px;padding:6px;border-radius:999px;color:#fff;background:var(--navy-800);font-size:12px;font-style:normal;font-weight:900}
+.auth-score-content{display:grid;grid-template-columns:.9fr 1.1fr;gap:26px}
+.sample-score-list{display:grid;gap:16px;padding:23px;border-radius:20px;background:#eaf0f6}
+.sample-score-list>div{display:grid;grid-template-columns:minmax(92px,1fr) 1.5fr 30px;align-items:center;gap:10px;font-size:12px}
+.sample-score-list span{font-weight:800}.sample-score-list i{height:8px;border-radius:999px;background:linear-gradient(90deg,var(--teal) var(--score),#cad5e2 var(--score));}.sample-score-list strong{text-align:right}
+.sample-feedback-list{display:grid;gap:12px}.sample-feedback-list article{padding:18px 19px;border:1px solid #dce4ed;border-radius:17px;background:#fff}.sample-feedback-list article.good{border-left:4px solid #35b77c}.sample-feedback-list article.improve{border-left:4px solid #ff9c49}.sample-feedback-list h3{margin:0 0 7px;font-size:14px}.sample-feedback-list p{margin:0;color:#53647a;font-size:13px;line-height:1.7}
+.auth-plan-comparison{background:#fff}
+.auth-plan-comparison .auth-showcase-heading h2{color:var(--ink)}.auth-plan-comparison .auth-showcase-heading p{color:var(--muted)}
+.plan-comparison-table{overflow:hidden;border:1px solid #dbe3ec;border-radius:18px}
+.plan-comparison-row{display:grid;grid-template-columns:minmax(150px,1.4fr) minmax(100px,.8fr) minmax(130px,1fr);min-width:0;border-top:1px solid #e2e8ef}
+.plan-comparison-row:first-child{border-top:0}.plan-comparison-row>*{min-width:0;padding:13px 15px;overflow-wrap:anywhere}.plan-comparison-row>*+*{border-left:1px solid #e2e8ef}.plan-comparison-row span{color:#526176;font-size:13px}.plan-comparison-row span:last-child{color:#123f6a;background:#f1faf7}.plan-comparison-head{color:#fff;background:var(--navy-800);font-weight:900}.plan-comparison-head span,.plan-comparison-head span:last-child{color:#fff;background:transparent}.plan-comparison-price b{font-size:18px;color:var(--orange)}
+.plan-comparison-actions .ghost-btn{border-color:#aebdcd}.plan-comparison-note{text-align:center;color:#6d7d90;font-size:11px}
+@media(max-width:800px){.auth-layout{min-height:auto}.auth-showcase{margin-top:54px}.auth-step-grid{grid-template-columns:1fr}.auth-score-content{grid-template-columns:1fr}.auth-score-heading{align-items:flex-start}.auth-brand{font-size:12px}.auth-showcase-heading p{font-size:14px}}
+@media(max-width:520px){.auth-gate{padding:16px}.mobile-only{display:block}.auth-showcase-heading h2{font-size:27px}.auth-showcase-actions,.plan-comparison-actions{flex-direction:column}.auth-showcase-actions>* ,.plan-comparison-actions>*{width:100%;min-height:50px}.auth-score-sample,.auth-plan-comparison{padding:26px 14px 20px;border-radius:22px}.auth-score-heading{display:grid;grid-template-columns:1fr auto;gap:8px}.auth-score-heading h2{font-size:22px}.sample-score{min-width:78px}.sample-score strong{font-size:44px}.sample-score-list{padding:18px 12px}.sample-score-list>div{grid-template-columns:minmax(80px,1fr) 1.1fr 25px;gap:6px}.plan-comparison-row{grid-template-columns:minmax(92px,1.25fr) minmax(72px,.82fr) minmax(86px,1fr)}.plan-comparison-row>*{padding:11px 7px;font-size:10px!important}.plan-comparison-price b{font-size:14px}.auth-step-grid article{padding:23px 20px}}

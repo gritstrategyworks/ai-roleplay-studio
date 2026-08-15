@@ -415,7 +415,7 @@ async function copyShareLink(){
   catch{const input=document.getElementById('shareLinkInput');input?.select();document.execCommand('copy');toast('公開リンクをコピーしました')}
 }
 async function shareApp(){
-  if(navigator.share){try{await navigator.share({title:'AI ROLEPLAY STUDIO',text:'AIで仕事の対話力を練習できるロールプレイアプリです。',url:APP_SHARE_URL});return}catch(error){if(error?.name==='AbortError')return}}
+  if(navigator.share){try{await navigator.share({title:'AIビジネスロールプレイスタジオ',text:'AIで仕事の対話力を練習できるロールプレイアプリです。',url:APP_SHARE_URL});return}catch(error){if(error?.name==='AbortError')return}}
   await copyShareLink();
 }
 function renderAdPlacement(){
@@ -475,6 +475,10 @@ async function startCheckout(){
     billingActionPending=false;renderBilling();
   }
 }
+async function startCheckoutWhenReady(){
+  await loadBillingStatus();
+  return startCheckout();
+}
 async function openBillingPortal(){
   if(billingActionPending)return;
   billingActionPending=true;renderBilling();toast('Stripeの契約管理画面を開いています');
@@ -515,7 +519,7 @@ async function initBilling(){
     if(returned){await loadBillingStatus();toast('契約情報を更新しました')}
   }
 }
-function downloadLatestReport(){const r=state.lastResult||loadHistory()[0];if(!r){toast('出力できる結果がありません');return}const lines=[`AI ROLEPLAY STUDIO トレーニング結果`,`日時: ${new Date(r.date).toLocaleString('ja-JP')}`,`カテゴリー: ${CATEGORY_LABELS[r.category]||r.category}`,`シナリオ: ${r.scenarioTitle}`,`相手: ${r.avatarName||''}`,`総合スコア: ${r.total}/100`,``,`項目別スコア`,...(r.scores||[]).map(x=>`${x.name}: ${x.score}`),``,`良かった点`,r.good||'',``,`改善ポイント`,r.improve||'',``,`次に使う一言`,r.nextPhrase||'',``,`相手の本音`,r.hiddenNeed||'',``,`会話記録`,...(r.conversation||[]).map(m=>`${m.role==='user'?'あなた':r.avatarName||'相手'}: ${m.text}`)];downloadText(`roleplay-report-${new Date(r.date).toISOString().slice(0,10)}.txt`,lines.join('\n'))}
+function downloadLatestReport(){const r=state.lastResult||loadHistory()[0];if(!r){toast('出力できる結果がありません');return}const lines=[`AIビジネスロールプレイスタジオ トレーニング結果`,`日時: ${new Date(r.date).toLocaleString('ja-JP')}`,`カテゴリー: ${CATEGORY_LABELS[r.category]||r.category}`,`シナリオ: ${r.scenarioTitle}`,`相手: ${r.avatarName||''}`,`総合スコア: ${r.total}/100`,``,`項目別スコア`,...(r.scores||[]).map(x=>`${x.name}: ${x.score}`),``,`良かった点`,r.good||'',``,`改善ポイント`,r.improve||'',``,`次に使う一言`,r.nextPhrase||'',``,`相手の本音`,r.hiddenNeed||'',``,`会話記録`,...(r.conversation||[]).map(m=>`${m.role==='user'?'あなた':r.avatarName||'相手'}: ${m.text}`)];downloadText(`roleplay-report-${new Date(r.date).toISOString().slice(0,10)}.txt`,lines.join('\n'))}
 function exportAllHistory(){const h=loadHistory();if(!h.length){toast('出力できる履歴がありません');return}downloadText(`roleplay-history-${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(h,null,2),'application/json')}
 function downloadText(name,text,type='text/plain'){const blob=new Blob([text],{type:`${type};charset=utf-8`});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 function confirmResetData(){if(confirm('成績・設定・履歴をすべて削除します。よろしいですか？')){try{localStorage.removeItem(APP_KEY);localStorage.removeItem(SETTINGS_KEY)}catch{}settings={...DEFAULT_SETTINGS};renderHome();renderSettings();toast('データを削除しました')}}
