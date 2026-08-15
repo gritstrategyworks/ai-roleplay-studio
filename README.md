@@ -1,6 +1,6 @@
 # AI ROLEPLAY STUDIO
 
-Cloudflare Workersで公開する、AI音声ロールプレイWebアプリです。
+Cloudflare Workersで公開する、AI実践ロールプレイWebアプリです。
 
 公開URL: https://roleplay.gritstrategyworks.com/
 
@@ -27,7 +27,7 @@ Cloudflare Workersで公開する、AI音声ロールプレイWebアプリです
 
 | 機能 | 無料 | Premium |
 | --- | --- | --- |
-| 基本設定・AIロープレ・音声会話 | 利用可 | 利用可 |
+| 基本設定・AIロープレ・文字・マイク入力 | 利用可 | 利用可 |
 | 総合評価 | 利用可 | 利用可 |
 | レクチャー動画 | 入門2本 | 全16本 |
 | 研修担当者・上級者向け詳細設定 | ロック | 利用可 |

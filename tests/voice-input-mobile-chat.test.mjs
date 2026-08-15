@@ -18,5 +18,5 @@ test('mobile roleplay keeps message history usable with the keyboard', () => {
   assert.match(styles, /grid-template-rows:64px minmax\(0,1fr\)/);
   assert.match(styles, /\.message\.user \.bubble\{[^}]*background:#9bea72/);
   assert.match(styles, /\.composer-tools\{display:none\}/);
-  assert.match(worker, /v1-40-seo/);
+  assert.match(worker, /v1-41-dialogue-positioning/);
 });

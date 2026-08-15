@@ -1,7 +1,7 @@
 {
-  "name": "AI ROLEPLAY STUDIO｜AI音声ロープレ研修",
+  "name": "AI ROLEPLAY STUDIO｜AI実践ロープレ研修",
   "short_name": "AIロープレ",
-  "description": "営業商談、1on1、採用面接、クレーム対応をAIアバターと音声で実践し、採点とフィードバックを受けられるロールプレイ研修アプリ",
+  "description": "営業商談、1on1、採用面接、クレーム対応をAIアバターとの対話で実践し、採点とフィードバックを受けられるロールプレイ研修アプリ",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#edf2f8",
