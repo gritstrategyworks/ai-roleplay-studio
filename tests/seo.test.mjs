@@ -28,6 +28,6 @@ test('crawler discovery files and preview image are publishable', async () => {
   assert.match(robots, /Sitemap: https:\/\/roleplay\.gritstrategyworks\.com\/sitemap\.xml/);
   assert.match(sitemap, /<loc>https:\/\/roleplay\.gritstrategyworks\.com\/<\/loc>/);
   assert.match(manifest, /AI実践ロープレ研修/);
-  assert.match(worker, /v1-41-dialogue-positioning/);
+  assert.match(worker, /v1-42-first-turn-placeholder/);
   assert.ok((await stat(new URL('../public/assets/og-image.png', import.meta.url))).size > 10_000);
 });
