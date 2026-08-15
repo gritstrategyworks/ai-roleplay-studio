@@ -328,3 +328,9 @@ body.roleplay-active .end-btn:hover{background:#ffe8e8;border-color:#df8888}
   body.roleplay-active.roleplay-keyboard-open .conversation-panel{border-radius:12px}
   body.roleplay-active.roleplay-keyboard-open .conversation-head{padding-block:5px}
 }
+
+/* Time-limit wrap-up controls. */
+.time-limit-action{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px;padding:9px 10px;border:1px solid #f0c889;border-radius:12px;background:#fff8e8;color:#765219;font-size:11px;font-weight:800}
+.time-limit-action[hidden]{display:none}
+.time-limit-action button{flex:none;border:0;border-radius:9px;background:var(--red);color:#fff;padding:8px 11px;font-size:11px;font-weight:900}
+@media(max-width:650px){body.roleplay-active .time-limit-action{align-items:stretch;flex-direction:column}body.roleplay-active .time-limit-action button{min-height:40px;width:100%}}
