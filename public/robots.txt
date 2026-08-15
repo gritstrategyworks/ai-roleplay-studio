@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://roleplay.gritstrategyworks.com/sitemap.xml
