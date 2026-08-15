@@ -24,8 +24,8 @@
   <title>AI ROLEPLAY STUDIO</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=1.38">
-  <link rel="stylesheet" href="auth.css?v=1.38">
+  <link rel="stylesheet" href="styles.css?v=1.39">
+  <link rel="stylesheet" href="auth.css?v=1.39">
 </head>
 <body class="auth-pending">
 <div id="authGate" class="auth-gate">
@@ -196,7 +196,7 @@
           <div class="meters"><div class="meter-row"><span>信頼</span><div class="meter-track"><div id="trustBar" class="meter-fill trust-fill"></div></div><strong id="trustValue">50</strong></div><div class="meter-row"><span>関心</span><div class="meter-track"><div id="interestBar" class="meter-fill interest-fill"></div></div><strong id="interestValue">45</strong></div><div class="meter-row"><span>負荷</span><div class="meter-track"><div id="stressBar" class="meter-fill stress-fill"></div></div><strong id="stressValue">20</strong></div></div>
         </aside>
         <section class="conversation-panel">
-          <div class="conversation-head"><div class="objective"><strong>今回のゴール：</strong><span id="objectiveText">相手の課題を具体化する</span></div><div id="phasePills" class="phase-pills"></div></div>
+          <div class="conversation-head"><div class="objective"><strong>今回のゴール：</strong><span id="objectiveText">相手の課題を具体化する</span></div><div class="conversation-head-actions"><div id="phasePills" class="phase-pills"></div><button class="roleplay-end-header" type="button" onclick="requestEndRoleplay()">ロープレを終了</button></div></div>
           <div id="messageList" class="messages" aria-live="polite"></div>
           <div id="hintCard" class="hint-card">💡 <span id="hintText"></span></div>
           <div id="voiceBanner" class="voice-banner"><div><strong id="voiceBannerTitle">音声会話は停止中です</strong><span id="voiceBannerText">開始すると、AI発話後に自動でマイクが開きます。</span></div><button id="voiceSessionButton" class="voice-session-btn" type="button" onclick="toggleVoiceSession()">音声会話を開始</button></div>
@@ -319,6 +319,6 @@
   </div>
 </div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-box"><div class="spinner"></div><strong>会話を振り返っています</strong><p style="color:#b9c7d9;font-size:13px">評価と改善ポイントを作成中です</p></div></div>
-<script src="auth.js?v=1.38" defer></script>
+<script src="auth.js?v=1.39" defer></script>
 </body>
 </html>

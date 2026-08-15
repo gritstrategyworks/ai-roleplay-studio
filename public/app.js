@@ -156,10 +156,26 @@ function getApiEndpoint(){const value=String(settings.apiEndpoint||'').trim();re
 function isRoleplayActive(){return document.getElementById('screen-roleplay')?.classList.contains('active')}
 
 function syncRoleplayViewport(){
-  const height=window.visualViewport?.height||window.innerHeight;
+  const viewport=window.visualViewport;
+  const height=viewport?.height||window.innerHeight;
+  const offsetTop=viewport?.offsetTop||0;
   document.documentElement.style.setProperty('--roleplay-viewport-height',`${Math.round(height)}px`);
+  document.documentElement.style.setProperty('--roleplay-viewport-offset-top',`${Math.round(offsetTop)}px`);
+  const input=document.getElementById('messageInput');
+  const keyboardOpen=document.body.classList.contains('roleplay-active')&&document.activeElement===input&&height<(roleplayViewportBaseline-80);
+  document.body.classList.toggle('roleplay-keyboard-open',keyboardOpen);
   if(!document.body.classList.contains('roleplay-active'))return;
   requestAnimationFrame(()=>{const list=document.getElementById('messageList');if(list)list.scrollTop=list.scrollHeight});
+}
+
+let roleplayViewportBaseline=Math.max(window.innerHeight,window.visualViewport?.height||0);
+
+function setupMobileComposer(){
+  const input=document.getElementById('messageInput');
+  if(!input)return;
+  const refresh=()=>{if(document.activeElement!==input)roleplayViewportBaseline=Math.max(roleplayViewportBaseline,window.innerHeight,window.visualViewport?.height||0);syncRoleplayViewport()};
+  input.addEventListener('focus',()=>{roleplayViewportBaseline=Math.max(roleplayViewportBaseline,window.innerHeight);setTimeout(syncRoleplayViewport,50);setTimeout(syncRoleplayViewport,300)});
+  input.addEventListener('blur',()=>{document.body.classList.remove('roleplay-keyboard-open');setTimeout(refresh,100)});
 }
 
 function showScreen(name){
@@ -751,5 +767,5 @@ function openPracticeMenu(){
 }
 document.getElementById('navStart').onclick=openPracticeMenu;
 renderSetup=function(){renderSetupModeBase();upgradeAdvancedDatalistInputs();renderAIModeSettings();refreshPremiumAccessUI()};
-init=function(){setupSpeechRecognition();loadVoices();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();initLectureFeature();syncRoleplayViewport();window.addEventListener('resize',syncRoleplayViewport,{passive:true});window.visualViewport?.addEventListener('resize',syncRoleplayViewport,{passive:true});window.visualViewport?.addEventListener('scroll',syncRoleplayViewport,{passive:true});probeAPI();initBilling();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).catch(()=>{})};
+init=function(){setupSpeechRecognition();loadVoices();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();initLectureFeature();setupMobileComposer();syncRoleplayViewport();window.addEventListener('resize',syncRoleplayViewport,{passive:true});window.visualViewport?.addEventListener('resize',syncRoleplayViewport,{passive:true});window.visualViewport?.addEventListener('scroll',syncRoleplayViewport,{passive:true});probeAPI();initBilling();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).catch(()=>{})};
 init();

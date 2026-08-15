@@ -285,3 +285,46 @@ body.roleplay-active .end-btn:hover{background:#ffe8e8;border-color:#df8888}
   body.roleplay-active #screen-roleplay{flex:1 1 0;height:auto}
   body.roleplay-active .roleplay-shell{height:100%}
 }
+
+/* Keep the conversation controls reachable on desktop and above mobile keyboards. */
+.conversation-head-actions{display:flex;align-items:center;gap:10px;min-width:0}
+.roleplay-end-header{flex:none;border:1px solid #efb8b8;border-radius:10px;background:#fff3f3;color:#b93434;padding:8px 12px;font-size:11px;font-weight:900;white-space:nowrap}
+.roleplay-end-header:hover{background:#ffe8e8;border-color:#df8888}
+
+@media(max-width:650px){
+  body.roleplay-active{
+    position:fixed;
+    top:var(--roleplay-viewport-offset-top,0px);
+    right:0;
+    bottom:auto;
+    left:0;
+    width:100%;
+    height:var(--roleplay-viewport-height,100dvh);
+  }
+  body.roleplay-active main{
+    height:calc(var(--roleplay-viewport-height,100dvh) - 68px);
+    padding-bottom:0;
+  }
+  body.roleplay-active .conversation-panel{background:#fff}
+  body.roleplay-active .conversation-head{display:flex;gap:8px;padding:7px 9px;background:#fbfcfe}
+  body.roleplay-active .conversation-head-actions{margin-left:auto}
+  body.roleplay-active .phase-pills{display:none}
+  body.roleplay-active .roleplay-end-header{padding:7px 9px;font-size:10px}
+  body.roleplay-active .messages{padding:12px 10px 16px;background:linear-gradient(180deg,#f4f7fa 0,#fff 100%);scroll-padding-bottom:12px}
+  body.roleplay-active .message.user .bubble{color:#fff;background:linear-gradient(135deg,var(--navy-700),var(--navy-800))}
+  body.roleplay-active .bubble-meta{color:#8290a2}
+  body.roleplay-active .composer{
+    position:sticky;
+    bottom:0;
+    z-index:10;
+    flex:0 0 auto;
+    padding:8px 8px max(8px,env(safe-area-inset-bottom));
+    background:#fff;
+    box-shadow:0 -5px 18px rgba(15,32,54,.08);
+  }
+  body.roleplay-active #messageInput{border:1px solid #d9e1e5;box-shadow:none;background:#fff}
+  body.roleplay-active.roleplay-keyboard-open .roleplay-shell{grid-template-rows:minmax(0,1fr);gap:0}
+  body.roleplay-active.roleplay-keyboard-open .customer-panel{display:none}
+  body.roleplay-active.roleplay-keyboard-open .conversation-panel{border-radius:12px}
+  body.roleplay-active.roleplay-keyboard-open .conversation-head{padding-block:5px}
+}
