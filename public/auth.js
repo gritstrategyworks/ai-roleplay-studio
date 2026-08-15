@@ -27,6 +27,7 @@
   const policyDialog = document.getElementById('authPolicyDialog');
   const policyTitle = document.getElementById('authPolicyTitle');
   const policyContent = document.getElementById('authPolicyContent');
+  const POST_AUTH_ACTION_KEY = 'ai-roleplay-post-auth-action';
 
   function setStatus(message, type) {
     status.textContent = message || '';
@@ -115,14 +116,23 @@
     loading.hidden = false;
     panel.hidden = true;
     document.getElementById('authLoadingText').textContent = 'アプリを準備しています';
-    await loadScript('scenario-design.js?v=1.43');
-    await loadScript('app.js?v=1.43');
+    await loadScript('scenario-design.js?v=1.44');
+    await loadScript('app.js?v=1.44');
     appLoaded = true;
     loadedUserId = currentUser.id;
     setUserLabels(currentUser);
     appShell.hidden = false;
     gate.hidden = true;
     document.body.classList.remove('auth-pending');
+  }
+
+  function runPostAuthAction() {
+    if (currentUser?.guest || sessionStorage.getItem(POST_AUTH_ACTION_KEY) !== 'checkout') return;
+    sessionStorage.removeItem(POST_AUTH_ACTION_KEY);
+    window.setTimeout(function () {
+      if (typeof window.startCheckoutWhenReady === 'function') window.startCheckoutWhenReady();
+      else if (typeof window.startCheckout === 'function') window.startCheckout();
+    }, 150);
   }
 
   async function unlock(data) {
@@ -135,6 +145,7 @@
     }
     try {
       await loadApplication();
+      runPostAuthAction();
     } catch (error) {
       console.error(error);
       showGate(error.message || 'アプリを読み込めませんでした。');
@@ -228,6 +239,16 @@
     }
   }
 
+  function preparePremiumSignup() {
+    sessionStorage.setItem(POST_AUTH_ACTION_KEY, 'checkout');
+    setMode(signupEnabled ? 'register' : 'login');
+    document.querySelector('.auth-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setStatus(signupEnabled
+      ? 'Premiumのお申込みにはアカウント作成が必要です。作成後、既存のStripe決済画面へ進みます。'
+      : 'Premiumのお申込みにはログインが必要です。ログイン後、既存のStripe決済画面へ進みます。', 'success');
+    window.setTimeout(function () { emailInput.focus(); }, 450);
+  }
+
   async function logout() {
     const buttons = document.querySelectorAll('[data-auth-logout]');
     buttons.forEach(function (button) { button.disabled = true; });
@@ -294,6 +315,12 @@
   registerTab.addEventListener('click', function () { setMode('register'); });
   resetToggle.addEventListener('click', function () { setMode(authMode.startsWith('reset-') ? 'login' : 'reset-request'); });
   guestButton.addEventListener('click', enterGuest);
+  document.querySelectorAll('[data-auth-guest-cta]').forEach(function (button) {
+    button.addEventListener('click', enterGuest);
+  });
+  document.querySelectorAll('[data-auth-premium-cta]').forEach(function (button) {
+    button.addEventListener('click', preparePremiumSignup);
+  });
   document.querySelectorAll('[data-auth-logout]').forEach(function (button) {
     button.addEventListener('click', logout);
   });

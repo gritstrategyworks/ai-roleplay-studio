@@ -1,18 +1,11 @@
 {
-  "name": "AI ROLEPLAY STUDIO｜AI実践ロープレ研修",
-  "short_name": "AIロープレ",
-  "description": "営業商談、1on1、採用面接、クレーム対応をAIアバターとの対話で実践し、採点とフィードバックを受けられるロールプレイ研修アプリ",
-  "start_url": "./",
+  "name": "AIビジネスロールプレイスタジオ",
+  "short_name": "AIロープレスタジオ",
+  "description": "AI顧客・部下・応募者との実践対話で、営業・1on1・採用面接・クレーム対応を練習し、AIの採点を受けられるビジネス研修Webアプリです。",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#edf2f8",
+  "background_color": "#07111f",
   "theme_color": "#07111f",
-  "icons": [
-    {
-      "src": "assets/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ],
-  "scope": "./"
+  "lang": "ja",
+  "icons": [{"src":"assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }

@@ -23,6 +23,6 @@ test('mobile composer follows the visual viewport and keyboard', () => {
 });
 
 test('asset cache is bumped for the layout fix', () => {
-  assert.match(worker, /v1-43-roleplay-timing/);
-  assert.match(worker, /styles\.css\?v=1\.43/);
+  assert.match(worker, /v1-44-business-onboarding/);
+  assert.match(worker, /styles\.css\?v=1\.44/);
 });

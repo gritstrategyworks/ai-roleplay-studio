@@ -15,12 +15,12 @@ test('marketing copy positions the product as practical dialogue training', () =
   assert.doesNotMatch(hero, /AI音声|声で話/);
   assert.match(hero, /AI実践ロールプレイ/);
   assert.match(hero, /文章入力またはマイク入力/);
-  assert.match(manifest, /AI実践ロープレ研修/);
+  assert.match(manifest, /AIビジネスロールプレイスタジオ/);
 });
 
 test('microphone and read-aloud features remain available', () => {
   assert.match(html, /id="micButton"/);
   assert.match(html, /id="speechSwitch"/);
   assert.match(html, /ハンズフリーを開始/);
-  assert.match(worker, /v1-43-roleplay-timing/);
+  assert.match(worker, /v1-44-business-onboarding/);
 });
