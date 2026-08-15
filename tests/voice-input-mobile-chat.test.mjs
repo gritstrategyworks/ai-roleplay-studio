@@ -13,10 +13,10 @@ test('hands-free recognition retries transient desktop failures', () => {
   assert.match(app, /function stopVoiceRuntime\(cancelSpeech=true\)\{clearRecognitionRestart\(\)/);
 });
 
-test('mobile roleplay prioritizes LINE-like message history', () => {
+test('mobile roleplay keeps message history usable with the keyboard', () => {
   assert.match(styles, /Mobile conversation view: prioritize the message history/);
   assert.match(styles, /grid-template-rows:64px minmax\(0,1fr\)/);
   assert.match(styles, /\.message\.user \.bubble\{[^}]*background:#9bea72/);
   assert.match(styles, /\.composer-tools\{display:none\}/);
-  assert.match(worker, /v1-38-email-reset/);
+  assert.match(worker, /v1-39-mobile-composer-end/);
 });
