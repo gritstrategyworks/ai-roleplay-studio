@@ -39,8 +39,8 @@
   <title>AIロープレ研修｜営業・1on1・採用面接をAIと実践</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=1.42">
-  <link rel="stylesheet" href="auth.css?v=1.42">
+  <link rel="stylesheet" href="styles.css?v=1.43">
+  <link rel="stylesheet" href="auth.css?v=1.43">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -185,6 +185,7 @@
             <div class="field"><label for="customerAttitudeSelect">⑩ 顧客の態度 <em>必須</em></label><select id="customerAttitudeSelect" onchange="updateSetupDraft()"><option>好意的</option><option selected>普通</option><option>慎重</option><option>警戒している</option><option>否定的</option></select></div>
             <div class="field"><label for="roleplayDifficultySelect">⑪ 難易度 <em>必須</em></label><select id="roleplayDifficultySelect" onchange="updateSetupDraft()"><option value="easy">初級</option><option value="normal" selected>中級</option><option value="hard">上級</option></select></div>
             <div class="field"><label for="roleplayGoalSelect">⑫ 今回のゴール <em>必須</em></label><select id="roleplayGoalSelect" onchange="updateSetupDraft()"><option>信頼関係をつくる</option><option>ニーズを把握する</option><option>商品を提案する</option><option>見積提出につなげる</option><option>契約する</option><option>クレームを収束させる</option></select></div>
+            <div class="field"><label for="roleplayTimeLimitSelect">⑬ ロープレ時間 <em>必須</em> <span id="timeLimitPlanBadge" class="feature-plan-badge">無料は5分</span></label><select id="roleplayTimeLimitSelect" onchange="updateSetupDraft()"><option value="300">5分</option><option value="600" data-premium-time>10分（Premium）</option><option value="900" data-premium-time>15分（Premium）</option></select><p id="timeLimitPlanHelp" class="field-help">無料プランでは5分を利用できます。</p></div>
           </div>
           <button id="advancedToggle" class="advanced-toggle" type="button" aria-expanded="false" onclick="toggleAdvancedSettings()"><span>詳細設定 <small id="advancedPlanBadge" class="feature-plan-badge">Premium</small></span><span id="advancedToggleLabel">研修担当者・上級者向け　🔒</span></button>
           <section id="advancedSettings" class="advanced-settings" hidden>
@@ -217,7 +218,7 @@
             </div>
           </section>
         </div>
-        <aside class="summary-card"><div class="summary-avatar"><img id="summaryAvatar" alt="選択中のアバター"><div><strong id="summaryName">中堅男性</strong><div id="summaryRole">BtoB・無形商材</div></div></div><div class="summary-line"><span>商品</span><strong id="summaryProduct">未入力</strong></div><div class="summary-line"><span>商談場面</span><strong id="summaryScene">初回訪問</strong></div><div class="summary-line"><span>顧客の態度</span><strong id="summaryAttitude">普通</strong></div><div class="summary-line"><span>難易度</span><strong id="summaryDifficulty">中級</strong></div><div class="summary-line"><span>ゴール</span><strong id="summaryGoal">信頼関係をつくる</strong></div><button class="primary-btn" type="button" onclick="beginRoleplay()">この設定で開始</button><p class="privacy-note">入力値はこの端末に保存されます。アバターは外見だけを表します。</p></aside>
+        <aside class="summary-card"><div class="summary-avatar"><img id="summaryAvatar" alt="選択中のアバター"><div><strong id="summaryName">中堅男性</strong><div id="summaryRole">BtoB・無形商材</div></div></div><div class="summary-line"><span>商品</span><strong id="summaryProduct">未入力</strong></div><div class="summary-line"><span>商談場面</span><strong id="summaryScene">初回訪問</strong></div><div class="summary-line"><span>顧客の態度</span><strong id="summaryAttitude">普通</strong></div><div class="summary-line"><span>難易度</span><strong id="summaryDifficulty">中級</strong></div><div class="summary-line"><span>ゴール</span><strong id="summaryGoal">信頼関係をつくる</strong></div><div class="summary-line"><span>時間</span><strong id="summaryTimeLimit">5分</strong></div><button class="primary-btn" type="button" onclick="beginRoleplay()">この設定で開始</button><p class="privacy-note">入力値はこの端末に保存されます。アバターは外見だけを表します。</p></aside>
       </div>
     </section>
 
@@ -233,7 +234,7 @@
           <div id="messageList" class="messages" aria-live="polite"></div>
           <div id="hintCard" class="hint-card">💡 <span id="hintText"></span></div>
           <div id="voiceBanner" class="voice-banner"><div><strong id="voiceBannerTitle">ハンズフリーは停止中です</strong><span id="voiceBannerText">開始すると、AI発話後に自動でマイクが開きます。</span></div><button id="voiceSessionButton" class="voice-session-btn" type="button" onclick="toggleVoiceSession()">ハンズフリーを開始</button></div>
-          <div class="composer"><div class="composer-row"><button id="micButton" class="mic-btn" type="button" aria-label="マイク入力" onclick="toggleSpeechRecognition()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></svg></button><textarea id="messageInput" rows="1" maxlength="600" placeholder="メッセージを入力してください" oninput="autoResize(this)" onkeydown="handleInputKey(event)"></textarea><button id="sendButton" class="send-btn" type="button" aria-label="送信" onclick="sendUserMessage()"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg></button></div><div class="composer-tools"><div class="tool-buttons"><button id="hintButton" class="tool-btn" type="button" onclick="showHint()">💡 ヒント</button><button class="tool-btn" type="button" onclick="insertPhrase('本日のお時間について、まず確認させてください。')">挨拶</button><button class="tool-btn" type="button" onclick="insertPhrase('もう少し具体的に教えていただけますか。')">深掘り</button><button class="tool-btn" type="button" onclick="repeatLastAIMessage()">🔊 もう一度</button></div><button id="roleplayEndButton" class="end-btn" type="button" onclick="requestEndRoleplay()">ロープレを終了</button></div></div>
+          <div class="composer"><div class="composer-row"><button id="micButton" class="mic-btn" type="button" aria-label="マイク入力" onclick="toggleSpeechRecognition()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></svg></button><textarea id="messageInput" rows="1" maxlength="600" placeholder="メッセージを入力してください" oninput="autoResize(this)" onkeydown="handleInputKey(event)"></textarea><button id="sendButton" class="send-btn" type="button" aria-label="送信" onclick="sendUserMessage()"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg></button></div><div id="timeLimitAction" class="time-limit-action" hidden><span id="timeLimitActionText">残り2ターン以内に終了してください</span><button type="button" onclick="requestEndRoleplay()">ロープレを終了する</button></div><div class="composer-tools"><div class="tool-buttons"><button id="hintButton" class="tool-btn" type="button" onclick="showHint()">💡 ヒント</button><button class="tool-btn" type="button" onclick="insertPhrase('本日のお時間について、まず確認させてください。')">挨拶</button><button class="tool-btn" type="button" onclick="insertPhrase('もう少し具体的に教えていただけますか。')">深掘り</button><button class="tool-btn" type="button" onclick="repeatLastAIMessage()">🔊 もう一度</button></div><button id="roleplayEndButton" class="end-btn" type="button" onclick="requestEndRoleplay()">ロープレを終了</button></div></div>
         </section>
       </div>
     </section>
@@ -352,6 +353,6 @@
   </div>
 </div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-box"><div class="spinner"></div><strong>会話を振り返っています</strong><p style="color:#b9c7d9;font-size:13px">評価と改善ポイントを作成中です</p></div></div>
-<script src="auth.js?v=1.42" defer></script>
+<script src="auth.js?v=1.43" defer></script>
 </body>
 </html>
