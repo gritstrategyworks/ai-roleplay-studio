@@ -14,4 +14,9 @@ test('password recovery uses email links instead of a browser secret command', (
   assert.match(worker, /https:\/\/api\.resend\.com\/emails/);
   assert.match(worker, /DELETE FROM auth_sessions WHERE user_id = \?/);
   assert.match(worker, /PASSWORD_RESET_TTL_SECONDS = 60 \* 30/);
+  assert.match(worker, /email_delivery_failed/);
+  assert.match(worker, /providerStatus/);
+  assert.match(worker, /DELETE FROM auth_rate_limits WHERE rate_key = \?/);
+  assert.match(worker, /no-reply@mail\.gritstrategyworks\.com/);
+  assert.match(auth, /迷惑メールフォルダ/);
 });

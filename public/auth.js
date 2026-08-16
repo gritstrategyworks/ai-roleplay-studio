@@ -67,7 +67,7 @@
     resetToggle.textContent = resetting ? 'ログインへ戻る' : 'パスワードを忘れた場合';
     document.getElementById('authPanelTitle').textContent = resetRequesting ? '再設定メールを送信' : (resetConfirming ? '新しいパスワードを設定' : (registering ? 'アカウントを作成' : 'おかえりなさい'));
     document.getElementById('authPanelLead').textContent = resetRequesting
-      ? '登録したメールアドレスへ、30分間有効な再設定リンクを送ります。'
+      ? '登録したメールアドレスへ、30分間有効な再設定リンクを送ります。届かない場合は迷惑メールフォルダも確認してください。'
       : resetConfirming
       ? '新しいパスワードを10文字以上で入力してください。'
       : registering
@@ -116,8 +116,8 @@
     loading.hidden = false;
     panel.hidden = true;
     document.getElementById('authLoadingText').textContent = 'アプリを準備しています';
-    await loadScript('scenario-design.js?v=1.44');
-    await loadScript('app.js?v=1.44');
+    await loadScript('scenario-design.js?v=1.45');
+    await loadScript('app.js?v=1.45');
     appLoaded = true;
     loadedUserId = currentUser.id;
     setUserLabels(currentUser);
