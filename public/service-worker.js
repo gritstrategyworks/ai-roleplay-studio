@@ -1,6 +1,6 @@
-const CACHE='ai-roleplay-studio-v1-46-admin-mode';
+const CACHE='ai-roleplay-studio-v1-47-admin-menu-visibility';
 const BASE=new URL('./',self.location.href);
-const CORE=['index.html','styles.css?v=1.46','auth.css?v=1.46','auth.js?v=1.46','app.js?v=1.46','scenario-design.js?v=1.46','manifest.webmanifest','robots.txt','sitemap.xml','assets/icon.svg','assets/og-image.png'].map(path=>new URL(path,BASE).href);
+const CORE=['index.html','styles.css?v=1.47','auth.css?v=1.47','auth.js?v=1.47','app.js?v=1.47','scenario-design.js?v=1.47','manifest.webmanifest','robots.txt','sitemap.xml','assets/icon.svg','assets/og-image.png'].map(path=>new URL(path,BASE).href);
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',event=>{

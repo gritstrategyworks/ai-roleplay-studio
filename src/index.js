@@ -922,8 +922,9 @@ async function onRequestGet2({ request, env }) {
     const { accountId, cookie, user } = await getBillingIdentity(request, env);
     const subscription = await getSubscription(env, accountId);
     const subscriptionPremium = hasPremiumAccess(subscription);
-    const developerAvailable = isDeveloperUser(user, env) && Boolean(adminModePassword(env));
-    const developerPreview = developerAvailable ? await getDeveloperPreview(request, env, user) : null;
+    const developerAvailable = isDeveloperUser(user, env);
+    const developerConfigured = Boolean(adminModePassword(env));
+    const developerPreview = developerAvailable && developerConfigured ? await getDeveloperPreview(request, env, user) : null;
     const premium = developerPreview?.mode === "premium" ? true : developerPreview?.mode === "free" ? false : subscriptionPremium;
     return json({
       premium,
@@ -936,6 +937,7 @@ async function onRequestGet2({ request, env }) {
       ),
       developerPreview: {
         available: developerAvailable,
+        configured: developerConfigured,
         mode: developerPreview?.mode || "actual",
         expiresAt: developerPreview?.expiresAt || null
       }
