@@ -238,8 +238,10 @@ test('developer can preview free and Premium without changing the subscription',
   env.PASSWORD_RESET_FROM = 'AI Roleplay Studio <no-reply@example.com>';
   const nativeFetch = globalThis.fetch;
   let resetUrl = '';
+  let rejectResetEmail = true;
   globalThis.fetch = async (url, init) => {
     if (String(url) === 'https://api.resend.com/emails') {
+      if (rejectResetEmail) return Response.json({ name: 'validation_error', message: 'Rejected for test' }, { status: 403 });
       const payload = JSON.parse(init.body);
       resetUrl = payload.html.match(/href="([^"]+)/)?.[1] || '';
       return Response.json({ id: 'email-test' });
@@ -247,6 +249,14 @@ test('developer can preview free and Premium without changing the subscription',
     return nativeFetch(url, init);
   };
   try {
+    response = await request(env, '/api/auth/password-reset/request', {
+      method: 'POST', body: { email: 'ordinary@example.com' }
+    });
+    assert.equal(response.status, 502);
+    assert.equal((await response.json()).code, 'email_delivery_failed');
+    assert.equal(database.prepare("SELECT COUNT(*) AS count FROM password_reset_tokens").get().count, 0);
+
+    rejectResetEmail = false;
     response = await request(env, '/api/auth/password-reset/request', {
       method: 'POST', body: { email: developerEmail }
     });

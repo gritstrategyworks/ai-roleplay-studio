@@ -586,21 +586,36 @@ async function ensurePasswordResetTable(env) {
   await env.BILLING_DB.prepare("CREATE INDEX IF NOT EXISTS idx_password_reset_user ON password_reset_tokens(user_id)").run();
 }
 async function sendPasswordResetEmail(env, email, resetUrl) {
-  if (!env.RESEND_API_KEY || !env.PASSWORD_RESET_FROM) throw new Error("Password reset email is not configured.");
+  if (!env.RESEND_API_KEY) {
+    const error = new Error("Password reset email is not configured.");
+    error.code = "email_not_configured";
+    throw error;
+  }
+  const defaultFrom = "AIビジネスロールプレイスタジオ <no-reply@mail.gritstrategyworks.com>";
+  const configuredFrom = String(env.PASSWORD_RESET_FROM || "").trim();
+  const from = /@mail\.gritstrategyworks\.com>?$/i.test(configuredFrom) ? configuredFrom : defaultFrom;
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
     body: JSON.stringify({
-      from: env.PASSWORD_RESET_FROM,
+      from,
       to: [email],
       subject: "【AIビジネスロールプレイスタジオ】パスワード再設定",
       html: `<div style="font-family:sans-serif;line-height:1.8;color:#17263a"><h2>パスワード再設定</h2><p>以下のボタンから30分以内に新しいパスワードを設定してください。</p><p><a href="${resetUrl}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#f47c2c;color:#fff;text-decoration:none;font-weight:bold">パスワードを再設定する</a></p><p>このリンクは一度だけ使用できます。心当たりがない場合は、このメールを無視してください。</p><p style="color:#6b7788;font-size:12px">AIビジネスロールプレイスタジオ</p></div>`
     })
   });
-  if (!response.ok) throw new Error(`Resend API returned ${response.status}.`);
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result.id) {
+    const error = new Error(`Resend API returned ${response.status}.`);
+    error.code = "email_provider_rejected";
+    error.providerStatus = response.status;
+    error.providerCode = String(result?.name || result?.code || "unknown").slice(0, 80);
+    throw error;
+  }
+  return result.id;
 }
 async function onRequestPostPasswordResetRequest({ request, env }) {
-  const generic = { ok: true, message: "入力されたメールアドレスが登録されている場合、パスワード再設定メールを送信しました。" };
+  const generic = { ok: true, message: "入力されたメールアドレスが登録されている場合、再設定メールの送信を受け付けました。数分待っても届かない場合は迷惑メールフォルダも確認してください。" };
   try {
     assertSameOrigin(request);
     if (!env.BILLING_DB || !env.AUTH_PEPPER) throw new Error("Password reset is not configured.");
@@ -608,7 +623,7 @@ async function onRequestPostPasswordResetRequest({ request, env }) {
     const email = normalizeEmail(body.email);
     if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(generic);
     const rate = await isRateLimited(request, env, email, "password-reset-request", 3, 900);
-    if (rate.limited) return json(generic);
+    if (rate.limited) return json({ error: "再設定メールの送信回数が上限に達しました。15分後にもう一度お試しください。", code: "rate_limited" }, { status: 429 });
     await recordRateLimit(env, rate);
     const user = await env.BILLING_DB.prepare("SELECT id, email FROM users WHERE email = ? COLLATE NOCASE").bind(email).first();
     if (!user) return json(generic);
@@ -623,10 +638,25 @@ async function onRequestPostPasswordResetRequest({ request, env }) {
     const appUrl = String(env.APP_URL || new URL(request.url).origin).replace(/\/$/, "");
     const resetUrl = `${appUrl}/?reset_token=${encodeURIComponent(token)}`;
     try {
-      await sendPasswordResetEmail(env, user.email, resetUrl);
+      const emailId = await sendPasswordResetEmail(env, user.email, resetUrl);
+      console.info("password reset email accepted", { emailId });
     } catch (error) {
-      await env.BILLING_DB.prepare("DELETE FROM password_reset_tokens WHERE token_hash = ?").bind(tokenHash).run();
-      console.error("password reset email failed", error);
+      await env.BILLING_DB.batch([
+        env.BILLING_DB.prepare("DELETE FROM password_reset_tokens WHERE token_hash = ?").bind(tokenHash),
+        env.BILLING_DB.prepare("DELETE FROM auth_rate_limits WHERE rate_key = ?").bind(rate.key)
+      ]);
+      console.error("password reset email failed", {
+        code: error?.code || "email_delivery_failed",
+        providerStatus: error?.providerStatus || null,
+        providerCode: error?.providerCode || null
+      });
+      const notConfigured = error?.code === "email_not_configured";
+      return json({
+        error: notConfigured
+          ? "現在、再設定メールの送信設定を確認しています。時間をおいてもう一度お試しください。"
+          : "再設定メールを送信できませんでした。時間をおいてもう一度お試しください。",
+        code: notConfigured ? "email_not_configured" : "email_delivery_failed"
+      }, { status: notConfigured ? 503 : 502 });
     }
     return json(generic);
   } catch (error) {
