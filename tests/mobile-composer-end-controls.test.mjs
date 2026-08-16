@@ -23,6 +23,6 @@ test('mobile composer follows the visual viewport and keyboard', () => {
 });
 
 test('asset cache is bumped for the layout fix', () => {
-  assert.match(worker, /v1-45-password-reset-delivery/);
-  assert.match(worker, /styles\.css\?v=1\.45/);
+  assert.match(worker, /v1-46-admin-mode/);
+  assert.match(worker, /styles\.css\?v=1\.46/);
 });

@@ -53,13 +53,19 @@ npm run deploy
 
 ## 試用期間中の開発者テスト表示（一時機能）
 
-`DEVELOPER_EMAILS` に登録されたメールアドレスでログインした場合だけ、ホームに無料／Premium表示の切替欄が表示されます。切替にはCloudflare Secretの `DEVELOPER_PREVIEW_COMMAND` が必要で、選択内容は署名付きHttpOnly Cookieとして4時間だけ保持されます。Stripeの契約や課金状態は変更しません。
+`ADMIN_EMAILS` または `DEVELOPER_EMAILS` に登録されたメールアドレスでログインした場合だけ、ホームとヘッダーに管理者メニューが表示されます。管理者Premiumモードでは有料機能を確認できますが、Stripeの契約や課金状態は変更しません。選択内容は署名付きHttpOnly Cookieとして4時間だけ保持されます。
 
 ```bash
 npx wrangler secret put DEVELOPER_PREVIEW_COMMAND
 ```
 
-- 秘密コマンドはソースコード、`wrangler.jsonc`、ブラウザ保存領域へ書かないでください。
+管理者用のパスワードは、より優先度の高いCloudflare Secretとして設定できます。
+
+```bash
+npx wrangler secret put ADMIN_MODE_PASSWORD
+```
+
+- 管理者パスワードはソースコード、`wrangler.jsonc`、ブラウザ保存領域へ書かないでください。
 - 5回失敗すると10分間ロックされます。
 - 無料表示では、実際にPremium契約中でも無料版のサーバー制限を確認できます。
 - Premium表示では、未契約でも全講義・詳細設定・詳細評価を確認できます。

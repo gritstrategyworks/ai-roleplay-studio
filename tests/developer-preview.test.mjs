@@ -5,6 +5,7 @@ import worker from '../src/index.js';
 
 const origin = 'https://app.test';
 const developerEmail = 'gritstrategyworks@gmail.com';
+const adminEmail = 'hirofumi.koizumi@gmail.com';
 const developerCommand = 'local-test-command';
 
 class D1Statement {
@@ -127,6 +128,8 @@ test('developer can preview free and Premium without changing the subscription',
     AUTH_PEPPER: 'local-test-pepper-1234567890123456',
     BILLING_DB: new D1TestDatabase(database),
     BILLING_ENABLED: 'false',
+    ADMIN_EMAILS: adminEmail,
+    ADMIN_MODE_PASSWORD: developerCommand,
     DEVELOPER_EMAILS: developerEmail,
     DEVELOPER_PREVIEW_COMMAND: developerCommand,
     SIGNUP_ENABLED: 'true',
@@ -232,6 +235,20 @@ test('developer can preview free and Premium without changing the subscription',
     body: { command: developerCommand, mode: 'premium' }
   });
   assert.equal(response.status, 404);
+
+  const adminCookie = await register(env, adminEmail);
+  response = await request(env, '/api/billing/status', { cookies: [adminCookie] });
+  state = await response.json();
+  assert.equal(state.developerPreview.available, true);
+  response = await request(env, '/api/developer/preview', {
+    method: 'POST', cookies: [adminCookie], body: { command: developerCommand, mode: 'premium' }
+  });
+  assert.equal(response.status, 200);
+  const adminPremiumCookie = responseCookie(response);
+  response = await request(env, '/api/billing/status', { cookies: [adminCookie, adminPremiumCookie] });
+  state = await response.json();
+  assert.equal(state.premium, true);
+  assert.equal(state.subscriptionPremium, false);
 
   // Password reset sends a single-use link without revealing whether an account exists.
   env.RESEND_API_KEY = 're_test_key';

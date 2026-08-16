@@ -22,5 +22,5 @@ test('microphone and read-aloud features remain available', () => {
   assert.match(html, /id="micButton"/);
   assert.match(html, /id="speechSwitch"/);
   assert.match(html, /ハンズフリーを開始/);
-  assert.match(worker, /v1-45-password-reset-delivery/);
+  assert.match(worker, /v1-46-admin-mode/);
 });

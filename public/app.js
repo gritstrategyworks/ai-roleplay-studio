@@ -346,7 +346,7 @@ function renderBilling(){
   const premium=billingState.premium,available=billingState.billingAvailable,status=billingState.status||'free';
   const preview=billingState.developerPreview||EMPTY_DEVELOPER_PREVIEW,previewActive=preview.available&&preview.mode!=='actual';
   const statusLabels={free:'無料プラン',active:'プレミアム',trialing:'無料体験中',past_due:'お支払い要確認',canceled:'解約済み',unpaid:'支払い未完了',incomplete:'申込み未完了',incomplete_expired:'申込み期限切れ',paused:'一時停止中'};
-  const label=billingState.loading?'確認中':previewActive?`開発テスト：${preview.mode==='premium'?'Premium':'無料'}`:!available&&!premium?'決済設定を確認してください':statusLabels[status]||status;
+  const label=billingState.loading?'確認中':previewActive?`管理者：${preview.mode==='premium'?'Premium':'無料確認'}`:!available&&!premium?'決済設定を確認してください':statusLabels[status]||status;
   const needsPaymentAction=['past_due','unpaid','paused'].includes(status);
   const manage=Boolean(billingState.canManage&&(billingState.subscriptionPremium||needsPaymentAction));
   const action=previewActive?focusDeveloperPreviewPanel:manage?openBillingPortal:startCheckout;
@@ -365,7 +365,7 @@ function renderBilling(){
   if(badge){badge.textContent=label;badge.classList.toggle('premium',premium)}
   const period=billingState.currentPeriodEnd?new Date(Number(billingState.currentPeriodEnd)*1000).toLocaleDateString('ja-JP'):null;
   const text=document.getElementById('billingStatusText');
-  if(text)text.textContent=previewActive?`開発者テストで${preview.mode==='premium'?'Premium':'無料'}表示にしています。実際の契約情報は変更されません。`:premium?(period?`プレミアム機能をご利用いただけます。現在の利用期間は${period}までです。`:'プレミアム機能をご利用いただけます。'):needsPaymentAction?'お支払い情報を確認するとプレミアム機能を再開できます。':available?'詳細分析を月額980円（税込）でご利用いただけます。いつでも次回更新日前に解約できます。':'決済設定を確認しています。';
+  if(text)text.textContent=previewActive?`管理者モードで${preview.mode==='premium'?'Premium':'無料確認'}表示にしています。実際の契約情報は変更されません。`:premium?(period?`プレミアム機能をご利用いただけます。現在の利用期間は${period}までです。`:'プレミアム機能をご利用いただけます。'):needsPaymentAction?'お支払い情報を確認するとプレミアム機能を再開できます。':available?'詳細分析を月額980円（税込）でご利用いただけます。いつでも次回更新日前に解約できます。':'決済設定を確認しています。';
   document.body.classList.toggle('free-plan-preview',!premium);
   const banner=document.getElementById('planPreviewBanner');
   if(banner){
@@ -429,20 +429,22 @@ function renderAdPlacement(){
 function renderDeveloperPreviewPanel(){
   const panel=document.getElementById('developerPreviewPanel');if(!panel)return;
   const preview=billingState.developerPreview||EMPTY_DEVELOPER_PREVIEW;
+  const menuButton=document.getElementById('adminMenuButton');
+  if(menuButton){menuButton.hidden=billingState.loading||!preview.available;menuButton.classList.toggle('is-active',preview.mode!=='actual')}
   panel.hidden=billingState.loading||!preview.available;
   if(panel.hidden)return;
-  const active=preview.mode!=='actual',label=preview.mode==='premium'?'Premium表示':preview.mode==='free'?'無料表示':'実契約どおり';
+  const active=preview.mode!=='actual',label=preview.mode==='premium'?'管理者Premium':preview.mode==='free'?'無料確認':'通常モード';
   panel.classList.toggle('is-active',active);
   panel.classList.toggle('is-premium',preview.mode==='premium');
   const badge=document.getElementById('developerPreviewBadge'),detail=document.getElementById('developerPreviewDetail');
   if(badge)badge.textContent=label;
-  if(detail){const expires=preview.expiresAt?new Date(Number(preview.expiresAt)*1000).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';detail.textContent=active?`現在は${label}です。${expires?expires+'まで有効。':''}Stripeの契約は変更しません。`:'実際のStripe契約状態を表示しています。'}
+  if(detail){const expires=preview.expiresAt?new Date(Number(preview.expiresAt)*1000).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';detail.textContent=active?`現在は${label}です。${expires?expires+'まで有効。':''}Stripeの契約は変更しません。`:'管理者Premiumモードを有効にすると、有料機能を動作確認できます。'}
   panel.querySelectorAll('[data-developer-preview-mode]').forEach(button=>{button.classList.toggle('selected',button.dataset.developerPreviewMode===preview.mode);button.disabled=Boolean(billingActionPending)});
 }
 function focusDeveloperPreviewPanel(){showScreen('home');setTimeout(()=>{document.getElementById('developerPreviewPanel')?.scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('developerCommandInput')?.focus()},100)}
 async function setDeveloperPreviewMode(mode){
   const input=document.getElementById('developerCommandInput'),status=document.getElementById('developerPreviewStatus'),command=input?.value||'';
-  if(!command){if(status){status.hidden=false;status.textContent='秘密コマンドを入力してください。'}input?.focus();return}
+  if(!command){if(status){status.hidden=false;status.textContent='管理者パスワードを入力してください。'}input?.focus();return}
   if(billingActionPending)return;
   billingActionPending=true;renderBilling();if(status){status.hidden=false;status.textContent='切り替えています…'}
   try{
@@ -450,8 +452,8 @@ async function setDeveloperPreviewMode(mode){
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(data.error||'切り替えられませんでした。');
     if(input)input.value='';
-    if(status){status.hidden=false;status.textContent=mode==='actual'?'実契約どおりの表示に戻しました。':`${mode==='premium'?'Premium':'無料'}表示に切り替えました。`}
-    await loadBillingStatus();toast(mode==='actual'?'開発者テストを終了しました':`開発者テスト：${mode==='premium'?'Premium':'無料'}表示`);
+    if(status){status.hidden=false;status.textContent=mode==='actual'?'通常モードに戻しました。':`${mode==='premium'?'管理者Premium':'無料確認'}モードに切り替えました。`}
+    await loadBillingStatus();toast(mode==='actual'?'管理者モードを終了しました':`${mode==='premium'?'管理者Premium':'無料確認'}モード`);
   }catch(error){if(status){status.hidden=false;status.textContent=error.message||'切り替えられませんでした。'}toast(error.message||'切り替えられませんでした。')}
   finally{billingActionPending=false;renderBilling()}
 }
