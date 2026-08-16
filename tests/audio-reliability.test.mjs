@@ -14,7 +14,7 @@ test('browser speech keeps utterances alive and retries a turn that does not sta
 });
 
 test('audio reliability release invalidates cached app assets', () => {
-  assert.match(indexSource, /auth\.js\?v=1\.46/);
-  assert.match(serviceWorkerSource, /v1-46-admin-mode/);
-  assert.match(serviceWorkerSource, /app\.js\?v=1\.46/);
+  assert.match(indexSource, /auth\.js\?v=1\.47/);
+  assert.match(serviceWorkerSource, /v1-47-admin-menu-visibility/);
+  assert.match(serviceWorkerSource, /app\.js\?v=1\.47/);
 });

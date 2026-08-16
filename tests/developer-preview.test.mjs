@@ -154,7 +154,7 @@ test('developer can preview free and Premium without changing the subscription',
 
   let response = await request(env, '/api/billing/status', { cookies: [sessionCookie] });
   let state = await response.json();
-  assert.deepEqual(state.developerPreview, { available: true, mode: 'actual', expiresAt: null });
+  assert.deepEqual(state.developerPreview, { available: true, configured: true, mode: 'actual', expiresAt: null });
   assert.equal(state.premium, false);
   assert.equal(state.subscriptionPremium, false);
 

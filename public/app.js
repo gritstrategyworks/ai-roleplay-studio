@@ -106,7 +106,7 @@ const state = {
 };
 
 let settings = loadSettings();
-const EMPTY_DEVELOPER_PREVIEW={available:false,mode:'actual',expiresAt:null};
+const EMPTY_DEVELOPER_PREVIEW={available:false,configured:false,mode:'actual',expiresAt:null};
 let billingState = { loading:true, premium:false, subscriptionPremium:false, status:'free', currentPeriodEnd:null, canManage:false, billingAvailable:false, developerPreview:{...EMPTY_DEVELOPER_PREVIEW} };
 const APP_SHARE_URL='https://roleplay.gritstrategyworks.com/';
 const FREE_LECTURE_IDS=new Set(['1.1','1.2']);
@@ -438,12 +438,13 @@ function renderDeveloperPreviewPanel(){
   panel.classList.toggle('is-premium',preview.mode==='premium');
   const badge=document.getElementById('developerPreviewBadge'),detail=document.getElementById('developerPreviewDetail');
   if(badge)badge.textContent=label;
-  if(detail){const expires=preview.expiresAt?new Date(Number(preview.expiresAt)*1000).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';detail.textContent=active?`現在は${label}です。${expires?expires+'まで有効。':''}Stripeの契約は変更しません。`:'管理者Premiumモードを有効にすると、有料機能を動作確認できます。'}
+  if(detail){const expires=preview.expiresAt?new Date(Number(preview.expiresAt)*1000).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';detail.textContent=!preview.configured?'管理者パスワードの設定を確認しています。利用できない場合はCloudflare Secret「ADMIN_MODE_PASSWORD」を再保存してください。':active?`現在は${label}です。${expires?expires+'まで有効。':''}Stripeの契約は変更しません。`:'管理者Premiumモードを有効にすると、有料機能を動作確認できます。'}
   panel.querySelectorAll('[data-developer-preview-mode]').forEach(button=>{button.classList.toggle('selected',button.dataset.developerPreviewMode===preview.mode);button.disabled=Boolean(billingActionPending)});
 }
 function focusDeveloperPreviewPanel(){showScreen('home');setTimeout(()=>{document.getElementById('developerPreviewPanel')?.scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('developerCommandInput')?.focus()},100)}
 async function setDeveloperPreviewMode(mode){
   const input=document.getElementById('developerCommandInput'),status=document.getElementById('developerPreviewStatus'),command=input?.value||'';
+  if(!billingState.developerPreview?.configured){if(status){status.hidden=false;status.textContent='Cloudflare Secret「ADMIN_MODE_PASSWORD」が実行中のWorkerに反映されていません。Secretを再保存してからお試しください。'}return}
   if(!command){if(status){status.hidden=false;status.textContent='管理者パスワードを入力してください。'}input?.focus();return}
   if(billingActionPending)return;
   billingActionPending=true;renderBilling();if(status){status.hidden=false;status.textContent='切り替えています…'}

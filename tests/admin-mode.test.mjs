@@ -13,11 +13,14 @@ test('administrator account gets a protected Premium mode menu', () => {
   assert.match(config, /"ADMIN_EMAILS": "hirofumi\.koizumi@gmail\.com"/);
   assert.match(worker, /env\.ADMIN_MODE_PASSWORD \|\| env\.DEVELOPER_PREVIEW_COMMAND/);
   assert.match(worker, /verifyDeveloperPreviewCommand\(body\.command, expectedPassword\)/);
+  assert.match(worker, /const developerAvailable = isDeveloperUser\(user, env\)/);
+  assert.match(worker, /configured: developerConfigured/);
   assert.match(html, /id="adminMenuButton"/);
   assert.match(html, /管理者メニュー/);
   assert.match(html, /管理者パスワード/);
   assert.match(html, /管理者Premium/);
   assert.match(app, /menuButton\.hidden=billingState\.loading\|\|!preview\.available/);
+  assert.match(app, /ADMIN_MODE_PASSWORD.+実行中のWorkerに反映されていません/);
 });
 
 test('administrator mode is temporary and does not modify Stripe state', () => {
