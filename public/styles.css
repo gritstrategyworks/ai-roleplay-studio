@@ -243,7 +243,7 @@ body.roleplay-active .end-btn:hover{background:#ffe8e8;border-color:#df8888}
 /* Temporary server-authorized developer preview. Remove after the trial period. */
 .developer-preview-panel{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,.85fr);gap:18px 28px;align-items:center;margin:-7px 0 28px;padding:20px 22px;border:1px dashed #74869a;border-radius:20px;background:linear-gradient(135deg,#f7f9fc,#eef4fb);box-shadow:var(--shadow-sm)}
 .developer-preview-panel[hidden]{display:none}
-.developer-preview-panel:before{content:"DEV";position:absolute;right:16px;top:-10px;padding:4px 9px;border-radius:999px;background:#35465a;color:#fff;font-size:8px;font-weight:900;letter-spacing:.16em}
+.developer-preview-panel:before{content:"ADMIN";position:absolute;right:16px;top:-10px;padding:4px 9px;border-radius:999px;background:#35465a;color:#fff;font-size:8px;font-weight:900;letter-spacing:.16em}
 .developer-preview-panel.is-active{border-style:solid;border-color:#e2a15e;background:linear-gradient(135deg,#fff9f1,#f6f9fc)}
 .developer-preview-panel.is-premium{border-color:#b88aef;background:linear-gradient(135deg,#fbf7ff,#f3f7ff)}
 .developer-preview-copy h2{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:3px 0 5px;font-size:18px}.developer-preview-copy p{margin:0;color:var(--muted);font-size:11px;line-height:1.65}
@@ -252,6 +252,8 @@ body.roleplay-active .end-btn:hover{background:#ffe8e8;border-color:#df8888}
 .developer-preview-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.developer-preview-actions button{min-height:38px;padding:0 9px;border:1px solid #cbd6e2;border-radius:10px;background:#fff;color:#3c5068;font-size:10px;font-weight:900}.developer-preview-actions button:hover,.developer-preview-actions button.selected{border-color:#ff9a4f;background:#fff3e8;color:#a94d0c}.developer-preview-actions button:disabled{cursor:progress;opacity:.6}
 .developer-preview-status{margin:0;color:#9a531a;font-size:10px;font-weight:800}.developer-preview-warning{grid-column:1/-1;margin:0;padding-top:10px;border-top:1px solid rgba(87,107,132,.15);color:#738195;font-size:9px;line-height:1.6}
 @media(max-width:760px){.developer-preview-panel{grid-template-columns:1fr;margin:0 0 24px;padding:18px}.developer-preview-warning{grid-column:auto}.developer-preview-actions{grid-template-columns:1fr}.developer-preview-actions button{min-height:42px}}
+.admin-menu-button{min-height:38px;padding:0 12px;border:1px solid rgba(255,174,91,.45);border-radius:11px;color:#ffd2aa;background:rgba(255,139,56,.12);font-size:11px;font-weight:900}.admin-menu-button:hover,.admin-menu-button.is-active{color:#fff;background:#d86d20}.admin-menu-button[hidden]{display:none}
+@media(max-width:600px){.admin-menu-button{width:40px;padding:0;font-size:0}.admin-menu-button:after{content:'管理';font-size:10px}}
 
 /* Mobile conversation view: prioritize the message history like a messaging app. */
 @media(max-width:650px){

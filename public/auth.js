@@ -116,8 +116,8 @@
     loading.hidden = false;
     panel.hidden = true;
     document.getElementById('authLoadingText').textContent = 'アプリを準備しています';
-    await loadScript('scenario-design.js?v=1.45');
-    await loadScript('app.js?v=1.45');
+    await loadScript('scenario-design.js?v=1.46');
+    await loadScript('app.js?v=1.46');
     appLoaded = true;
     loadedUserId = currentUser.id;
     setUserLabels(currentUser);

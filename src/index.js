@@ -204,7 +204,7 @@ function clearDeveloperPreviewCookie(request) {
 __name(clearDeveloperPreviewCookie, "clearDeveloperPreviewCookie");
 __name2(clearDeveloperPreviewCookie, "clearDeveloperPreviewCookie");
 function developerEmailSet(env) {
-  return new Set(String(env.DEVELOPER_EMAILS || "").split(/[;,\n]/).map(normalizeEmail).filter(Boolean));
+  return new Set([env.ADMIN_EMAILS, env.DEVELOPER_EMAILS].filter(Boolean).join(",").split(/[;,\n]/).map(normalizeEmail).filter(Boolean));
 }
 __name(developerEmailSet, "developerEmailSet");
 __name2(developerEmailSet, "developerEmailSet");
@@ -213,6 +213,11 @@ function isDeveloperUser(user, env) {
 }
 __name(isDeveloperUser, "isDeveloperUser");
 __name2(isDeveloperUser, "isDeveloperUser");
+function adminModePassword(env) {
+  return String(env.ADMIN_MODE_PASSWORD || env.DEVELOPER_PREVIEW_COMMAND || "");
+}
+__name(adminModePassword, "adminModePassword");
+__name2(adminModePassword, "adminModePassword");
 async function verifyDeveloperPreviewCommand(provided, expected) {
   const values = [String(provided || ""), String(expected || "")];
   const digests = await Promise.all(values.map((value) => crypto.subtle.digest("SHA-256", encoder.encode(value))));
@@ -917,7 +922,7 @@ async function onRequestGet2({ request, env }) {
     const { accountId, cookie, user } = await getBillingIdentity(request, env);
     const subscription = await getSubscription(env, accountId);
     const subscriptionPremium = hasPremiumAccess(subscription);
-    const developerAvailable = isDeveloperUser(user, env) && Boolean(env.DEVELOPER_PREVIEW_COMMAND);
+    const developerAvailable = isDeveloperUser(user, env) && Boolean(adminModePassword(env));
     const developerPreview = developerAvailable ? await getDeveloperPreview(request, env, user) : null;
     const premium = developerPreview?.mode === "premium" ? true : developerPreview?.mode === "free" ? false : subscriptionPremium;
     return json({
@@ -946,7 +951,8 @@ async function onRequestPostDeveloperPreview(context) {
   try {
     assertSameOrigin(request);
     const user = context.data?.user;
-    if (context.data?.auth?.guest || !isDeveloperUser(user, env) || !env.DEVELOPER_PREVIEW_COMMAND) {
+    const expectedPassword = adminModePassword(env);
+    if (context.data?.auth?.guest || !isDeveloperUser(user, env) || !expectedPassword) {
       return json({ error: "この機能は利用できません。", code: "not_found" }, { status: 404 });
     }
     if (!env.AUTH_PEPPER || !env.BILLING_DB) throw new Error("Developer preview dependencies are not configured.");
@@ -959,10 +965,10 @@ async function onRequestPostDeveloperPreview(context) {
     if (rate.limited) {
       return json({ error: "入力回数が多すぎます。10分後にお試しください。", code: "rate_limited" }, { status: 429 });
     }
-    const verified = await verifyDeveloperPreviewCommand(body.command, env.DEVELOPER_PREVIEW_COMMAND);
+    const verified = await verifyDeveloperPreviewCommand(body.command, expectedPassword);
     if (!verified) {
       await recordRateLimit(env, rate);
-      return json({ error: "秘密コマンドが一致しません。", code: "invalid_command" }, { status: 403 });
+      return json({ error: "管理者パスワードが一致しません。", code: "invalid_command" }, { status: 403 });
     }
     await env.BILLING_DB.prepare("DELETE FROM auth_rate_limits WHERE rate_key = ?").bind(rate.key).run();
     if (mode === "actual") {
