@@ -39,8 +39,8 @@
   <title>AIビジネスロールプレイスタジオ｜営業・1on1・採用面接をAIと実践</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=1.47">
-  <link rel="stylesheet" href="auth.css?v=1.47">
+  <link rel="stylesheet" href="styles.css?v=1.48">
+  <link rel="stylesheet" href="auth.css?v=1.48">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -285,7 +285,7 @@
           <div id="messageList" class="messages" aria-live="polite"></div>
           <div id="hintCard" class="hint-card">💡 <span id="hintText"></span></div>
           <div id="voiceBanner" class="voice-banner"><div><strong id="voiceBannerTitle">ハンズフリーは停止中です</strong><span id="voiceBannerText">開始すると、AI発話後に自動でマイクが開きます。</span></div><button id="voiceSessionButton" class="voice-session-btn" type="button" onclick="toggleVoiceSession()">ハンズフリーを開始</button></div>
-          <div class="composer"><div class="composer-row"><button id="micButton" class="mic-btn" type="button" aria-label="マイク入力" onclick="toggleSpeechRecognition()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></svg></button><textarea id="messageInput" rows="1" maxlength="600" placeholder="メッセージを入力してください" oninput="autoResize(this)" onkeydown="handleInputKey(event)"></textarea><button id="sendButton" class="send-btn" type="button" aria-label="送信" onclick="sendUserMessage()"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg></button></div><div id="timeLimitAction" class="time-limit-action" hidden><span id="timeLimitActionText">残り2ターン以内に終了してください</span><button type="button" onclick="requestEndRoleplay()">ロープレを終了する</button></div><div class="composer-tools"><div class="tool-buttons"><button id="hintButton" class="tool-btn" type="button" onclick="showHint()">💡 ヒント</button><button class="tool-btn" type="button" onclick="insertPhrase('本日のお時間について、まず確認させてください。')">挨拶</button><button class="tool-btn" type="button" onclick="insertPhrase('もう少し具体的に教えていただけますか。')">深掘り</button><button class="tool-btn" type="button" onclick="repeatLastAIMessage()">🔊 もう一度</button></div><button id="roleplayEndButton" class="end-btn" type="button" onclick="requestEndRoleplay()">ロープレを終了</button></div></div>
+          <div class="composer"><div class="composer-row"><button id="micButton" class="mic-btn" type="button" aria-label="マイク入力" title="マイク入力" onclick="toggleSpeechRecognition()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></svg></button><textarea id="messageInput" rows="1" maxlength="600" inputmode="text" enterkeyhint="send" autocapitalize="sentences" aria-label="ロープレのメッセージ入力" placeholder="メッセージを入力してください" oninput="autoResize(this)" onkeydown="handleInputKey(event)"></textarea><button id="sendButton" class="send-btn" type="button" aria-label="メッセージを送信" title="送信" onclick="sendUserMessage()"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg></button></div><div id="timeLimitAction" class="time-limit-action" hidden><span id="timeLimitActionText">残り2ターン以内に終了してください</span><button type="button" onclick="requestEndRoleplay()">ロープレを終了する</button></div><div class="composer-tools"><div class="tool-buttons"><button id="hintButton" class="tool-btn" type="button" onclick="showHint()">💡 ヒント</button><button class="tool-btn" type="button" onclick="insertPhrase('本日のお時間について、まず確認させてください。')">挨拶</button><button class="tool-btn" type="button" onclick="insertPhrase('もう少し具体的に教えていただけますか。')">深掘り</button><button class="tool-btn" type="button" onclick="repeatLastAIMessage()">🔊 もう一度</button></div><button id="roleplayEndButton" class="end-btn" type="button" onclick="requestEndRoleplay()">ロープレを終了</button></div></div>
         </section>
       </div>
     </section>
@@ -404,6 +404,6 @@
   </div>
 </div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-box"><div class="spinner"></div><strong>会話を振り返っています</strong><p style="color:#b9c7d9;font-size:13px">評価と改善ポイントを作成中です</p></div></div>
-<script src="auth.js?v=1.47" defer></script>
+<script src="auth.js?v=1.48" defer></script>
 </body>
 </html>

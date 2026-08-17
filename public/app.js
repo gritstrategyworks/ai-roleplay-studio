@@ -706,7 +706,7 @@ renderKokoroStatus=function(){};
 renderApiStatus=function(){const el=document.getElementById('apiStatus'),text=document.getElementById('apiStatusText');el?.classList.toggle('online',apiAvailable);if(text)text.textContent=apiAvailable?'オンラインAI':'簡易応答'};
 probeAPI=async function(){const endpoint=getApiEndpoint();if(!settings.preferAI||(!settings.apiEndpoint&&location.protocol==='file:')){apiAvailable=false;renderApiStatus();return}try{const res=await fetch(endpoint,{method:'GET',cache:'no-store'}),data=await res.json();apiAvailable=res.ok&&data.aiConfigured!==false}catch{apiAvailable=false}renderApiStatus()};
 const beginRoleplayModeBase=beginRoleplay;
-beginRoleplay=async function(){state.interaction='voice';return beginRoleplayModeBase()};
+beginRoleplay=async function(){return beginRoleplayModeBase()};
 const renderSetupModeBase=renderSetup;
 function upgradeAdvancedDatalistInputs(){
   document.querySelectorAll('#advancedSettings input[list]').forEach(input=>{
