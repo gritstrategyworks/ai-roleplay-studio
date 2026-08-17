@@ -10,5 +10,7 @@ test('hands-free reports unsupported Brave and recovers stalled recognition', ()
   assert.match(app, /Braveは音声認識サービスに対応していません。ChromeまたはEdgeで開いてください/);
   assert.match(app, /recognitionWatchdogTimer=setTimeout/);
   assert.match(app, /recognition\.onspeechend=/);
-  assert.match(worker, /v1-49-speech-accuracy/);
+  assert.match(app, /permissionDenied/);
+  assert.match(app, /state\.voiceSessionActive&&isRoleplayActive\(\)\)scheduleRecognitionRestart/);
+  assert.match(worker, /v1-50-handsfree-compatibility/);
 });
