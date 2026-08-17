@@ -1,6 +1,6 @@
-const CACHE='ai-roleplay-studio-v1-48-iphone-composer';
+const CACHE='ai-roleplay-studio-v1-49-speech-accuracy';
 const BASE=new URL('./',self.location.href);
-const CORE=['index.html','styles.css?v=1.48','auth.css?v=1.48','auth.js?v=1.48','app.js?v=1.48','scenario-design.js?v=1.48','manifest.webmanifest','robots.txt','sitemap.xml','assets/icon.svg','assets/og-image.png'].map(path=>new URL(path,BASE).href);
+const CORE=['index.html','styles.css?v=1.49','auth.css?v=1.49','auth.js?v=1.49','app.js?v=1.49','scenario-design.js?v=1.49','manifest.webmanifest','robots.txt','sitemap.xml','assets/icon.svg','assets/og-image.png'].map(path=>new URL(path,BASE).href);
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',event=>{

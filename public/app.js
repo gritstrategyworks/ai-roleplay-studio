@@ -545,6 +545,26 @@ function repeatLastAIMessage(){const last=[...state.conversation].reverse().find
 function clearRecognitionRestart(){if(recognitionRestartTimer){clearTimeout(recognitionRestartTimer);recognitionRestartTimer=null}if(recognitionWatchdogTimer){clearTimeout(recognitionWatchdogTimer);recognitionWatchdogTimer=null}}
 async function isBraveBrowser(){try{return Boolean(navigator.brave&&await navigator.brave.isBrave())}catch{return false}}
 async function ensureHandsFreeBrowser(){if(await isBraveBrowser()){toast('Braveは音声認識サービスに対応していません。ChromeまたはEdgeで開いてください');setVoiceState('idle','ChromeまたはEdgeでご利用ください');return false}return true}
+const SPEECH_BUSINESS_TERMS=['成約率','商談','営業課題','顧客','提案','ヒアリング','意思決定','決裁者','予算','導入時期','競合','費用対効果','課題','影響','目標','次の行動','管理職','部下','1on1','採用面接','応募者','志望動機','クレーム対応','事実確認','解決策','エスカレーション'];
+function speechContextTerms(){
+  const dynamic=[CATEGORY_LABELS[state.category],scenario()?.title,state.roleplayConfig?.product?.name,state.roleplayConfig?.deal?.scene,state.roleplayConfig?.deal?.goal,state.roleplayConfig?.customer?.publicFacts];
+  return [...new Set([...SPEECH_BUSINESS_TERMS,...dynamic.flatMap(value=>String(value||'').split(/[\s、。・／/｜|（）()「」『』]+/))].map(value=>String(value||'').trim()).filter(value=>value.length>=2&&value.length<=30))].slice(0,80);
+}
+function configureRecognitionContext(){
+  if(!recognition)return;
+  const terms=speechContextTerms();
+  if('phrases'in recognition&&globalThis.SpeechRecognitionPhrase){try{recognition.phrases=terms.map(term=>new SpeechRecognitionPhrase(term,5))}catch(error){console.warn('Speech context phrases unavailable',error)}}
+}
+function normalizeSpeechTranscript(value){
+  let text=String(value||'').normalize('NFKC').replace(/[ \t\u3000]+/g,'').trim();
+  if(state.category==='sales')text=text.replace(/製薬率/g,'成約率').replace(/制約(?=率|件数|でき|する可能性|につなが)/g,'成約');
+  return text;
+}
+function chooseRecognitionAlternative(result){
+  const terms=speechContextTerms();let best='';let bestScore=-Infinity;
+  for(let i=0;i<result.length;i+=1){const candidate=normalizeSpeechTranscript(result[i]?.transcript);if(!candidate)continue;const confidence=Number(result[i]?.confidence||0);const contextScore=terms.reduce((score,term)=>score+(candidate.includes(term)?Math.min(term.length,8):0),0);const score=confidence*10+contextScore;if(score>bestScore){best=candidate;bestScore=score}}
+  return best;
+}
 function scheduleRecognitionRestart(delay=500){
   clearRecognitionRestart();
   if(!state.voiceSessionActive||!isRoleplayActive()||state.isBusy||isSpeechOutputActive())return;
@@ -559,15 +579,15 @@ function scheduleRecognitionRestart(delay=500){
 }
 function setupSpeechRecognition(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;
-  recognition=new SR();recognition.lang='ja-JP';recognition.interimResults=true;recognition.continuous=false;recognition.maxAlternatives=1;
+  recognition=new SR();recognition.lang='ja-JP';recognition.interimResults=true;recognition.continuous=false;recognition.maxAlternatives=5;configureRecognitionContext();
   recognition.onstart=()=>{clearRecognitionRestart();recognitionRestartAttempts=0;recognitionReceivedResult=false;isListening=true;recognitionFinalText='';recognitionStartedAt=Date.now();document.getElementById('micButton')?.classList.add('listening');setVoiceState('listening','聞き取り中');recognitionWatchdogTimer=setTimeout(()=>{if(isListening&&!recognitionReceivedResult){try{recognition.abort()}catch{}scheduleRecognitionRestart(500)}},12000)};
-  recognition.onresult=e=>{recognitionReceivedResult=true;if(recognitionWatchdogTimer){clearTimeout(recognitionWatchdogTimer);recognitionWatchdogTimer=null}let interim='',final='';for(let i=e.resultIndex;i<e.results.length;i++){const part=e.results[i][0].transcript;if(e.results[i].isFinal)final+=part;else interim+=part}if(final)recognitionFinalText+=final;const input=document.getElementById('messageInput');input.value=(recognitionFinalText+interim).trim();autoResize(input)};
+  recognition.onresult=e=>{recognitionReceivedResult=true;if(recognitionWatchdogTimer){clearTimeout(recognitionWatchdogTimer);recognitionWatchdogTimer=null}let interim='',final='';for(let i=e.resultIndex;i<e.results.length;i++){const part=chooseRecognitionAlternative(e.results[i]);if(e.results[i].isFinal)final+=part;else interim+=part}if(final)recognitionFinalText=normalizeSpeechTranscript(recognitionFinalText+final);const input=document.getElementById('messageInput');input.value=normalizeSpeechTranscript(recognitionFinalText+interim);autoResize(input)};
   recognition.onspeechend=()=>{if(isListening){try{recognition.stop()}catch{}}};
   recognition.onend=()=>{if(recognitionWatchdogTimer){clearTimeout(recognitionWatchdogTimer);recognitionWatchdogTimer=null}isListening=false;recognitionDuration=Math.max(0,Date.now()-recognitionStartedAt);document.getElementById('micButton')?.classList.remove('listening');const text=(recognitionFinalText||document.getElementById('messageInput')?.value||'').trim();recognitionFinalText='';if(text&&(settings.autoSend||state.voiceSessionActive)&&isRoleplayActive()&&!state.isBusy){setTimeout(()=>sendUserMessage({source:'speech',durationMs:recognitionDuration}),260)}else if(state.voiceSessionActive&&isRoleplayActive()&&!state.isBusy){setVoiceState('idle','声を待っています');scheduleRecognitionRestart(500)}else setVoiceState('idle','待機中')};
   recognition.onerror=e=>{isListening=false;document.getElementById('micButton')?.classList.remove('listening');if(e.error!=='aborted'&&e.error!=='no-speech')toast(e.error==='not-allowed'?'マイクの利用を許可してください':'音声入力を再接続します');if(e.error==='not-allowed'||e.error==='service-not-allowed'){clearRecognitionRestart();state.voiceSessionActive=false}else if(e.error==='no-speech'||e.error==='network'||e.error==='audio-capture')scheduleRecognitionRestart(700);updateVoiceBanner()}
 }
 async function prepareMicrophone(){if(!recognition){toast('このブラウザはマイク入力に対応していません。ChromeまたはEdgeでお試しください。');return false}try{if(navigator.mediaDevices?.getUserMedia){const stream=await navigator.mediaDevices.getUserMedia({audio:true});stream.getTracks().forEach(t=>t.stop())}return true}catch{toast('マイクの利用を許可すると、ハンズフリーを開始できます');return false}}
-async function startListening(manual=true){if(!recognition||isListening||state.isBusy||!isRoleplayActive()||isSpeechOutputActive())return false;if(manual&&!await prepareMicrophone())return false;clearRecognitionRestart();try{recognition.start();setVoiceState('idle','マイクを準備しています');return true}catch(error){console.warn('Speech recognition start failed',error);if(state.voiceSessionActive)scheduleRecognitionRestart(450);return false}}
+async function startListening(manual=true){if(!recognition||isListening||state.isBusy||!isRoleplayActive()||isSpeechOutputActive())return false;if(manual&&!await prepareMicrophone())return false;clearRecognitionRestart();configureRecognitionContext();try{recognition.start();setVoiceState('idle','マイクを準備しています');return true}catch(error){console.warn('Speech recognition start failed',error);if(state.voiceSessionActive)scheduleRecognitionRestart(450);return false}}
 async function toggleSpeechRecognition(){if(!await ensureHandsFreeBrowser())return;if(!recognition){toast('このブラウザはマイク入力に対応していません');return}if(isListening){clearRecognitionRestart();try{recognition.stop()}catch{};return}recognitionRestartAttempts=0;const started=await startListening(true);if(!started)toast('マイク入力を開始できませんでした。もう一度お試しください')}
 async function toggleVoiceSession(){if(!state.voiceSessionActive&&!await ensureHandsFreeBrowser())return;if(state.voiceSessionActive){clearRecognitionRestart();state.voiceSessionActive=false;stopVoiceRuntime(false);updateVoiceBanner();toast('ハンズフリーを停止しました');return}if(state.interaction!=='voice')state.interaction='voice';const ok=await prepareMicrophone();if(!ok)return;recognitionRestartAttempts=0;state.voiceSessionActive=true;updateVoiceBanner();if(!isSpeechOutputActive()&&!state.isBusy){const started=await startListening(false);if(!started)scheduleRecognitionRestart(500)}}
 function updateVoiceBanner(){const active=state.voiceSessionActive;document.getElementById('voiceBanner').style.display=state.interaction==='voice'?'':'none';document.getElementById('voiceBannerTitle').textContent=active?'ハンズフリーで対話中':'ハンズフリーは停止中です';const engine=resolvedTtsEngine()==='kokoro'?'Kokoro音声':'端末音声';document.getElementById('voiceBannerText').textContent=active?`${engine}が話し終わると、自動でマイクが開きます。`:'開始すると、AI発話後に自動でマイクが開きます。';const btn=document.getElementById('voiceSessionButton');btn.textContent=active?'ハンズフリーを停止':'ハンズフリーを開始';btn.classList.toggle('active',active)}
