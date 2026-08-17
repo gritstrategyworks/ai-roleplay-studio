@@ -25,6 +25,8 @@ const ROLE_CONTRACTS = Object.freeze({
       /上司として|管理職として|評価します|指導します/,
       /(?:最近の仕事|仕事上)で困っていること[^。！？]*(?:ありますか|教えて)/,
       /あなたの目標[^。！？]*(?:教えて|聞かせて)/,
+      /(?:次の行動|今後の(?:具体的な)?取り組み|目標|優先順位).{0,18}(?:整理|確認|決め|考え).{0,12}(?:しましょう|していきましょう|ませんか)/,
+      /(?:では|それでは).{0,16}(?:取り組み|行動|目標).{0,18}(?:整理|決め|考え)(?:しましょう|ませんか)/,
     ],
   }),
   interview: Object.freeze({
@@ -270,6 +272,8 @@ ${detailedSettings || '未設定'}
 - 難易度が高いほど、曖昧さ、反論、確認質問を残す。
 - 過去の発言と矛盾しない。同じ質問を繰り返されたら自然に指摘する。
 - 採点、助言、メタ説明、AIであることへの言及は禁止。
+- 相手役は利用者を指導・コーチングしたり、会話を研修として進行したりしない。「整理しましょう」「考えてみましょう」「次の行動を決めましょう」のような指導的な呼びかけは禁止。
+- 管理職面談で部下・社員を演じる場合は、上司である利用者に進行を指示しない。まとめの段階では、自分の希望、不安、取り組み案を一人称で述べ、必要なら上司へ相談する。
 - JSON以外の文字を出力しない。`;
 
   const history = data.conversation.map((m) => ({ role: m.role, content: m.text }));
@@ -310,7 +314,7 @@ ${detailedSettings || '未設定'}
 
   let parsed = await generateReply();
   if (parsed.speakerRole !== contract.speakerRole || looksRoleReversed(data.category, parsed.reply)) {
-    parsed = await generateReply(`\n\n【再生成指示】\n直前の生成は役割違反です。利用者は「${contract.userRole}」、あなたは「${contract.aiRole}」です。利用者へ役割を逆向きに質問せず、あなたの役からだけ返答してください。`);
+    parsed = await generateReply(`\n\n【再生成指示】\n直前の生成は役割違反または指導的な発言です。利用者は「${contract.userRole}」、あなたは「${contract.aiRole}」です。利用者を指導したり会話を進行したりせず、あなた自身の希望・懸念・回答だけを人物の一人称で述べてください。`);
   }
   if (parsed.speakerRole !== contract.speakerRole || looksRoleReversed(data.category, parsed.reply)) {
     parsed = {
