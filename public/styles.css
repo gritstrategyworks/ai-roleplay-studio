@@ -336,6 +336,44 @@ body.roleplay-active .end-btn:hover{background:#ffe8e8;border-color:#df8888}
 .time-limit-action[hidden]{display:none}
 .time-limit-action button{flex:none;border:0;border-radius:9px;background:var(--red);color:#fff;padding:8px 11px;font-size:11px;font-weight:900}
 @media(max-width:650px){body.roleplay-active .time-limit-action{align-items:stretch;flex-direction:column}body.roleplay-active .time-limit-action button{min-height:40px;width:100%}}
+
+/* iOS Chrome/Safari: anchor the whole roleplay workspace to the visual viewport.
+   Keeping the header outside this fixed workspace can push the composer below the
+   keyboard when browser toolbars resize or offset the visual viewport. */
+@supports (-webkit-touch-callout:none){
+  @media(max-width:650px){
+    body.roleplay-active{position:static;width:auto;height:auto;overflow:hidden}
+    body.roleplay-active .topbar{display:none}
+    body.roleplay-active main{
+      position:fixed;
+      z-index:40;
+      top:var(--roleplay-viewport-offset-top,0px);
+      right:0;
+      bottom:auto;
+      left:0;
+      width:100%;
+      height:var(--roleplay-viewport-height,100dvh);
+      padding:6px 6px max(6px,env(safe-area-inset-bottom));
+      overflow:hidden;
+    }
+    body.roleplay-active #screen-roleplay,
+    body.roleplay-active .roleplay-shell,
+    body.roleplay-active .conversation-panel{height:100%;min-height:0}
+    body.roleplay-active .composer{
+      display:block!important;
+      position:relative!important;
+      inset:auto!important;
+      flex:0 0 auto;
+      visibility:visible!important;
+      opacity:1!important;
+      pointer-events:auto!important;
+    }
+    body.roleplay-active .composer-row{display:grid!important}
+    body.roleplay-active .mic-btn,
+    body.roleplay-active #messageInput,
+    body.roleplay-active .send-btn{visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+  }
+}
 .brand-name-short{display:none}
 @media(max-width:720px){.brand-name-full{display:none}.brand-name-short{display:inline}.brand-name{font-size:14px;letter-spacing:.01em}}
 .info-plan-table{margin:22px 0}.info-plan-table+.plan-comparison-actions{margin:20px 0}.info-section .plan-comparison-row strong{font-size:13px}

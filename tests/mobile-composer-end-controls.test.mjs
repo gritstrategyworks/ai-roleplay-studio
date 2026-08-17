@@ -22,7 +22,15 @@ test('mobile composer follows the visual viewport and keyboard', () => {
   assert.match(styles, /roleplay-keyboard-open \.customer-panel\{display:none\}/);
 });
 
+test('iPhone browsers keep text and microphone controls inside the visual viewport', () => {
+  assert.match(html, /id="messageInput"[^>]+inputmode="text"[^>]+enterkeyhint="send"/);
+  assert.match(styles, /@supports \(-webkit-touch-callout:none\)/);
+  assert.match(styles, /roleplay-active \.topbar\{display:none\}/);
+  assert.match(styles, /roleplay-active \.composer\{[\s\S]*display:block!important;[\s\S]*position:relative!important/);
+  assert.doesNotMatch(app, /beginRoleplay=async function\(\)\{state\.interaction='voice'/);
+});
+
 test('asset cache is bumped for the layout fix', () => {
-  assert.match(worker, /v1-47-admin-menu-visibility/);
-  assert.match(worker, /styles\.css\?v=1\.47/);
+  assert.match(worker, /v1-48-iphone-composer/);
+  assert.match(worker, /styles\.css\?v=1\.48/);
 });
