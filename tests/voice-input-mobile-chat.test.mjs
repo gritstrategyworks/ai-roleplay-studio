@@ -8,7 +8,7 @@ const worker = await readFile(new URL('../public/service-worker.js', import.meta
 
 test('hands-free recognition retries transient desktop failures', () => {
   assert.match(app, /function scheduleRecognitionRestart\(delay=500\)/);
-  assert.match(app, /e\.error==='no-speech'\|\|e\.error==='network'\|\|e\.error==='audio-capture'/);
+  assert.match(app, /state\.voiceSessionActive&&isRoleplayActive\(\)\)scheduleRecognitionRestart/);
   assert.match(app, /if\(!started&&attempt<4\)scheduleRecognitionRestart/);
   assert.match(app, /function stopVoiceRuntime\(cancelSpeech=true\)\{clearRecognitionRestart\(\)/);
 });
@@ -18,5 +18,5 @@ test('mobile roleplay keeps message history usable with the keyboard', () => {
   assert.match(styles, /grid-template-rows:64px minmax\(0,1fr\)/);
   assert.match(styles, /\.message\.user \.bubble\{[^}]*background:#9bea72/);
   assert.match(styles, /\.composer-tools\{display:none\}/);
-  assert.match(worker, /v1-49-speech-accuracy/);
+  assert.match(worker, /v1-50-handsfree-compatibility/);
 });
