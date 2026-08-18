@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';
 
-const [html, authCss, authJs, styles, manifest] = await Promise.all([
+const [html, authCss, authJs, styles, manifest, appJs] = await Promise.all([
   readFile(new URL('../public/index.html', import.meta.url), 'utf8'),
   readFile(new URL('../public/auth.css', import.meta.url), 'utf8'),
   readFile(new URL('../public/auth.js', import.meta.url), 'utf8'),
   readFile(new URL('../public/styles.css', import.meta.url), 'utf8'),
   readFile(new URL('../public/manifest.webmanifest', import.meta.url), 'utf8'),
+  readFile(new URL('../public/app.js', import.meta.url), 'utf8'),
 ]);
 
 test('official service names are used in branding and metadata', () => {
@@ -34,12 +35,19 @@ test('logged-out page explains the three-step service and sample score', () => {
 test('plan comparisons reflect enforced limits and reuse existing actions', () => {
   assert.match(html, /ロープレ時間[\s\S]*5分[\s\S]*5分・10分・15分/);
   assert.match(html, /詳細設定[\s\S]*利用不可[\s\S]*利用可能/);
-  assert.match(html, /入門2本[\s\S]*全16本/);
+  assert.match(html, /入門2本[\s\S]*全20本/);
   assert.match(html, /data-auth-guest-cta/);
   assert.match(html, /data-auth-premium-cta/);
   assert.match(html, /onclick="startCheckout\(\)"/);
   assert.match(authJs, /POST_AUTH_ACTION_KEY/);
   assert.match(authJs, /startCheckoutWhenReady/);
+});
+
+test('new hire lecture category adds four local VOICEVOX videos', () => {
+  assert.match(appJs, /newhire:\{label:'新入社員'/);
+  assert.match(appJs, /id:'5\.1'[\s\S]*id:'5\.4'/);
+  assert.match(appJs, /media\/lectures\/5-1\.mp4/);
+  assert.match(html, /VOICEVOX:四国めたん/);
 });
 
 test('responsive styles avoid wide fixed layouts at phone width', () => {

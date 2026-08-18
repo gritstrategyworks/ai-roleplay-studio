@@ -739,7 +739,8 @@ const LECTURE_CATEGORIES={
   sales:{label:'営業・商談',icon:'💼',lead:'信頼構築からクロージングまで'},
   manager:{label:'管理職面談',icon:'👔',lead:'本音を引き出し、行動を合意する'},
   interview:{label:'採用面接',icon:'🎤',lead:'経験・価値観・適性を見極める'},
-  support:{label:'クレーム対応',icon:'🎧',lead:'感情を受け止め、解決へ導く'}
+  support:{label:'クレーム対応',icon:'🎧',lead:'感情を受け止め、解決へ導く'},
+  newhire:{label:'新入社員',icon:'🌱',lead:'仕事の基本を対話で身につける'}
 };
 const LECTURES=[
   {id:'1.1',category:'sales',youtubeId:'_3A0-YHuRtA',title:'初回訪問と信頼関係のつくり方',description:'第一印象を整え、相手が安心して話せる商談の土台を学びます。',scene:'初回訪問',goal:'信頼関係をつくる'},
@@ -757,7 +758,11 @@ const LECTURES=[
   {id:'4.1',category:'support',youtubeId:'cnmpaEdzDzk',title:'最初の不満と感情の受け止め方',description:'反論を急がず、相手の不満と感情を受け止める初動対応を学びます。',scene:'初回受付',goal:'感情を落ち着かせる'},
   {id:'4.2',category:'support',youtubeId:'-rNFPh5HVe8',title:'事実・影響・要望の整理',description:'発生した事実、相手への影響、希望する対応を切り分けて確認する方法を学びます。',scene:'事実確認',goal:'事実関係を整理する'},
   {id:'4.3',category:'support',youtubeId:'oYSEczhYlLc',title:'解決策の提示と合意形成',description:'対応可能な範囲を明確にし、期限や次の連絡について合意する方法を学びます。',scene:'解決策提示',goal:'解決策に合意する'},
-  {id:'4.4',category:'support',youtubeId:'8FYA7sbuWlk',title:'強い要求とエスカレーション',description:'過度な要求には境界を示し、適切な担当者へ引き継ぐ判断を学びます。',scene:'エスカレーション',goal:'適切にエスカレーションする'}
+  {id:'4.4',category:'support',youtubeId:'8FYA7sbuWlk',title:'強い要求とエスカレーション',description:'過度な要求には境界を示し、適切な担当者へ引き継ぐ判断を学びます。',scene:'エスカレーション',goal:'適切にエスカレーションする'},
+  {id:'5.1',category:'newhire',mediaSrc:'media/lectures/5-1.mp4',thumbnail:'media/lectures/5-1.png',title:'報告・連絡・相談の基本',description:'結論から話し、事実と意見を分け、悪い報告ほど早く伝える基本を学びます。',practice:false},
+  {id:'5.2',category:'newhire',mediaSrc:'media/lectures/5-2.mp4',thumbnail:'media/lectures/5-2.png',title:'指示の受け方・質問の仕方',description:'メモと復唱を使い、期限・目的・完成イメージを確認する質問の基本を学びます。',practice:false},
+  {id:'5.3',category:'newhire',mediaSrc:'media/lectures/5-3.mp4',thumbnail:'media/lectures/5-3.png',title:'ビジネス対話の基本',description:'挨拶、傾聴、敬語、簡潔な説明、電話・社内コミュニケーションの基本を学びます。',practice:false},
+  {id:'5.4',category:'newhire',mediaSrc:'media/lectures/5-4.mp4',thumbnail:'media/lectures/5-4.png',title:'仕事の進め方・振り返り',description:'優先順位、期限、途中報告、ミスへの初動、フィードバックを次の行動へつなげます。',practice:false}
 ];
 let lectureCategoryFilter='sales';
 let activeLectureId='';
@@ -768,23 +773,25 @@ function renderLectures(){
   const tabs=document.getElementById('lectureCategoryTabs'),grid=document.getElementById('lectureGrid');if(!tabs||!grid)return;
   const watched=loadWatchedLectures();
   tabs.innerHTML=Object.entries(LECTURE_CATEGORIES).map(([key,value])=>`<button type="button" class="lecture-category-tab ${key===lectureCategoryFilter?'active':''}" aria-pressed="${key===lectureCategoryFilter}" onclick="setLectureCategory('${key}')"><span>${value.icon}</span><strong>${escapeHtml(value.label)}</strong><small>${escapeHtml(value.lead)}</small></button>`).join('');
-  grid.innerHTML=LECTURES.filter(item=>item.category===lectureCategoryFilter).map(item=>{const done=watched.has(item.id),locked=!canAccessLecture(item.id);return `<article class="lecture-card ${done?'watched':''} ${locked?'premium-locked':''}"><button class="lecture-thumbnail-button" type="button" onclick="openLecture('${item.id}')" aria-label="${escapeHtml(item.title)}${locked?'はPremium講義です':'を再生'}"><img src="https://i.ytimg.com/vi/${item.youtubeId}/hqdefault.jpg" alt="" loading="lazy"><span class="lecture-play-mark" aria-hidden="true">${locked?'🔒':'▶'}</span><span class="lecture-duration">${locked?'Premium':'約5分'}</span></button><div class="lecture-card-body"><div class="lecture-card-meta"><span>LESSON ${item.id}</span><span class="lecture-watched-badge">${locked?'🔒 Premium':done?'✓ 視聴済み':'未視聴'}</span></div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}</p><div class="lecture-card-actions"><button class="ghost-btn" type="button" onclick="openLecture('${item.id}')">${locked?'Premiumで見る':'動画を見る'}</button><button class="lecture-practice-link" type="button" onclick="startLecturePractice('${item.id}')">ロープレで試す →</button></div></div></article>`}).join('');
+  grid.innerHTML=LECTURES.filter(item=>item.category===lectureCategoryFilter).map(item=>{const done=watched.has(item.id),locked=!canAccessLecture(item.id);return `<article class="lecture-card ${done?'watched':''} ${locked?'premium-locked':''}"><button class="lecture-thumbnail-button" type="button" onclick="openLecture('${item.id}')" aria-label="${escapeHtml(item.title)}${locked?'はPremium講義です':'を再生'}"><img src="${item.thumbnail||`https://i.ytimg.com/vi/${item.youtubeId}/hqdefault.jpg`}" alt="" loading="lazy"><span class="lecture-play-mark" aria-hidden="true">${locked?'🔒':'▶'}</span><span class="lecture-duration">${locked?'Premium':'約5分'}</span></button><div class="lecture-card-body"><div class="lecture-card-meta"><span>LESSON ${item.id}</span><span class="lecture-watched-badge">${locked?'🔒 Premium':done?'✓ 視聴済み':'未視聴'}</span></div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}</p><div class="lecture-card-actions"><button class="ghost-btn" type="button" onclick="openLecture('${item.id}')">${locked?'Premiumで見る':'動画を見る'}</button>${item.practice===false?'':`<button class="lecture-practice-link" type="button" onclick="startLecturePractice('${item.id}')">ロープレで試す →</button>`}</div></div></article>`}).join('');
   const count=watched.size;document.getElementById('lectureWatchedCount').textContent=count;document.getElementById('lectureProgressBar').style.width=`${Math.round(count/LECTURES.length*100)}%`;
 }
 function openLecture(id){
   const lecture=LECTURES.find(item=>item.id===id);if(!lecture)return;activeLectureId=id;
-  if(!canAccessLecture(id)){activeLectureId='';return requestPremiumFeature('この講義はPremiumで視聴できます','入門講義2本は無料です。Premiumでは営業・マネジメント・採用・クレーム対応の全16講義を利用できます。')}
+  if(!canAccessLecture(id)){activeLectureId='';return requestPremiumFeature('この講義はPremiumで視聴できます','入門講義2本は無料です。Premiumでは営業・マネジメント・採用・クレーム対応・新入社員の全20講義を利用できます。')}
   document.getElementById('lectureModalCategory').textContent=`${LECTURE_CATEGORIES[lecture.category].icon} ${LECTURE_CATEGORIES[lecture.category].label}・LESSON ${lecture.id}`;
   document.getElementById('lectureModalTitle').textContent=lecture.title;document.getElementById('lectureModalDescription').textContent=lecture.description;
-  document.getElementById('lecturePlayer').src=`https://www.youtube-nocookie.com/embed/${lecture.youtubeId}?rel=0&playsinline=1`;
+  const iframe=document.getElementById('lecturePlayer'),video=document.getElementById('lectureLocalPlayer'),sourceNote=document.getElementById('lectureSourceNote'),practiceButton=document.getElementById('lecturePracticeButton');
+  if(lecture.mediaSrc){iframe.src='about:blank';iframe.hidden=true;video.src=lecture.mediaSrc;video.hidden=false;sourceNote.textContent='音声：VOICEVOX:四国めたん';}else{video.pause();video.removeAttribute('src');video.hidden=true;iframe.hidden=false;iframe.src=`https://www.youtube-nocookie.com/embed/${lecture.youtubeId}?rel=0&playsinline=1`;sourceNote.textContent='動画はYouTubeの限定公開プレーヤーで再生します。';}
+  practiceButton.hidden=lecture.practice===false;
   updateLectureWatchedButton();document.getElementById('lectureModal').classList.add('show');document.body.classList.add('lecture-modal-open');document.querySelector('.lecture-modal-close')?.focus();
 }
-function closeLectureModal(){const modal=document.getElementById('lectureModal');if(!modal)return;modal.classList.remove('show');document.body.classList.remove('lecture-modal-open');document.getElementById('lecturePlayer').src='about:blank';activeLectureId=''}
+function closeLectureModal(){const modal=document.getElementById('lectureModal');if(!modal)return;modal.classList.remove('show');document.body.classList.remove('lecture-modal-open');document.getElementById('lecturePlayer').src='about:blank';const video=document.getElementById('lectureLocalPlayer');video.pause();video.removeAttribute('src');video.load();activeLectureId=''}
 function updateLectureWatchedButton(){const button=document.getElementById('lectureWatchedButton');if(!button)return;const done=loadWatchedLectures().has(activeLectureId);button.textContent=done?'✓ 視聴済み':'視聴済みにする';button.classList.toggle('lecture-complete',done)}
 function toggleActiveLectureWatched(){if(!activeLectureId)return;const watched=loadWatchedLectures();if(watched.has(activeLectureId))watched.delete(activeLectureId);else watched.add(activeLectureId);saveWatchedLectures(watched);updateLectureWatchedButton();renderLectures()}
 function startActiveLecturePractice(){if(activeLectureId)startLecturePractice(activeLectureId)}
 function startLecturePractice(id){
-  const lecture=LECTURES.find(item=>item.id===id);if(!lecture)return;if(!canAccessLecture(id))return requestPremiumFeature('この講義連動ロープレはPremium機能です','入門講義2本は無料です。Premiumでは全16講義の内容に合わせたロープレを始められます。');const watched=loadWatchedLectures();watched.add(id);saveWatchedLectures(watched);closeLectureModal();startSetup(lecture.category);
+  const lecture=LECTURES.find(item=>item.id===id);if(!lecture)return;if(lecture.practice===false)return toast('この講義のロープレシナリオは今後追加予定です');if(!canAccessLecture(id))return requestPremiumFeature('この講義連動ロープレはPremium機能です','入門講義2本は無料です。Premiumでは全20講義の内容に合わせたロープレを始められます。');const watched=loadWatchedLectures();watched.add(id);saveWatchedLectures(watched);closeLectureModal();startSetup(lecture.category);
   const scene=document.getElementById('dealSceneSelect'),goal=document.getElementById('roleplayGoalSelect');if(scene&&[...scene.options].some(option=>option.value===lecture.scene))scene.value=lecture.scene;if(goal&&[...goal.options].some(option=>option.value===lecture.goal))goal.value=lecture.goal;updateSetupDraft();toast(`「${lecture.title}」に合う設定を選びました`);
 }
 function initLectureFeature(){
