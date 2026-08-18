@@ -17,5 +17,5 @@ test('the opening prompt is limited to the first user turn', () => {
 test('new sessions and later turns use the neutral prompt', () => {
   assert.match(app, /DEFAULT_MESSAGE_PLACEHOLDER='メッセージを入力してください'/);
   assert.match(html, /id="messageInput"[^>]+placeholder="メッセージを入力してください"/);
-  assert.match(worker, /v1-55-newhire-video-end/);
+  assert.match(worker, /v1-56-synced-newhire-videos/);
 });

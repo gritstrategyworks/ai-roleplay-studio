@@ -70,8 +70,8 @@ test('dedicated avatar and mobile advisor layout are production assets', async (
   assert.match(html, /assets\/avatars\/portraits\/advisor\.webp/);
   assert.match(styles, /@media\(max-width:650px\)[^{]*\{\.advisor-page-header/);
   assert.match(styles, /\.advisor-composer\{position:sticky/);
-  assert.match(auth, /advisor\.js\?v=1\.55/);
-  assert.match(serviceWorker, /advisor\.js\?v=1\.55/);
+  assert.match(auth, /advisor\.js\?v=1\.56/);
+  assert.match(serviceWorker, /advisor\.js\?v=1\.56/);
   assert.match(serviceWorker, /assets\/avatars\/portraits\/advisor\.webp/);
 });
 
