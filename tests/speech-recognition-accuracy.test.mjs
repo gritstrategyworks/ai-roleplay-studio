@@ -18,5 +18,5 @@ test('speech recognition uses compatible alternatives and business context', () 
 test('common sales recognition errors are normalized before sending', () => {
   assert.match(app, /製薬率\/g,'成約率'/);
   assert.match(app, /state\.voiceSessionActive&&isRoleplayActive\(\)\)scheduleRecognitionRestart/);
-  assert.match(worker, /v1-51-counterpart-boundary/);
+  assert.match(worker, /v1-52-newhire-roleplay/);
 });

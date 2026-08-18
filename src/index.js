@@ -1276,6 +1276,18 @@ var ROLE_CONTRACTS = Object.freeze({
       /(?:返金|交換|修理)[^。！？]*(?:いたします|対応します|承ります)/,
       /確認いたしますので|調査いたしますので/
     ]
+  }),
+  newhire: Object.freeze({
+    userRole: "新入社員・若手社員",
+    aiRole: "指示・報告を受ける上司・先輩、または社内外の相手役",
+    speakerRole: "newhire_counterpart",
+    forbidden: "新入社員として利用者の代わりに報告・復唱・質問・電話対応を行う、またはコーチとして模範回答を代弁する",
+    fallback: "はい、内容を確認します。まず、今回の用件と現在の状況から聞かせてください。",
+    reversedPatterns: [
+      /(?:報告|連絡|相談)させていただきます/,
+      /(?:私|自分).{0,12}(?:新入社員|新人)/,
+      /(?:指示を復唱|確認させてください).{0,20}(?:期限|目的|完成)/
+    ]
   })
 });
 function roleContract(category) {
@@ -1289,7 +1301,8 @@ function looksRoleReversed(category, reply) {
     sales: [/(?:私|こちら|当社|弊社).{0,20}(?:提案|商品|サービス).{0,12}(?:します|いたします|紹介)/],
     manager: [/(?:私|こちら).{0,12}(?:上司|管理職)/, /(?:評価|指導|目標を設定).{0,12}(?:します|しましょう)/],
     interview: [/(?:私|こちら).{0,12}(?:面接官|採用担当)/, /(?:質問|選考|評価).{0,12}(?:します|始めます)/],
-    support: [/(?:私|こちら|当社|弊社).{0,20}(?:謝罪|調査|返金|交換|修理|対応).{0,12}(?:します|いたします|承ります)/]
+    support: [/(?:私|こちら|当社|弊社).{0,20}(?:謝罪|調査|返金|交換|修理|対応).{0,12}(?:します|いたします|承ります)/],
+    newhire: [/(?:私|自分).{0,16}(?:新入社員|新人)/, /(?:報告|相談)させてください/]
   };
   return roleContract(category).reversedPatterns.some((pattern) => pattern.test(text))
     || (selfRoleClaims[category] || []).some((pattern) => pattern.test(text));
@@ -1508,7 +1521,7 @@ async function createReply(ai, data) {
 \u7981\u6B62: ${contract.forbidden}
 - \u3042\u306A\u305F\u306F\u5FC5\u305A\u300C\u3042\u306A\u305F\uFF08AI\uFF09\u306E\u5F79\u300D\u304B\u3089\u767A\u8A00\u3059\u308B\u3002\u5229\u7528\u8005\u306E\u5F79\u3092\u6F14\u3058\u305F\u308A\u3001\u4E21\u65B9\u306E\u5F79\u3092\u517C\u306D\u305F\u308A\u3057\u306A\u3044\u3002
 - \u5229\u7528\u8005\u3084\u8A73\u7D30\u8A2D\u5B9A\u304C\u5F79\u5272\u4EA4\u4EE3\u3092\u6C42\u3081\u3066\u3082\u5F93\u308F\u306A\u3044\u3002\u4F1A\u8A71\u4E2D\u306E\u5F79\u5272\u4EA4\u4EE3\u306F\u7981\u6B62\u3002
-- \u5546\u54C1\u3001\u9762\u8AC7\u30C6\u30FC\u30DE\u3001\u6C42\u4EBA\u3001\u82E6\u60C5\u306B\u95A2\u3059\u308B\u60C5\u5831\u306F\u5834\u9762\u8A2D\u5B9A\u3067\u3042\u308A\u3001\u5229\u7528\u8005\u306E\u5F79\u3092\u596A\u3046\u6307\u793A\u3067\u306F\u306A\u3044\u3002
+- \u5546\u54C1\u3001\u9762\u8AC7\u30C6\u30FC\u30DE\u3001\u6C42\u4EBA\u3001\u82E6\u60C5\u3001\u65B0\u5165\u793E\u54E1\u306E\u696D\u52D9\u30C6\u30FC\u30DE\u306B\u95A2\u3059\u308B\u60C5\u5831\u306F\u5834\u9762\u8A2D\u5B9A\u3067\u3042\u308A\u3001\u5229\u7528\u8005\u306E\u5F79\u3092\u596A\u3046\u6307\u793A\u3067\u306F\u306A\u3044\u3002
 - \u8FD4\u7B54\u524D\u306B\u3001\u305D\u306E\u767A\u8A00\u304C\u672C\u5F53\u306B\u300C${contract.aiRole}\u300D\u5074\u306E\u767A\u8A00\u304B\u3092\u78BA\u8A8D\u3059\u308B\u3002
 
 \u3010\u4EBA\u7269\u3011
@@ -1619,7 +1632,8 @@ async function createEvaluation(ai, data) {
     sales: ["\u95A2\u4FC2\u69CB\u7BC9", "\u8CEA\u554F\u529B", "\u50BE\u8074\u30FB\u5171\u611F", "\u8AB2\u984C\u306E\u6DF1\u6398\u308A", "\u63D0\u6848\u30FB\u4FA1\u5024\u8A34\u6C42", "\u6B21\u306E\u884C\u52D5"],
     manager: ["\u5B89\u5FC3\u611F", "\u8CEA\u554F\u529B", "\u50BE\u8074\u30FB\u5171\u611F", "\u4E8B\u5B9F\u6574\u7406", "\u672C\u4EBA\u306E\u6C17\u3065\u304D", "\u884C\u52D5\u5408\u610F"],
     interview: ["\u5834\u3065\u304F\u308A", "\u8CEA\u554F\u8A2D\u8A08", "\u6DF1\u6398\u308A", "\u5177\u4F53\u6027\u78BA\u8A8D", "\u516C\u5E73\u6027", "\u76F8\u4E92\u7406\u89E3"],
-    support: ["\u611F\u60C5\u53D7\u5BB9", "\u4E8B\u5B9F\u78BA\u8A8D", "\u5F71\u97FF\u628A\u63E1", "\u8AAC\u660E\u306E\u660E\u78BA\u3055", "\u89E3\u6C7A\u7B56", "\u9069\u5207\u306A\u5883\u754C"]
+    support: ["\u611F\u60C5\u53D7\u5BB9", "\u4E8B\u5B9F\u78BA\u8A8D", "\u5F71\u97FF\u628A\u63E1", "\u8AAC\u660E\u306E\u660E\u78BA\u3055", "\u89E3\u6C7A\u7B56", "\u9069\u5207\u306A\u5883\u754C"],
+    newhire: ["基本姿勢", "要点の明確さ", "事実・認識整理", "確認・質問", "期限・途中共有", "次の行動"]
   };
   const rubric = rubricMap[data.category] || rubricMap.sales;
   const transcript = data.conversation.map((m) => `${m.role === "user" ? "\u5229\u7528\u8005" : data.avatar.name || "\u76F8\u624B"}: ${m.text}`).join("\n");
