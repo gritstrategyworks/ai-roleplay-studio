@@ -774,10 +774,10 @@ const LECTURES=[
   {id:'4.2',category:'support',youtubeId:'-rNFPh5HVe8',title:'事実・影響・要望の整理',description:'発生した事実、相手への影響、希望する対応を切り分けて確認する方法を学びます。',scene:'事実確認',goal:'事実関係を整理する'},
   {id:'4.3',category:'support',youtubeId:'oYSEczhYlLc',title:'解決策の提示と合意形成',description:'対応可能な範囲を明確にし、期限や次の連絡について合意する方法を学びます。',scene:'解決策提示',goal:'解決策に合意する'},
   {id:'4.4',category:'support',youtubeId:'8FYA7sbuWlk',title:'強い要求とエスカレーション',description:'過度な要求には境界を示し、適切な担当者へ引き継ぐ判断を学びます。',scene:'エスカレーション',goal:'適切にエスカレーションする'},
-  {id:'5.1',category:'newhire',mediaSrc:'media/lectures/5-1.mp4',thumbnail:'media/lectures/5-1.png',title:'報告・連絡・相談の基本',description:'結論から話し、事実と意見を分け、悪い報告ほど早く伝える基本を学びます。',scene:'報告・連絡・相談',goal:'相手が判断できるように伝える'},
-  {id:'5.2',category:'newhire',mediaSrc:'media/lectures/5-2.mp4',thumbnail:'media/lectures/5-2.png',title:'指示の受け方・質問の仕方',description:'メモと復唱を使い、期限・目的・完成イメージを確認する質問の基本を学びます。',scene:'指示を受ける',goal:'認識をそろえて着手する'},
-  {id:'5.3',category:'newhire',mediaSrc:'media/lectures/5-3.mp4',thumbnail:'media/lectures/5-3.png',title:'ビジネス対話の基本',description:'挨拶、傾聴、敬語、簡潔な説明、電話・社内コミュニケーションの基本を学びます。',scene:'電話・社内対話',goal:'感じよく正確に伝える'},
-  {id:'5.4',category:'newhire',mediaSrc:'media/lectures/5-4.mp4',thumbnail:'media/lectures/5-4.png',title:'仕事の進め方・振り返り',description:'優先順位、期限、途中報告、ミスへの初動、フィードバックを次の行動へつなげます。',scene:'途中報告',goal:'次の行動を具体化する'}
+  {id:'5.1',category:'newhire',youtubeId:'qi4Jh8xOdLI',title:'報告・連絡・相談の基本',description:'結論から話し、事実と意見を分け、悪い報告ほど早く伝える基本を学びます。',scene:'報告・連絡・相談',goal:'相手が判断できるように伝える'},
+  {id:'5.2',category:'newhire',youtubeId:'_o3hRtZYWJc',title:'指示の受け方・質問の仕方',description:'メモと復唱を使い、期限・目的・完成イメージを確認する質問の基本を学びます。',scene:'指示を受ける',goal:'認識をそろえて着手する'},
+  {id:'5.3',category:'newhire',youtubeId:'eV4LqLNY25Q',title:'ビジネス対話の基本',description:'挨拶、傾聴、敬語、簡潔な説明、電話・社内コミュニケーションの基本を学びます。',scene:'電話・社内対話',goal:'感じよく正確に伝える'},
+  {id:'5.4',category:'newhire',youtubeId:'H7B-p-ygOBc',title:'仕事の進め方・振り返り',description:'優先順位、期限、途中報告、ミスへの初動、フィードバックを次の行動へつなげます。',scene:'途中報告',goal:'次の行動を具体化する'}
 ];
 let lectureCategoryFilter='sales';
 let activeLectureId='';
@@ -796,12 +796,12 @@ function openLecture(id){
   if(!canAccessLecture(id)){activeLectureId='';return requestPremiumFeature('この講義はPremiumで視聴できます','入門講義2本は無料です。Premiumでは営業・マネジメント・採用・クレーム対応・新入社員の全20講義を利用できます。')}
   document.getElementById('lectureModalCategory').textContent=`${LECTURE_CATEGORIES[lecture.category].icon} ${LECTURE_CATEGORIES[lecture.category].label}・LESSON ${lecture.id}`;
   document.getElementById('lectureModalTitle').textContent=lecture.title;document.getElementById('lectureModalDescription').textContent=lecture.description;
-  const iframe=document.getElementById('lecturePlayer'),video=document.getElementById('lectureLocalPlayer'),sourceNote=document.getElementById('lectureSourceNote'),practiceButton=document.getElementById('lecturePracticeButton');
-  if(lecture.mediaSrc){iframe.src='about:blank';iframe.hidden=true;video.src=lecture.mediaSrc;video.hidden=false;sourceNote.textContent='音声：VOICEVOX:四国めたん';}else{video.pause();video.removeAttribute('src');video.hidden=true;iframe.hidden=false;iframe.src=`https://www.youtube-nocookie.com/embed/${lecture.youtubeId}?rel=0&playsinline=1`;sourceNote.textContent='動画はYouTubeの限定公開プレーヤーで再生します。';}
+  const iframe=document.getElementById('lecturePlayer'),sourceNote=document.getElementById('lectureSourceNote'),practiceButton=document.getElementById('lecturePracticeButton');
+  iframe.src='https://www.youtube-nocookie.com/embed/'+lecture.youtubeId+'?rel=0&playsinline=1';sourceNote.textContent='動画はYouTubeの限定公開プレーヤーで再生します。';
   practiceButton.hidden=lecture.practice===false;
   updateLectureWatchedButton();document.getElementById('lectureModal').classList.add('show');document.body.classList.add('lecture-modal-open');document.querySelector('.lecture-modal-close')?.focus();
 }
-function closeLectureModal(){const modal=document.getElementById('lectureModal');if(!modal)return;modal.classList.remove('show');document.body.classList.remove('lecture-modal-open');document.getElementById('lecturePlayer').src='about:blank';const video=document.getElementById('lectureLocalPlayer');video.pause();video.removeAttribute('src');video.load();activeLectureId=''}
+function closeLectureModal(){const modal=document.getElementById('lectureModal');if(!modal)return;modal.classList.remove('show');document.body.classList.remove('lecture-modal-open');document.getElementById('lecturePlayer').src='about:blank';activeLectureId=''}
 function updateLectureWatchedButton(){const button=document.getElementById('lectureWatchedButton');if(!button)return;const done=loadWatchedLectures().has(activeLectureId);button.textContent=done?'✓ 視聴済み':'視聴済みにする';button.classList.toggle('lecture-complete',done)}
 function toggleActiveLectureWatched(){if(!activeLectureId)return;const watched=loadWatchedLectures();if(watched.has(activeLectureId))watched.delete(activeLectureId);else watched.add(activeLectureId);saveWatchedLectures(watched);updateLectureWatchedButton();renderLectures()}
 function startActiveLecturePractice(){if(activeLectureId)startLecturePractice(activeLectureId)}

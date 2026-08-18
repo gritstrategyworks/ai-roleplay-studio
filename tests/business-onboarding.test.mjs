@@ -43,11 +43,15 @@ test('plan comparisons reflect enforced limits and reuse existing actions', () =
   assert.match(authJs, /startCheckoutWhenReady/);
 });
 
-test('new hire lecture category adds four local VOICEVOX videos', () => {
-  assert.match(appJs, /newhire:\{label:'新入社員'/);
+test('new hire lecture category adds four YouTube videos', () => {
+  assert.match(appJs, /newhire:\{label:/);
   assert.match(appJs, /id:'5\.1'[\s\S]*id:'5\.4'/);
-  assert.match(appJs, /media\/lectures\/5-1\.mp4/);
-  assert.match(html, /VOICEVOX:四国めたん/);
+  assert.match(appJs, /youtubeId:'qi4Jh8xOdLI'/);
+  assert.match(appJs, /youtubeId:'_o3hRtZYWJc'/);
+  assert.match(appJs, /youtubeId:'eV4LqLNY25Q'/);
+  assert.match(appJs, /youtubeId:'H7B-p-ygOBc'/);
+  assert.doesNotMatch(appJs, /mediaSrc:'media\/lectures\/5-[1-4]\.mp4'/);
+  assert.match(html, /VOICEVOX:\u56db\u56fd\u3081\u305f\u3093/);
 });
 
 test('responsive styles avoid wide fixed layouts at phone width', () => {

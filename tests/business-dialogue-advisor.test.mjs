@@ -70,12 +70,12 @@ test('dedicated avatar and mobile advisor layout are production assets', async (
   assert.match(html, /assets\/avatars\/portraits\/advisor\.webp/);
   assert.match(styles, /@media\(max-width:650px\)[^{]*\{\.advisor-page-header/);
   assert.match(styles, /\.advisor-composer\{position:sticky/);
-  assert.match(auth, /advisor\.js\?v=1\.58/);
-  assert.match(serviceWorker, /advisor\.js\?v=1\.58/);
+  assert.match(auth, /advisor\.js\?v=1\.59/);
+  assert.match(serviceWorker, /advisor\.js\?v=1\.59/);
   assert.match(serviceWorker, /assets\/avatars\/portraits\/advisor\.webp/);
 });
 
 test('VOICEVOX commercial credit remains visible', () => {
-  assert.match(html, /新入社員講義の音声：VOICEVOX:四国めたん/);
-  assert.match(app, /音声：VOICEVOX:四国めたん/);
+  assert.match(html, /VOICEVOX:\u56db\u56fd\u3081\u305f\u3093/);
+  assert.match(app, /YouTube/);
 });

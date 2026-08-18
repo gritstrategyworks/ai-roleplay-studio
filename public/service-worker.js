@@ -1,6 +1,6 @@
-const CACHE='ai-roleplay-studio-v1-58-newhire-setup-field';
+const CACHE='ai-roleplay-studio-v1-59-youtube-newhire-lectures';
 const BASE=new URL('./',self.location.href);
-const CORE=['index.html','styles.css?v=1.58','auth.css?v=1.58','auth.js?v=1.58','app.js?v=1.58','advisor.js?v=1.58','scenario-design.js?v=1.58','manifest.webmanifest','robots.txt','sitemap.xml','assets/icon.svg','assets/og-image.png','assets/avatars/portraits/advisor.webp'].map(path=>new URL(path,BASE).href);
+const CORE=['index.html','styles.css?v=1.59','auth.css?v=1.59','auth.js?v=1.59','app.js?v=1.59','advisor.js?v=1.59','scenario-design.js?v=1.59','manifest.webmanifest','robots.txt','sitemap.xml','assets/icon.svg','assets/og-image.png','assets/avatars/portraits/advisor.webp'].map(path=>new URL(path,BASE).href);
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',event=>{

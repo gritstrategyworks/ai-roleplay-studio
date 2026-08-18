@@ -12,5 +12,5 @@ test('hands-free reports unsupported Brave and recovers stalled recognition', ()
   assert.match(app, /recognition\.onspeechend=/);
   assert.match(app, /permissionDenied/);
   assert.match(app, /state\.voiceSessionActive&&isRoleplayActive\(\)\)scheduleRecognitionRestart/);
-  assert.match(worker, /v1-58-newhire-setup-field/);
+  assert.match(worker, /v1-59-youtube-newhire-lectures/);
 });
