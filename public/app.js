@@ -197,7 +197,7 @@ function showScreen(name){
   document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
   document.getElementById(`screen-${name}`)?.classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
-  const navMap={home:'navHome',lectures:'navLectures',setup:'navStart',roleplay:'navStart',results:'navHistory',history:'navHistory',settings:'navSettings'};
+  const navMap={home:'navHome',advisor:'navAdvisor',lectures:'navLectures',setup:'navStart',roleplay:'navStart',results:'navHistory',history:'navHistory',settings:'navSettings'};
   if(navMap[name])document.getElementById(navMap[name])?.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
   if(name==='roleplay')syncRoleplayViewport();
@@ -815,6 +815,22 @@ function initLectureFeature(){
   document.getElementById('shareModal')?.addEventListener('click',event=>{if(event.target.id==='shareModal')closeShareModal()});
   document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;if(document.getElementById('lectureModal')?.classList.contains('show'))closeLectureModal();else if(document.getElementById('premiumUpsellModal')?.classList.contains('show'))closePremiumUpsell();else if(document.getElementById('shareModal')?.classList.contains('show'))closeShareModal()});
 }
+
+const ADVISOR_ROLEPLAY_PRESETS={
+  sales_initial:{category:'sales',scene:'初回訪問',goal:'信頼関係をつくる'},sales_discovery:{category:'sales',scene:'ヒアリング',goal:'ニーズを把握する'},sales_proposal:{category:'sales',scene:'商品説明',goal:'商品を提案する'},sales_close:{category:'sales',scene:'クロージング',goal:'契約する'},sales_followup:{category:'sales',scene:'アフターフォロー',goal:'信頼関係をつくる'},
+  manager_1on1:{category:'manager',scene:'定期1on1',goal:'本音を引き出す'},manager_feedback:{category:'manager',scene:'評価フィードバック',goal:'課題を整理する'},manager_guidance:{category:'manager',scene:'改善指導',goal:'行動目標を合意する'},manager_career:{category:'manager',scene:'キャリア面談',goal:'成長を支援する'},manager_retention:{category:'manager',scene:'退職相談',goal:'退職意向を把握する'},
+  support_initial:{category:'support',scene:'初回受付',goal:'感情を落ち着かせる'},support_fact:{category:'support',scene:'事実確認',goal:'事実関係を整理する'},support_apology:{category:'support',scene:'謝罪説明',goal:'感情を落ち着かせる'},support_solution:{category:'support',scene:'解決策提示',goal:'解決策に合意する'},support_escalation:{category:'support',scene:'エスカレーション',goal:'適切にエスカレーションする'},
+  newhire_report:{category:'newhire',scene:'報告・連絡・相談',goal:'相手が判断できるように伝える'},newhire_instruction:{category:'newhire',scene:'指示を受ける',goal:'認識をそろえて着手する'},newhire_dialogue:{category:'newhire',scene:'電話・社内対話',goal:'感じよく正確に伝える'},newhire_workflow:{category:'newhire',scene:'途中報告',goal:'進捗と懸念を早めに共有する'},newhire_mistake:{category:'newhire',scene:'ミス報告・振り返り',goal:'次の行動を具体化する'}
+};
+function startRoleplayFromAdvisor(plan={},consultation=''){
+  const preset=ADVISOR_ROLEPLAY_PRESETS[String(plan.scenario||'')]||ADVISOR_ROLEPLAY_PRESETS.newhire_dialogue;
+  startSetup(preset.category);
+  const config={...state.roleplayConfig,product:{...state.roleplayConfig.product},customer:{...state.roleplayConfig.customer},deal:{...state.roleplayConfig.deal}};
+  const topic=String(plan.topic||'相談した場面の対話練習').trim().slice(0,100),context=String(plan.context||consultation||'').trim().slice(0,500),goal=String(plan.goal||preset.goal).trim().slice(0,180);
+  config.product.name=topic||config.product.name;config.product.description=context||config.product.description;config.product.benefits=goal||config.product.benefits;config.customer.needs=String(consultation||context).trim().slice(0,500);config.deal.scene=preset.scene;config.deal.goal=preset.goal;config.deal.difficulty=['easy','normal','hard'].includes(plan.difficulty)?plan.difficulty:'normal';config.category=preset.category;
+  state.roleplayConfig=config;populateRoleplayConfig(config);renderSetup();updateSetupDraft();toast('相談内容に合うロープレ設定を用意しました');
+}
+globalThis.startRoleplayFromAdvisor=startRoleplayFromAdvisor;
 
 function openPracticeMenu(){
   showScreen('home');document.getElementById('navHome')?.classList.remove('active');document.getElementById('navStart')?.classList.add('active');

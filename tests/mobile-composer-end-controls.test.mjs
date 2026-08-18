@@ -31,6 +31,6 @@ test('iPhone browsers keep text and microphone controls inside the visual viewpo
 });
 
 test('asset cache is bumped for the layout fix', () => {
-  assert.match(worker, /v1-52-newhire-roleplay/);
-  assert.match(worker, /styles\.css\?v=1\.52/);
+  assert.match(worker, /v1-53-business-advisor/);
+  assert.match(worker, /styles\.css\?v=1\.53/);
 });
