@@ -25,5 +25,5 @@ test('expiry gives three turns and reveals an inline end action', () => {
   assert.match(html, /id="timeLimitAction"[^>]+hidden/);
   assert.match(html, /ロープレを終了する/);
   assert.match(styles, /\.time-limit-action\{/);
-  assert.match(worker, /v1-56-synced-newhire-videos/);
+  assert.match(worker, /v1-57-corrected-newhire-pronunciation/);
 });
