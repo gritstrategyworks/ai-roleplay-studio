@@ -7,7 +7,7 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --keep-vars",
     "deploy:dry": "wrangler deploy --dry-run --keep-vars",
-    "check": "node --check public/app.js && node --check public/auth.js && node --check public/scenario-design.js && node --check src/index.js",
+    "check": "node --check public/app.js && node --check public/auth.js && node --check public/scenario-design.js && node --check public/advisor.js && node --check src/index.js",
     "test": "node --test tests/*.test.mjs"
   },
   "devDependencies": {
