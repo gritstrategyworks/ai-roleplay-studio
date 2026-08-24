@@ -1,0 +1,1400 @@
+﻿var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+
+// src/index.js
+var __defProp2 = Object.defineProperty;
+var __name2 = /* @__PURE__ */ __name((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
+var __defProp22 = Object.defineProperty;
+var __name22 = /* @__PURE__ */ __name2((target, value) => __defProp22(target, "name", { value, configurable: true }), "__name");
+var encoder = new TextEncoder();
+var decoder = new TextDecoder();
+var AUTH_COOKIE_NAME = "__Host-roleplay_session";
+var LOCAL_AUTH_COOKIE_NAME = "roleplay_session";
+var GUEST_COOKIE_NAME = "__Host-roleplay_guest";
+var LOCAL_GUEST_COOKIE_NAME = "roleplay_guest";
+var DEVELOPER_PREVIEW_COOKIE_NAME = "__Host-roleplay_dev_preview";
+var LOCAL_DEVELOPER_PREVIEW_COOKIE_NAME = "roleplay_dev_preview";
+var SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
+var GUEST_TTL_SECONDS = 60 * 60 * 24;
+var DEVELOPER_PREVIEW_TTL_SECONDS = 60 * 60 * 4;
+var PASSWORD_ITERATIONS = 1e5;
+var PASSWORD_RESET_TTL_SECONDS = 60 * 30;
+function toBase64Url(bytes) {
+  let value = "";
+  for (const byte of new Uint8Array(bytes)) value += String.fromCharCode(byte);
+  return btoa(value).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+__name(toBase64Url, "toBase64Url");
+__name2(toBase64Url, "toBase64Url");
+__name22(toBase64Url, "toBase64Url");
+function fromBase64Url(value) {
+  const normalized = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized + "=".repeat((4 - normalized.length % 4) % 4);
+  try {
+    const binary = atob(padded);
+    return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  } catch {
+    return new Uint8Array();
+  }
+}
+__name(fromBase64Url, "fromBase64Url");
+__name2(fromBase64Url, "fromBase64Url");
+__name22(fromBase64Url, "fromBase64Url");
+function equalBytes(left, right) {
+  const size = Math.max(left.length, right.length, 32);
+  let difference = left.length ^ right.length;
+  for (let index = 0; index < size; index += 1) {
+    difference |= (left[index] || 0) ^ (right[index] || 0);
+  }
+  return difference === 0;
+}
+__name(equalBytes, "equalBytes");
+__name2(equalBytes, "equalBytes");
+__name22(equalBytes, "equalBytes");
+function parseCookies(request) {
+  return Object.fromEntries((request.headers.get("cookie") || "").split(";").map((part) => {
+    const index = part.indexOf("=");
+    return index < 0 ? ["", ""] : [part.slice(0, index).trim(), part.slice(index + 1).trim()];
+  }).filter(([key]) => key));
+}
+__name(parseCookies, "parseCookies");
+__name2(parseCookies, "parseCookies");
+__name22(parseCookies, "parseCookies");
+function cookieNameFor(request) {
+  return new URL(request.url).protocol === "https:" ? AUTH_COOKIE_NAME : LOCAL_AUTH_COOKIE_NAME;
+}
+__name(cookieNameFor, "cookieNameFor");
+__name2(cookieNameFor, "cookieNameFor");
+__name22(cookieNameFor, "cookieNameFor");
+function guestCookieNameFor(request) {
+  return new URL(request.url).protocol === "https:" ? GUEST_COOKIE_NAME : LOCAL_GUEST_COOKIE_NAME;
+}
+__name(guestCookieNameFor, "guestCookieNameFor");
+__name2(guestCookieNameFor, "guestCookieNameFor");
+__name22(guestCookieNameFor, "guestCookieNameFor");
+function developerPreviewCookieNameFor(request) {
+  return new URL(request.url).protocol === "https:" ? DEVELOPER_PREVIEW_COOKIE_NAME : LOCAL_DEVELOPER_PREVIEW_COOKIE_NAME;
+}
+__name(developerPreviewCookieNameFor, "developerPreviewCookieNameFor");
+__name2(developerPreviewCookieNameFor, "developerPreviewCookieNameFor");
+__name22(developerPreviewCookieNameFor, "developerPreviewCookieNameFor");
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+__name(normalizeEmail, "normalizeEmail");
+__name2(normalizeEmail, "normalizeEmail");
+__name22(normalizeEmail, "normalizeEmail");
+function validateCredentials(emailValue, passwordValue, options = {}) {
+  const email = normalizeEmail(emailValue);
+  const password = String(passwordValue || "");
+  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { valid: false, error: "\u6709\u52B9\u306A\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002" };
+  }
+  const characterLength = Array.from(password).length;
+  if (!options.registration) {
+    return characterLength > 0 && characterLength <= 128 ? { valid: true, email, password } : { valid: false, error: "\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u307E\u305F\u306F\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093\u3002" };
+  }
+  if (characterLength < 10 || characterLength > 128) {
+    return { valid: false, error: "\u30D1\u30B9\u30EF\u30FC\u30C9\u306F10\u6587\u5B57\u4EE5\u4E0A128\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002" };
+  }
+  return { valid: true, email, password };
+}
+__name(validateCredentials, "validateCredentials");
+__name2(validateCredentials, "validateCredentials");
+__name22(validateCredentials, "validateCredentials");
+async function hmac(value, secret) {
+  if (!secret) throw new Error("AUTH_PEPPER is not configured.");
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  return new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(value)));
+}
+__name(hmac, "hmac");
+__name2(hmac, "hmac");
+__name22(hmac, "hmac");
+async function derivePassword(password, pepper, salt, iterations) {
+  const peppered = await hmac(password, pepper);
+  const baseKey = await crypto.subtle.importKey("raw", peppered, "PBKDF2", false, ["deriveBits"]);
+  return new Uint8Array(await crypto.subtle.deriveBits({
+    name: "PBKDF2",
+    hash: "SHA-256",
+    salt,
+    iterations
+  }, baseKey, 256));
+}
+__name(derivePassword, "derivePassword");
+__name2(derivePassword, "derivePassword");
+__name22(derivePassword, "derivePassword");
+async function hashPassword(password, pepper, iterations = PASSWORD_ITERATIONS) {
+  const safeIterations = Math.min(PASSWORD_ITERATIONS, Math.max(1e5, Number(iterations) || PASSWORD_ITERATIONS));
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const hash = await derivePassword(password, pepper, salt, safeIterations);
+  return {
+    algorithm: "pbkdf2-hmac-sha256",
+    iterations: safeIterations,
+    salt: toBase64Url(salt),
+    hash: toBase64Url(hash)
+  };
+}
+__name(hashPassword, "hashPassword");
+__name2(hashPassword, "hashPassword");
+__name22(hashPassword, "hashPassword");
+async function verifyPassword(password, pepper, stored) {
+  const iterations = Math.min(PASSWORD_ITERATIONS, Math.max(1e5, Number(stored?.iterations) || PASSWORD_ITERATIONS));
+  const salt = fromBase64Url(stored?.salt);
+  const expected = fromBase64Url(stored?.hash);
+  const safeSalt = salt.length === 16 ? salt : new Uint8Array(16);
+  const actual = await derivePassword(password, pepper, safeSalt, iterations);
+  return salt.length === 16 && expected.length === 32 && equalBytes(actual, expected);
+}
+__name(verifyPassword, "verifyPassword");
+__name2(verifyPassword, "verifyPassword");
+__name22(verifyPassword, "verifyPassword");
+function generateSessionToken() {
+  return toBase64Url(crypto.getRandomValues(new Uint8Array(32)));
+}
+__name(generateSessionToken, "generateSessionToken");
+__name2(generateSessionToken, "generateSessionToken");
+__name22(generateSessionToken, "generateSessionToken");
+async function hashSessionToken(token) {
+  return toBase64Url(await crypto.subtle.digest("SHA-256", encoder.encode(token)));
+}
+__name(hashSessionToken, "hashSessionToken");
+__name2(hashSessionToken, "hashSessionToken");
+__name22(hashSessionToken, "hashSessionToken");
+function buildSessionCookie(token, request, maxAge = SESSION_TTL_SECONDS) {
+  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  return cookieNameFor(request) + "=" + token + "; Path=/; HttpOnly; SameSite=Lax; Max-Age=" + maxAge + secure;
+}
+__name(buildSessionCookie, "buildSessionCookie");
+__name2(buildSessionCookie, "buildSessionCookie");
+__name22(buildSessionCookie, "buildSessionCookie");
+function clearSessionCookie(request) {
+  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  return cookieNameFor(request) + "=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0" + secure;
+}
+__name(clearSessionCookie, "clearSessionCookie");
+__name2(clearSessionCookie, "clearSessionCookie");
+__name22(clearSessionCookie, "clearSessionCookie");
+function readSessionToken(request) {
+  const cookies = parseCookies(request);
+  return cookies[AUTH_COOKIE_NAME] || cookies[LOCAL_AUTH_COOKIE_NAME] || null;
+}
+__name(readSessionToken, "readSessionToken");
+__name2(readSessionToken, "readSessionToken");
+__name22(readSessionToken, "readSessionToken");
+function readGuestToken(request) {
+  const cookies = parseCookies(request);
+  return cookies[GUEST_COOKIE_NAME] || cookies[LOCAL_GUEST_COOKIE_NAME] || null;
+}
+__name(readGuestToken, "readGuestToken");
+__name2(readGuestToken, "readGuestToken");
+__name22(readGuestToken, "readGuestToken");
+function buildGuestCookie(token, request, maxAge = GUEST_TTL_SECONDS) {
+  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  return guestCookieNameFor(request) + "=" + token + "; Path=/; HttpOnly; SameSite=Lax; Max-Age=" + maxAge + secure;
+}
+__name(buildGuestCookie, "buildGuestCookie");
+__name2(buildGuestCookie, "buildGuestCookie");
+__name22(buildGuestCookie, "buildGuestCookie");
+function clearGuestCookie(request) {
+  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  return guestCookieNameFor(request) + "=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0" + secure;
+}
+__name(clearGuestCookie, "clearGuestCookie");
+__name2(clearGuestCookie, "clearGuestCookie");
+__name22(clearGuestCookie, "clearGuestCookie");
+function readDeveloperPreviewToken(request) {
+  const cookies = parseCookies(request);
+  return cookies[DEVELOPER_PREVIEW_COOKIE_NAME] || cookies[LOCAL_DEVELOPER_PREVIEW_COOKIE_NAME] || null;
+}
+__name(readDeveloperPreviewToken, "readDeveloperPreviewToken");
+__name2(readDeveloperPreviewToken, "readDeveloperPreviewToken");
+__name22(readDeveloperPreviewToken, "readDeveloperPreviewToken");
+function buildDeveloperPreviewCookie(token, request) {
+  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  return developerPreviewCookieNameFor(request) + "=" + token + "; Path=/; HttpOnly; SameSite=Strict; Max-Age=" + DEVELOPER_PREVIEW_TTL_SECONDS + secure;
+}
+__name(buildDeveloperPreviewCookie, "buildDeveloperPreviewCookie");
+__name2(buildDeveloperPreviewCookie, "buildDeveloperPreviewCookie");
+__name22(buildDeveloperPreviewCookie, "buildDeveloperPreviewCookie");
+function clearDeveloperPreviewCookie(request) {
+  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  return developerPreviewCookieNameFor(request) + "=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0" + secure;
+}
+__name(clearDeveloperPreviewCookie, "clearDeveloperPreviewCookie");
+__name2(clearDeveloperPreviewCookie, "clearDeveloperPreviewCookie");
+__name22(clearDeveloperPreviewCookie, "clearDeveloperPreviewCookie");
+function developerEmailSet(env) {
+  return new Set([env.ADMIN_EMAILS, env.DEVELOPER_EMAILS].filter(Boolean).join(",").split(/[;,\n]/).map(normalizeEmail).filter(Boolean));
+}
+__name(developerEmailSet, "developerEmailSet");
+__name2(developerEmailSet, "developerEmailSet");
+__name22(developerEmailSet, "developerEmailSet");
+function isDeveloperUser(user, env) {
+  return Boolean(user?.id && developerEmailSet(env).has(normalizeEmail(user.email)));
+}
+__name(isDeveloperUser, "isDeveloperUser");
+__name2(isDeveloperUser, "isDeveloperUser");
+__name22(isDeveloperUser, "isDeveloperUser");
+function adminModePassword(env) {
+  return String(env.ADMIN_MODE_PASSWORD || env.DEVELOPER_PREVIEW_COMMAND || "");
+}
+__name(adminModePassword, "adminModePassword");
+__name2(adminModePassword, "adminModePassword");
+__name22(adminModePassword, "adminModePassword");
+async function verifyDeveloperPreviewCommand(provided, expected) {
+  const values = [String(provided || ""), String(expected || "")];
+  const digests = await Promise.all(values.map((value) => crypto.subtle.digest("SHA-256", encoder.encode(value))));
+  return Boolean(expected) && equalBytes(new Uint8Array(digests[0]), new Uint8Array(digests[1]));
+}
+__name(verifyDeveloperPreviewCommand, "verifyDeveloperPreviewCommand");
+__name2(verifyDeveloperPreviewCommand, "verifyDeveloperPreviewCommand");
+__name22(verifyDeveloperPreviewCommand, "verifyDeveloperPreviewCommand");
+async function createDeveloperPreviewToken(request, env, user, mode) {
+  const now = Math.floor(Date.now() / 1e3);
+  const expiresAt = now + DEVELOPER_PREVIEW_TTL_SECONDS;
+  const payload = toBase64Url(encoder.encode(JSON.stringify({
+    version: 1,
+    role: "developer-preview",
+    userId: user.id,
+    mode,
+    issuedAt: now,
+    expiresAt,
+    nonce: generateSessionToken()
+  })));
+  const signature = toBase64Url(await hmac("developer-preview:" + payload, env.AUTH_PEPPER));
+  return { token: payload + "." + signature, mode, expiresAt };
+}
+__name(createDeveloperPreviewToken, "createDeveloperPreviewToken");
+__name2(createDeveloperPreviewToken, "createDeveloperPreviewToken");
+__name22(createDeveloperPreviewToken, "createDeveloperPreviewToken");
+async function getDeveloperPreview(request, env, user) {
+  if (!env.AUTH_PEPPER || !isDeveloperUser(user, env)) return null;
+  const token = readDeveloperPreviewToken(request);
+  if (!token || token.length > 1024) return null;
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+  const expected = await hmac("developer-preview:" + parts[0], env.AUTH_PEPPER);
+  const actual = fromBase64Url(parts[1]);
+  if (actual.length !== expected.length || !equalBytes(actual, expected)) return null;
+  try {
+    const payload = JSON.parse(decoder.decode(fromBase64Url(parts[0])));
+    const now = Math.floor(Date.now() / 1e3);
+    if (payload.version !== 1 || payload.role !== "developer-preview" || payload.userId !== user.id) return null;
+    if (!(/* @__PURE__ */ new Set(["free", "premium"])).has(payload.mode)) return null;
+    if (!Number.isInteger(payload.issuedAt) || !Number.isInteger(payload.expiresAt)) return null;
+    if (payload.issuedAt > now + 60 || payload.expiresAt <= now || payload.expiresAt - payload.issuedAt !== DEVELOPER_PREVIEW_TTL_SECONDS) return null;
+    return { mode: payload.mode, expiresAt: payload.expiresAt };
+  } catch {
+    return null;
+  }
+}
+__name(getDeveloperPreview, "getDeveloperPreview");
+__name2(getDeveloperPreview, "getDeveloperPreview");
+__name22(getDeveloperPreview, "getDeveloperPreview");
+async function createGuestSession(request, env) {
+  if (!env.AUTH_PEPPER) throw new Error("AUTH_PEPPER is not configured.");
+  const now = Math.floor(Date.now() / 1e3);
+  const expiresAt = now + GUEST_TTL_SECONDS;
+  const payload = toBase64Url(encoder.encode(JSON.stringify({
+    version: 1,
+    role: "guest",
+    issuedAt: now,
+    expiresAt,
+    nonce: generateSessionToken()
+  })));
+  const signature = toBase64Url(await hmac("guest-session:" + payload, env.AUTH_PEPPER));
+  const token = payload + "." + signature;
+  return {
+    guest: true,
+    user: { id: "guest", email: "\u30B2\u30B9\u30C8\u30E2\u30FC\u30C9", guest: true },
+    expiresAt,
+    cookie: buildGuestCookie(token, request)
+  };
+}
+__name(createGuestSession, "createGuestSession");
+__name2(createGuestSession, "createGuestSession");
+__name22(createGuestSession, "createGuestSession");
+async function getGuestUser(request, env) {
+  if (!env.AUTH_PEPPER) return null;
+  const token = readGuestToken(request);
+  if (!token || token.length > 512) return null;
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+  const expected = await hmac("guest-session:" + parts[0], env.AUTH_PEPPER);
+  const actual = fromBase64Url(parts[1]);
+  if (actual.length !== expected.length || !equalBytes(actual, expected)) return null;
+  try {
+    const payload = JSON.parse(decoder.decode(fromBase64Url(parts[0])));
+    const now = Math.floor(Date.now() / 1e3);
+    if (payload.version !== 1 || payload.role !== "guest") return null;
+    if (!Number.isInteger(payload.issuedAt) || !Number.isInteger(payload.expiresAt)) return null;
+    if (payload.issuedAt > now + 60 || payload.expiresAt <= now || payload.expiresAt - payload.issuedAt !== GUEST_TTL_SECONDS) return null;
+    return {
+      guest: true,
+      expiresAt: payload.expiresAt,
+      user: { id: "guest", email: "\u30B2\u30B9\u30C8\u30E2\u30FC\u30C9", guest: true }
+    };
+  } catch {
+    return null;
+  }
+}
+__name(getGuestUser, "getGuestUser");
+__name2(getGuestUser, "getGuestUser");
+__name22(getGuestUser, "getGuestUser");
+async function createSession(request, env, userId) {
+  if (!env.BILLING_DB) throw new Error("BILLING_DB is not configured.");
+  const token = generateSessionToken();
+  const tokenHash = await hashSessionToken(token);
+  const now = Math.floor(Date.now() / 1e3);
+  const expiresAt = now + SESSION_TTL_SECONDS;
+  await env.BILLING_DB.batch([
+    env.BILLING_DB.prepare("DELETE FROM auth_sessions WHERE user_id = ? AND expires_at <= ?").bind(userId, now),
+    env.BILLING_DB.prepare(
+      "INSERT INTO auth_sessions (token_hash, user_id, created_at, expires_at, last_seen_at) VALUES (?, ?, ?, ?, ?)"
+    ).bind(tokenHash, userId, now, expiresAt, now)
+  ]);
+  return { token, tokenHash, expiresAt, cookie: buildSessionCookie(token, request) };
+}
+__name(createSession, "createSession");
+__name2(createSession, "createSession");
+__name22(createSession, "createSession");
+async function getSessionUser(request, env) {
+  if (!env.BILLING_DB) return null;
+  const token = readSessionToken(request);
+  if (!token) return null;
+  const tokenHash = await hashSessionToken(token);
+  const now = Math.floor(Date.now() / 1e3);
+  const row = await env.BILLING_DB.prepare(`
+    SELECT s.token_hash, s.expires_at, s.last_seen_at, u.id, u.email
+    FROM auth_sessions s
+    JOIN users u ON u.id = s.user_id
+    WHERE s.token_hash = ? AND s.expires_at > ?
+  `).bind(tokenHash, now).first();
+  if (!row) return null;
+  if (Number(row.last_seen_at || 0) < now - 86400) {
+    await env.BILLING_DB.prepare("UPDATE auth_sessions SET last_seen_at = ? WHERE token_hash = ?").bind(now, tokenHash).run();
+  }
+  return {
+    tokenHash,
+    expiresAt: Number(row.expires_at),
+    user: { id: row.id, email: row.email }
+  };
+}
+__name(getSessionUser, "getSessionUser");
+__name2(getSessionUser, "getSessionUser");
+__name22(getSessionUser, "getSessionUser");
+async function deleteSession(request, env) {
+  const token = readSessionToken(request);
+  if (!token || !env.BILLING_DB) return;
+  await env.BILLING_DB.prepare("DELETE FROM auth_sessions WHERE token_hash = ?").bind(await hashSessionToken(token)).run();
+}
+__name(deleteSession, "deleteSession");
+__name2(deleteSession, "deleteSession");
+__name22(deleteSession, "deleteSession");
+async function rateLimitKey(request, email, action, pepper, windowStart) {
+  const ip = request.headers.get("CF-Connecting-IP") || "local";
+  return toBase64Url(await hmac([action, ip, normalizeEmail(email), windowStart].join("|"), pepper));
+}
+__name(rateLimitKey, "rateLimitKey");
+__name2(rateLimitKey, "rateLimitKey");
+__name22(rateLimitKey, "rateLimitKey");
+async function isRateLimited(request, env, email, action, limit, windowSeconds) {
+  const now = Math.floor(Date.now() / 1e3);
+  const windowStart = Math.floor(now / windowSeconds) * windowSeconds;
+  const key = await rateLimitKey(request, email, action, env.AUTH_PEPPER, windowStart);
+  const row = await env.BILLING_DB.prepare("SELECT attempts FROM auth_rate_limits WHERE rate_key = ? AND reset_at > ?").bind(key, now).first();
+  return { limited: Number(row?.attempts || 0) >= limit, key, resetAt: windowStart + windowSeconds };
+}
+__name(isRateLimited, "isRateLimited");
+__name2(isRateLimited, "isRateLimited");
+__name22(isRateLimited, "isRateLimited");
+async function recordRateLimit(env, rate) {
+  const now = Math.floor(Date.now() / 1e3);
+  await env.BILLING_DB.batch([
+    env.BILLING_DB.prepare(`
+      INSERT INTO auth_rate_limits (rate_key, attempts, reset_at)
+      VALUES (?, 1, ?)
+      ON CONFLICT(rate_key) DO UPDATE SET attempts = attempts + 1, reset_at = excluded.reset_at
+    `).bind(rate.key, rate.resetAt),
+    env.BILLING_DB.prepare("DELETE FROM auth_rate_limits WHERE reset_at < ?").bind(now - 86400)
+  ]);
+}
+__name(recordRateLimit, "recordRateLimit");
+__name2(recordRateLimit, "recordRateLimit");
+__name22(recordRateLimit, "recordRateLimit");
+var JSON_HEADERS = {
+  "content-type": "application/json; charset=utf-8",
+  "cache-control": "no-store",
+  "x-content-type-options": "nosniff"
+};
+function json(data, init = {}) {
+  return Response.json(data, {
+    ...init,
+    headers: { ...JSON_HEADERS, ...init.headers || {} }
+  });
+}
+__name(json, "json");
+__name2(json, "json");
+__name22(json, "json");
+function assertSameOrigin(request) {
+  const origin = request.headers.get("origin");
+  if (origin && origin !== new URL(request.url).origin) {
+    throw new Response("Forbidden", { status: 403 });
+  }
+}
+__name(assertSameOrigin, "assertSameOrigin");
+__name2(assertSameOrigin, "assertSameOrigin");
+__name22(assertSameOrigin, "assertSameOrigin");
+async function readJson(request, maxBytes = 16384) {
+  const length = Number(request.headers.get("content-length") || 0);
+  if (length > maxBytes) throw new Response("Payload Too Large", { status: 413 });
+  if (!request.body) return {};
+  const reader = request.body.getReader();
+  const decoder2 = new TextDecoder();
+  let bytesRead = 0;
+  let text = "";
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    bytesRead += value.byteLength;
+    if (bytesRead > maxBytes) {
+      await reader.cancel();
+      throw new Response("Payload Too Large", { status: 413 });
+    }
+    text += decoder2.decode(value, { stream: true });
+  }
+  text += decoder2.decode();
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch {
+    throw new Response("Bad Request", { status: 400 });
+  }
+}
+__name(readJson, "readJson");
+__name2(readJson, "readJson");
+__name22(readJson, "readJson");
+function errorResponse(error, message = "Billing request failed.") {
+  if (error instanceof Response) return error;
+  console.error("api error", error);
+  return json({ error: message }, { status: 500 });
+}
+__name(errorResponse, "errorResponse");
+__name2(errorResponse, "errorResponse");
+__name22(errorResponse, "errorResponse");
+async function onRequestPost({ request, env }) {
+  try {
+    assertSameOrigin(request);
+    const session = await createGuestSession(request, env);
+    return json({
+      authenticated: false,
+      guest: true,
+      user: session.user,
+      expiresAt: session.expiresAt
+    }, {
+      headers: { "set-cookie": session.cookie }
+    });
+  } catch (error) {
+    return errorResponse(error, "\u30B2\u30B9\u30C8\u30E2\u30FC\u30C9\u3092\u958B\u59CB\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002");
+  }
+}
+__name(onRequestPost, "onRequestPost");
+__name2(onRequestPost, "onRequestPost");
+__name22(onRequestPost, "onRequestPost");
+var DUMMY_PASSWORD = {
+  salt: "AAAAAAAAAAAAAAAAAAAAAA",
+  hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  iterations: 1e5
+};
+async function onRequestPost2({ request, env }) {
+  try {
+    assertSameOrigin(request);
+    if (!env.BILLING_DB) throw new Error("BILLING_DB is not configured.");
+    if (!env.AUTH_PEPPER) throw new Error("AUTH_PEPPER is not configured.");
+    const body = await readJson(request);
+    const validation = validateCredentials(body.email, body.password);
+    if (!validation.valid) {
+      return json({ error: "\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u307E\u305F\u306F\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093\u3002", code: "invalid_credentials" }, { status: 401 });
+    }
+    const rate = await isRateLimited(request, env, validation.email, "login", 5, 600);
+    if (rate.limited) {
+      return json({ error: "\u30ED\u30B0\u30A4\u30F3\u8A66\u884C\u56DE\u6570\u304C\u591A\u3059\u304E\u307E\u3059\u300210\u5206\u5F8C\u306B\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002", code: "rate_limited" }, { status: 429 });
+    }
+    const user = await env.BILLING_DB.prepare(`
+      SELECT id, email, password_hash, password_salt, password_iterations
+      FROM users WHERE email = ? COLLATE NOCASE
+    `).bind(validation.email).first();
+    const verified = await verifyPassword(validation.password, env.AUTH_PEPPER, user ? {
+      hash: user.password_hash,
+      salt: user.password_salt,
+      iterations: user.password_iterations
+    } : DUMMY_PASSWORD);
+    if (!user || !verified) {
+      await recordRateLimit(env, rate);
+      return json({ error: "\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u307E\u305F\u306F\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093\u3002", code: "invalid_credentials" }, { status: 401 });
+    }
+    const now = Math.floor(Date.now() / 1e3);
+    await env.BILLING_DB.batch([
+      env.BILLING_DB.prepare("UPDATE users SET last_login_at = ?, updated_at = ? WHERE id = ?").bind(now, now, user.id),
+      env.BILLING_DB.prepare("DELETE FROM auth_rate_limits WHERE rate_key = ?").bind(rate.key)
+    ]);
+    const session = await createSession(request, env, user.id);
+    return json({
+      authenticated: true,
+      user: { id: user.id, email: user.email },
+      expiresAt: session.expiresAt
+    }, { headers: { "set-cookie": session.cookie } });
+  } catch (error) {
+    return errorResponse(error, "\u30ED\u30B0\u30A4\u30F3\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002");
+  }
+}
+__name(onRequestPost2, "onRequestPost2");
+__name2(onRequestPost2, "onRequestPost2");
+__name22(onRequestPost2, "onRequestPost");
+async function onRequestPost3({ request, env }) {
+  try {
+    assertSameOrigin(request);
+    await deleteSession(request, env);
+    const response = json({ authenticated: false }, {
+      headers: { "set-cookie": clearSessionCookie(request) }
+    });
+    response.headers.append("set-cookie", clearGuestCookie(request));
+    response.headers.append("set-cookie", clearDeveloperPreviewCookie(request));
+    return response;
+  } catch (error) {
+    return errorResponse(error, "\u30ED\u30B0\u30A2\u30A6\u30C8\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002");
+  }
+}
+__name(onRequestPost3, "onRequestPost3");
+__name2(onRequestPost3, "onRequestPost3");
+__name22(onRequestPost3, "onRequestPost");
+async function onRequestPost4({ request, env }) {
+  try {
+    assertSameOrigin(request);
+    if (!env.BILLING_DB) throw new Error("BILLING_DB is not configured.");
+    if (!env.AUTH_PEPPER) throw new Error("AUTH_PEPPER is not configured.");
+    if (env.SIGNUP_ENABLED === "false") {
+      return json({ error: "\u73FE\u5728\u3001\u65B0\u898F\u30A2\u30AB\u30A6\u30F3\u30C8\u4F5C\u6210\u3092\u505C\u6B62\u3057\u3066\u3044\u307E\u3059\u3002", code: "signup_disabled" }, { status: 403 });
+    }
+    const body = await readJson(request);
+    const validation = validateCredentials(body.email, body.password, { registration: true });
+    if (!validation.valid) return json({ error: validation.error, code: "invalid_input" }, { status: 400 });
+    const rate = await isRateLimited(request, env, "*", "register", 3, 3600);
+    if (rate.limited) {
+      return json({ error: "\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u3001\u3082\u3046\u4E00\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002", code: "rate_limited" }, { status: 429 });
+    }
+    await recordRateLimit(env, rate);
+    const existing = await env.BILLING_DB.prepare("SELECT id FROM users WHERE email = ? COLLATE NOCASE").bind(normalizeEmail(validation.email)).first();
+    if (existing) {
+      return json({ error: "\u3053\u306E\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u306F\u767B\u9332\u6E08\u307F\u3067\u3059\u3002\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002", code: "email_exists" }, { status: 409 });
+    }
+    const password = await hashPassword(validation.password, env.AUTH_PEPPER);
+    const userId = crypto.randomUUID();
+    const now = Math.floor(Date.now() / 1e3);
+    await env.BILLING_DB.prepare(`
+      INSERT INTO users (
+        id, email, password_hash, password_salt, password_iterations, created_at, updated_at, last_login_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      userId,
+      validation.email,
+      password.hash,
+      password.salt,
+      password.iterations,
+      now,
+      now,
+      now
+    ).run();
+    const session = await createSession(request, env, userId);
+    return json({
+      authenticated: true,
+      user: { id: userId, email: validation.email },
+      expiresAt: session.expiresAt
+    }, { status: 201, headers: { "set-cookie": session.cookie } });
+  } catch (error) {
+    if (/UNIQUE constraint failed/i.test(String(error?.message || error))) {
+      return json({ error: "\u3053\u306E\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u306F\u767B\u9332\u6E08\u307F\u3067\u3059\u3002\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002", code: "email_exists" }, { status: 409 });
+    }
+    return errorResponse(error, "\u30A2\u30AB\u30A6\u30F3\u30C8\u3092\u4F5C\u6210\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002");
+  }
+}
+__name(onRequestPost4, "onRequestPost4");
+__name2(onRequestPost4, "onRequestPost4");
+__name22(onRequestPost4, "onRequestPost");
+async function ensurePasswordResetTable(env) {
+  await env.BILLING_DB.prepare(`
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      token_hash TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL,
+      used_at INTEGER
+    )
+  `).run();
+  await env.BILLING_DB.prepare("CREATE INDEX IF NOT EXISTS idx_password_reset_user ON password_reset_tokens(user_id)").run();
+}
+__name(ensurePasswordResetTable, "ensurePasswordResetTable");
+async function sendPasswordResetEmail(env, email, resetUrl) {
+  if (!env.RESEND_API_KEY) {
+    const error = new Error("Password reset email is not configured.");
+    error.code = "email_not_configured";
+    throw error;
+  }
+  const defaultFrom = "AI\u30D3\u30B8\u30CD\u30B9\u30ED\u30FC\u30EB\u30D7\u30EC\u30A4\u30B9\u30BF\u30B8\u30AA <no-reply@mail.gritstrategyworks.com>";
+  const configuredFrom = String(env.PASSWORD_RESET_FROM || "").trim();
+  const from = /@mail\.gritstrategyworks\.com>?$/i.test(configuredFrom) ? configuredFrom : defaultFrom;
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
+    body: JSON.stringify({
+      from,
+      to: [email],
+      subject: "\u3010AI\u30D3\u30B8\u30CD\u30B9\u30ED\u30FC\u30EB\u30D7\u30EC\u30A4\u30B9\u30BF\u30B8\u30AA\u3011\u30D1\u30B9\u30EF\u30FC\u30C9\u518D\u8A2D\u5B9A",
+      html: `<div style="font-family:sans-serif;line-height:1.8;color:#17263a"><h2>\u30D1\u30B9\u30EF\u30FC\u30C9\u518D\u8A2D\u5B9A</h2><p>\u4EE5\u4E0B\u306E\u30DC\u30BF\u30F3\u304B\u308930\u5206\u4EE5\u5185\u306B\u65B0\u3057\u3044\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u8A2D\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p><p><a href="${resetUrl}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#f47c2c;color:#fff;text-decoration:none;font-weight:bold">\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u518D\u8A2D\u5B9A\u3059\u308B</a></p><p>\u3053\u306E\u30EA\u30F3\u30AF\u306F\u4E00\u5EA6\u3060\u3051\u4F7F\u7528\u3067\u304D\u307E\u3059\u3002\u5FC3\u5F53\u305F\u308A\u304C\u306A\u3044\u5834\u5408\u306F\u3001\u3053\u306E\u30E1\u30FC\u30EB\u3092\u7121\u8996\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p><p style="color:#6b7788;font-size:12px">AI\u30D3\u30B8\u30CD\u30B9\u30ED\u30FC\u30EB\u30D7\u30EC\u30A4\u30B9\u30BF\u30B8\u30AA</p></div>`
+    })
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result.id) {
+    const error = new Error(`Resend API returned ${response.status}.`);
+    error.code = "email_provider_rejected";
+    error.providerStatus = response.status;
+    error.providerCode = String(result?.name || result?.code || "unknown").slice(0, 80);
+    throw error;
+  }
+  return result.id;
+}
+__name(sendPasswordResetEmail, "sendPasswordResetEmail");
+async function onRequestPostPasswordResetRequest({ request, env }) {
+  const generic = { ok: true, message: "\u5165\u529B\u3055\u308C\u305F\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u304C\u767B\u9332\u3055\u308C\u3066\u3044\u308B\u5834\u5408\u3001\u518D\u8A2D\u5B9A\u30E1\u30FC\u30EB\u306E\u9001\u4FE1\u3092\u53D7\u3051\u4ED8\u3051\u307E\u3057\u305F\u3002\u6570\u5206\u5F85\u3063\u3066\u3082\u5C4A\u304B\u306A\u3044\u5834\u5408\u306F\u8FF7\u60D1\u30E1\u30FC\u30EB\u30D5\u30A9\u30EB\u30C0\u3082\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002" };
+  try {
+    assertSameOrigin(request);
+    if (!env.BILLING_DB || !env.AUTH_PEPPER) throw new Error("Password reset is not configured.");
+    const body = await readJson(request);
+    const email = normalizeEmail(body.email);
+    if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(generic);
+    const rate = await isRateLimited(request, env, email, "password-reset-request", 3, 900);
+    if (rate.limited) return json({ error: "\u518D\u8A2D\u5B9A\u30E1\u30FC\u30EB\u306E\u9001\u4FE1\u56DE\u6570\u304C\u4E0A\u9650\u306B\u9054\u3057\u307E\u3057\u305F\u300215\u5206\u5F8C\u306B\u3082\u3046\u4E00\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002", code: "rate_limited" }, { status: 429 });
+    await recordRateLimit(env, rate);
+    const user = await env.BILLING_DB.prepare("SELECT id, email FROM users WHERE email = ? COLLATE NOCASE").bind(email).first();
+    if (!user) return json(generic);
+    await ensurePasswordResetTable(env);
+    const token = generateSessionToken();
+    const tokenHash = await hashSessionToken(token);
+    const now = Math.floor(Date.now() / 1e3);
+    await env.BILLING_DB.batch([
+      env.BILLING_DB.prepare("DELETE FROM password_reset_tokens WHERE user_id = ? OR expires_at <= ?").bind(user.id, now),
+      env.BILLING_DB.prepare("INSERT INTO password_reset_tokens (token_hash, user_id, created_at, expires_at, used_at) VALUES (?, ?, ?, ?, NULL)").bind(tokenHash, user.id, now, now + PASSWORD_RESET_TTL_SECONDS)
+    ]);
+    const appUrl = String(env.APP_URL || new URL(request.url).origin).replace(/\/$/, "");
+    const resetUrl = `${appUrl}/?reset_token=${encodeURIComponent(token)}`;
+    try {
+      const emailId = await sendPasswordResetEmail(env, user.email, resetUrl);
+      console.info("password reset email accepted", { emailId });
+    } catch (error) {
+      await env.BILLING_DB.batch([
+        env.BILLING_DB.prepare("DELETE FROM password_reset_tokens WHERE token_hash = ?").bind(tokenHash),
+        env.BILLING_DB.prepare("DELETE FROM auth_rate_limits WHERE rate_key = ?").bind(rate.key)
+      ]);
+      console.error("password reset email failed", {
+        code: error?.code || "email_delivery_failed",
+        providerStatus: error?.providerStatus || null,
+        providerCode: error?.providerCode || null
+      });
+      const notConfigured = error?.code === "email_not_configured";
+      return json({
+        error: notConfigured ? "\u73FE\u5728\u3001\u518D\u8A2D\u5B9A\u30E1\u30FC\u30EB\u306E\u9001\u4FE1\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u3044\u307E\u3059\u3002\u6642\u9593\u3092\u304A\u3044\u3066\u3082\u3046\u4E00\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002" : "\u518D\u8A2D\u5B9A\u30E1\u30FC\u30EB\u3092\u9001\u4FE1\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002\u6642\u9593\u3092\u304A\u3044\u3066\u3082\u3046\u4E00\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002",
+        code: notConfigured ? "email_not_configured" : "email_delivery_failed"
+      }, { status: notConfigured ? 503 : 502 });
+    }
+    return json(generic);
+  } catch (error) {
+    if (error instanceof Response) return error;
+    console.error("password reset request failed", error);
+    return json(generic);
+  }
+}
+__name(onRequestPostPasswordResetRequest, "onRequestPostPasswordResetRequest");
+async function onRequestPostPasswordResetConfirm({ request, env }) {
+  try {
+    assertSameOrigin(request);
+    if (!env.BILLING_DB || !env.AUTH_PEPPER) throw new Error("Password reset is not configured.");
+    const body = await readJson(request);
+    const token = String(body.token || "");
+    const validation = validateCredentials("reset@example.com", body.password, { registration: true });
+    if (!validation.valid || token.length < 32 || token.length > 256) return json({ error: "\u518D\u8A2D\u5B9A\u30EA\u30F3\u30AF\u304C\u7121\u52B9\u304B\u3001\u6709\u52B9\u671F\u9650\u304C\u5207\u308C\u3066\u3044\u307E\u3059\u3002", code: "invalid_reset_token" }, { status: 400 });
+    await ensurePasswordResetTable(env);
+    const tokenHash = await hashSessionToken(token);
+    const now = Math.floor(Date.now() / 1e3);
+    const reset = await env.BILLING_DB.prepare("SELECT token_hash, user_id FROM password_reset_tokens WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?").bind(tokenHash, now).first();
+    if (!reset) return json({ error: "\u518D\u8A2D\u5B9A\u30EA\u30F3\u30AF\u304C\u7121\u52B9\u304B\u3001\u6709\u52B9\u671F\u9650\u304C\u5207\u308C\u3066\u3044\u307E\u3059\u3002", code: "invalid_reset_token" }, { status: 400 });
+    const consumed = await env.BILLING_DB.prepare("UPDATE password_reset_tokens SET used_at = ? WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?").bind(now, tokenHash, now).run();
+    if (Number(consumed?.meta?.changes || 0) !== 1) return json({ error: "\u518D\u8A2D\u5B9A\u30EA\u30F3\u30AF\u304C\u7121\u52B9\u304B\u3001\u6709\u52B9\u671F\u9650\u304C\u5207\u308C\u3066\u3044\u307E\u3059\u3002", code: "invalid_reset_token" }, { status: 400 });
+    const password = await hashPassword(validation.password, env.AUTH_PEPPER);
+    await env.BILLING_DB.batch([
+      env.BILLING_DB.prepare("UPDATE users SET password_hash = ?, password_salt = ?, password_iterations = ?, updated_at = ? WHERE id = ?").bind(password.hash, password.salt, password.iterations, now, reset.user_id),
+      env.BILLING_DB.prepare("DELETE FROM auth_sessions WHERE user_id = ?").bind(reset.user_id)
+    ]);
+    return json({ ok: true, message: "\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5909\u66F4\u3057\u307E\u3057\u305F\u3002\u65B0\u3057\u3044\u30D1\u30B9\u30EF\u30FC\u30C9\u3067\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002" });
+  } catch (error) {
+    return errorResponse(error, "\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5909\u66F4\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002");
+  }
+}
+__name(onRequestPostPasswordResetConfirm, "onRequestPostPasswordResetConfirm");
+async function onRequestGet({ request, env }) {
+  try {
+    const session = await getSessionUser(request, env);
+    if (!session) {
+      const guest = await getGuestUser(request, env);
+      if (guest) {
+        return json({
+          authenticated: false,
+          guest: true,
+          user: guest.user,
+          expiresAt: guest.expiresAt,
+          signupEnabled: env.SIGNUP_ENABLED !== "false"
+        });
+      }
+      return json({ authenticated: false, signupEnabled: env.SIGNUP_ENABLED !== "false" });
+    }
+    return json({
+      authenticated: true,
+      user: session.user,
+      expiresAt: session.expiresAt,
+      signupEnabled: env.SIGNUP_ENABLED !== "false"
+    });
+  } catch (error) {
+    return errorResponse(error, "\u8A8D\u8A3C\u72B6\u614B\u3092\u78BA\u8A8D\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002");
+  }
+}
+__name(onRequestGet, "onRequestGet");
+__name2(onRequestGet, "onRequestGet");
+__name22(onRequestGet, "onRequestGet");
+var PREMIUM_STATUSES = /* @__PURE__ */ new Set(["active", "trialing"]);
+async function getBillingIdentity(request, env) {
+  const session = await getSessionUser(request, env);
+  if (!session) throw new Response("Unauthorized", { status: 401 });
+  return {
+    accountId: session.user.id,
+    user: session.user,
+    cookie: null
+  };
+}
+__name(getBillingIdentity, "getBillingIdentity");
+__name2(getBillingIdentity, "getBillingIdentity");
+__name22(getBillingIdentity, "getBillingIdentity");
+async function getSubscription(env, accountId) {
+  if (!env.BILLING_DB) return null;
+  return env.BILLING_DB.prepare(
+    "SELECT stripe_customer_id, stripe_subscription_id, status, current_period_end FROM billing_accounts WHERE account_id = ?"
+  ).bind(accountId).first();
+}
+__name(getSubscription, "getSubscription");
+__name2(getSubscription, "getSubscription");
+__name22(getSubscription, "getSubscription");
+function hasPremiumAccess(subscription) {
+  return Boolean(subscription && PREMIUM_STATUSES.has(subscription.status));
+}
+__name(hasPremiumAccess, "hasPremiumAccess");
+__name2(hasPremiumAccess, "hasPremiumAccess");
+__name22(hasPremiumAccess, "hasPremiumAccess");
+function subscriptionPeriodEnd(subscription) {
+  return subscription?.current_period_end ?? subscription?.items?.data?.[0]?.current_period_end ?? null;
+}
+__name(subscriptionPeriodEnd, "subscriptionPeriodEnd");
+__name2(subscriptionPeriodEnd, "subscriptionPeriodEnd");
+__name22(subscriptionPeriodEnd, "subscriptionPeriodEnd");
+async function upsertSubscription(env, values) {
+  if (!env.BILLING_DB) throw new Error("BILLING_DB is not configured.");
+  const now = Math.floor(Date.now() / 1e3);
+  await env.BILLING_DB.prepare(`
+    INSERT INTO billing_accounts (
+      account_id, stripe_customer_id, stripe_subscription_id, status, current_period_end, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(account_id) DO UPDATE SET
+      stripe_customer_id = excluded.stripe_customer_id,
+      stripe_subscription_id = excluded.stripe_subscription_id,
+      status = excluded.status,
+      current_period_end = excluded.current_period_end,
+      updated_at = excluded.updated_at
+  `).bind(
+    values.accountId,
+    values.customerId || null,
+    values.subscriptionId || null,
+    values.status || "incomplete",
+    values.currentPeriodEnd || null,
+    now,
+    now
+  ).run();
+}
+__name(upsertSubscription, "upsertSubscription");
+__name2(upsertSubscription, "upsertSubscription");
+__name22(upsertSubscription, "upsertSubscription");
+var STRIPE_API = "https://api.stripe.com/v1";
+var STRIPE_API_VERSION = "2026-06-24.dahlia";
+var STRIPE_INTEGRATION_IDENTIFIER = "ai_roleplay_studio_qfjtmzra";
+async function stripeRequest(env, path, options = {}) {
+  if (!env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY is not configured.");
+  const headers = new Headers({
+    authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+    "stripe-version": STRIPE_API_VERSION,
+    accept: "application/json"
+  });
+  if (options.body) headers.set("content-type", "application/x-www-form-urlencoded");
+  if (options.idempotencyKey) headers.set("idempotency-key", String(options.idempotencyKey).slice(0, 255));
+  const response = await fetch(`${STRIPE_API}${path}`, {
+    method: options.method || "GET",
+    headers,
+    body: options.body
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    const error = new Error(data?.error?.message || `Stripe API returned ${response.status}.`);
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+__name(stripeRequest, "stripeRequest");
+__name2(stripeRequest, "stripeRequest");
+__name22(stripeRequest, "stripeRequest");
+function bytesToHex(bytes) {
+  return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+__name(bytesToHex, "bytesToHex");
+__name2(bytesToHex, "bytesToHex");
+__name22(bytesToHex, "bytesToHex");
+function safeEqual(left, right) {
+  if (left.length !== right.length) return false;
+  let result = 0;
+  for (let i = 0; i < left.length; i += 1) result |= left.charCodeAt(i) ^ right.charCodeAt(i);
+  return result === 0;
+}
+__name(safeEqual, "safeEqual");
+__name2(safeEqual, "safeEqual");
+__name22(safeEqual, "safeEqual");
+async function verifyStripeWebhook(payload, signatureHeader, secret) {
+  if (!signatureHeader || !secret) return false;
+  const parts = signatureHeader.split(",").map((part) => part.split("="));
+  const timestamp = parts.find(([key2]) => key2 === "t")?.[1];
+  const signatures = parts.filter(([key2]) => key2 === "v1").map(([, value]) => value);
+  if (!timestamp || !signatures.length) return false;
+  if (Math.abs(Date.now() / 1e3 - Number(timestamp)) > 300) return false;
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const digest = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${timestamp}.${payload}`));
+  const expected = bytesToHex(digest);
+  return signatures.some((signature) => safeEqual(signature, expected));
+}
+__name(verifyStripeWebhook, "verifyStripeWebhook");
+__name2(verifyStripeWebhook, "verifyStripeWebhook");
+__name22(verifyStripeWebhook, "verifyStripeWebhook");
+async function onRequestPost5({ request, env }) {
+  try {
+    assertSameOrigin(request);
+    if (!env.BILLING_DB) throw new Error("BILLING_DB is not configured.");
+    if (env.BILLING_ENABLED !== "true") {
+      return json({ error: "Billing is not yet available.", code: "billing_unavailable" }, { status: 503 });
+    }
+    const { accountId, cookie, user } = await getBillingIdentity(request, env);
+    const requestBody = await readJson(request);
+    const checkoutRequestId = /^[A-Za-z0-9_-]{16,80}$/.test(String(requestBody.requestId || "")) ? String(requestBody.requestId) : crypto.randomUUID();
+    const subscription = await getSubscription(env, accountId);
+    if (hasPremiumAccess(subscription)) {
+      return json({ error: "Subscription is already active.", code: "already_subscribed" }, { status: 409 });
+    }
+    if (env.STRIPE_PAYMENT_LINK_URL) {
+      const paymentLink = new URL(env.STRIPE_PAYMENT_LINK_URL);
+      paymentLink.searchParams.set("client_reference_id", accountId);
+      paymentLink.searchParams.set("locale", "ja");
+      return json({ url: paymentLink.toString() }, { headers: cookie ? { "set-cookie": cookie } : {} });
+    }
+    if (!env.STRIPE_PRICE_ID) throw new Error("STRIPE_PRICE_ID is not configured.");
+    const appUrl = String(env.APP_URL || new URL(request.url).origin).replace(/\/$/, "");
+    const form = new URLSearchParams({
+      mode: "subscription",
+      locale: "ja",
+      origin_context: "web",
+      integration_identifier: STRIPE_INTEGRATION_IDENTIFIER,
+      "line_items[0][price]": env.STRIPE_PRICE_ID,
+      "line_items[0][quantity]": "1",
+      client_reference_id: accountId,
+      "metadata[account_id]": accountId,
+      "subscription_data[metadata][account_id]": accountId,
+      success_url: `${appUrl}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appUrl}/?checkout=cancelled`
+    });
+    if (subscription?.stripe_customer_id) form.set("customer", subscription.stripe_customer_id);
+    else if (user?.email) form.set("customer_email", user.email);
+    const session = await stripeRequest(env, "/checkout/sessions", {
+      method: "POST",
+      body: form,
+      idempotencyKey: `checkout-${accountId}-${checkoutRequestId}`
+    });
+    return json({ url: session.url }, { headers: cookie ? { "set-cookie": cookie } : {} });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
+__name(onRequestPost5, "onRequestPost5");
+__name2(onRequestPost5, "onRequestPost5");
+__name22(onRequestPost5, "onRequestPost");
+async function onRequestPost6({ request, env }) {
+  try {
+    assertSameOrigin(request);
+    if (env.STRIPE_PORTAL_LOGIN_URL) {
+      return json({ url: env.STRIPE_PORTAL_LOGIN_URL });
+    }
+    const { accountId } = await getBillingIdentity(request, env);
+    const subscription = await getSubscription(env, accountId);
+    if (!subscription?.stripe_customer_id) {
+      return json({ error: "Stripe customer not found.", code: "customer_not_found" }, { status: 404 });
+    }
+    const appUrl = String(env.APP_URL || new URL(request.url).origin).replace(/\/$/, "");
+    const form = new URLSearchParams({
+      customer: subscription.stripe_customer_id,
+      return_url: `${appUrl}/?billing=returned`
+    });
+    const session = await stripeRequest(env, "/billing_portal/sessions", {
+      method: "POST",
+      body: form,
+      idempotencyKey: `portal-${accountId}-${Math.floor(Date.now() / 6e4)}`
+    });
+    return json({ url: session.url });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
+__name(onRequestPost6, "onRequestPost6");
+__name2(onRequestPost6, "onRequestPost6");
+__name22(onRequestPost6, "onRequestPost");
+async function onRequestGet2({ request, env }) {
+  try {
+    const { accountId, cookie, user } = await getBillingIdentity(request, env);
+    const subscription = await getSubscription(env, accountId);
+    const subscriptionPremium = hasPremiumAccess(subscription);
+    const developerAvailable = isDeveloperUser(user, env);
+    const developerConfigured = Boolean(adminModePassword(env));
+    const developerPreview = developerAvailable && developerConfigured ? await getDeveloperPreview(request, env, user) : null;
+    const premium = developerPreview?.mode === "premium" ? true : developerPreview?.mode === "free" ? false : subscriptionPremium;
+    return json({
+      premium,
+      subscriptionPremium,
+      status: subscription?.status || "free",
+      currentPeriodEnd: subscription?.current_period_end || null,
+      canManage: Boolean(subscription?.stripe_customer_id),
+      billingAvailable: env.BILLING_ENABLED === "true" && Boolean(
+        env.STRIPE_PAYMENT_LINK_URL || env.STRIPE_SECRET_KEY && env.STRIPE_PRICE_ID
+      ),
+      developerPreview: {
+        available: developerAvailable,
+        configured: developerConfigured,
+        mode: developerPreview?.mode || "actual",
+        expiresAt: developerPreview?.expiresAt || null
+      }
+    }, { headers: cookie ? { "set-cookie": cookie } : {} });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
+__name(onRequestGet2, "onRequestGet2");
+__name2(onRequestGet2, "onRequestGet2");
+__name22(onRequestGet2, "onRequestGet");
+async function onRequestPostDeveloperPreview(context) {
+  const { request, env } = context;
+  try {
+    assertSameOrigin(request);
+    const user = context.data?.user;
+    const expectedPassword = adminModePassword(env);
+    if (context.data?.auth?.guest || !isDeveloperUser(user, env) || !expectedPassword) {
+      return json({ error: "\u3053\u306E\u6A5F\u80FD\u306F\u5229\u7528\u3067\u304D\u307E\u305B\u3093\u3002", code: "not_found" }, { status: 404 });
+    }
+    if (!env.AUTH_PEPPER || !env.BILLING_DB) throw new Error("Developer preview dependencies are not configured.");
+    const body = await readJson(request, 2048);
+    const mode = String(body.mode || "");
+    if (!(/* @__PURE__ */ new Set(["free", "premium", "actual"])).has(mode)) {
+      return json({ error: "\u5207\u66FF\u30E2\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093\u3002", code: "invalid_mode" }, { status: 400 });
+    }
+    const rate = await isRateLimited(request, env, user.email, "developer-preview", 5, 600);
+    if (rate.limited) {
+      return json({ error: "\u5165\u529B\u56DE\u6570\u304C\u591A\u3059\u304E\u307E\u3059\u300210\u5206\u5F8C\u306B\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002", code: "rate_limited" }, { status: 429 });
+    }
+    const verified = await verifyDeveloperPreviewCommand(body.command, expectedPassword);
+    if (!verified) {
+      await recordRateLimit(env, rate);
+      return json({ error: "\u7BA1\u7406\u8005\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u4E00\u81F4\u3057\u307E\u305B\u3093\u3002", code: "invalid_command" }, { status: 403 });
+    }
+    await env.BILLING_DB.prepare("DELETE FROM auth_rate_limits WHERE rate_key = ?").bind(rate.key).run();
+    if (mode === "actual") {
+      return json({ ok: true, mode: "actual", expiresAt: null }, {
+        headers: { "set-cookie": clearDeveloperPreviewCookie(request) }
+      });
+    }
+    const preview = await createDeveloperPreviewToken(request, env, user, mode);
+    return json({ ok: true, mode: preview.mode, expiresAt: preview.expiresAt }, {
+      headers: { "set-cookie": buildDeveloperPreviewCookie(preview.token, request) }
+    });
+  } catch (error) {
+    return errorResponse(error, "\u30C6\u30B9\u30C8\u30E2\u30FC\u30C9\u3092\u5207\u308A\u66FF\u3048\u3089\u308C\u307E\u305B\u3093\u3067\u3057\u305F\u3002");
+  }
+}
+__name(onRequestPostDeveloperPreview, "onRequestPostDeveloperPreview");
+__name2(onRequestPostDeveloperPreview, "onRequestPostDeveloperPreview");
+__name22(onRequestPostDeveloperPreview, "onRequestPost");
+async function onRequestGetCheckoutSession({ request, env }) {
+  try {
+    assertSameOrigin(request);
+    if (env.BILLING_ENABLED !== "true") {
+      return json({ error: "Billing is not available.", code: "billing_unavailable" }, { status: 503 });
+    }
+    const { accountId } = await getBillingIdentity(request, env);
+    const sessionId = new URL(request.url).searchParams.get("session_id") || "";
+    if (!/^cs_(?:test_|live_)?[A-Za-z0-9]+$/.test(sessionId)) {
+      return json({ error: "Invalid Checkout Session.", code: "invalid_session" }, { status: 400 });
+    }
+    const checkout = await stripeRequest(
+      env,
+      `/checkout/sessions/${encodeURIComponent(sessionId)}?expand%5B%5D=subscription`
+    );
+    const referencedAccount = checkout.client_reference_id || checkout.metadata?.account_id;
+    if (!referencedAccount || referencedAccount !== accountId) {
+      return json({ error: "Checkout Session does not belong to this account.", code: "forbidden" }, { status: 403 });
+    }
+    if (checkout.status === "complete" && checkout.subscription) {
+      const subscription = typeof checkout.subscription === "object" ? checkout.subscription : await stripeRequest(env, `/subscriptions/${encodeURIComponent(checkout.subscription)}`);
+      await syncSubscription(env, subscription, accountId);
+    }
+    const stored = await getSubscription(env, accountId);
+    return json({
+      complete: checkout.status === "complete",
+      paymentStatus: checkout.payment_status || null,
+      premium: hasPremiumAccess(stored),
+      status: stored?.status || "free"
+    });
+  } catch (error) {
+    return errorResponse(error, "Checkout confirmation failed.");
+  }
+}
+__name(onRequestGetCheckoutSession, "onRequestGetCheckoutSession");
+__name2(onRequestGetCheckoutSession, "onRequestGetCheckoutSession");
+__name22(onRequestGetCheckoutSession, "onRequestGet");
+function objectId(value) {
+  return typeof value === "string" ? value : value?.id || null;
+}
+__name(objectId, "objectId");
+__name2(objectId, "objectId");
+__name22(objectId, "objectId");
+async function syncSubscription(env, subscription, fallbackAccountId = null) {
+  let accountId = subscription?.metadata?.account_id || fallbackAccountId;
+  if (!accountId && subscription?.id) {
+    const existing = await env.BILLING_DB.prepare(
+      "SELECT account_id FROM billing_accounts WHERE stripe_subscription_id = ?"
+    ).bind(subscription.id).first();
+    accountId = existing?.account_id || null;
+  }
+  if (!accountId) return false;
+  await upsertSubscription(env, {
+    accountId,
+    customerId: objectId(subscription.customer),
+    subscriptionId: subscription.id,
+    status: subscription.status,
+    currentPeriodEnd: subscriptionPeriodEnd(subscription)
+  });
+  return true;
+}
+__name(syncSubscription, "syncSubscription");
+__name2(syncSubscription, "syncSubscription");
+__name22(syncSubscription, "syncSubscription");
+async function onRequestPost7({ request, env }) {
+  const payload = await request.text();
+  const valid = await verifyStripeWebhook(
+    payload,
+    request.headers.get("stripe-signature"),
+    env.STRIPE_WEBHOOK_SECRET
+  );
+  if (!valid) return json({ error: "Invalid Stripe signature." }, { status: 400 });
+  if (!env.BILLING_DB) return json({ error: "BILLING_DB is not configured." }, { status: 503 });
+  try {
+    const event = JSON.parse(payload);
+    const processed = await env.BILLING_DB.prepare(
+      "SELECT event_id FROM stripe_events WHERE event_id = ?"
+    ).bind(event.id).first();
+    if (processed) return json({ received: true, duplicate: true });
+    if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
+      const session = event.data.object;
+      if (session.mode === "subscription" && session.subscription) {
+        if (env.STRIPE_SECRET_KEY) {
+          const subscription = await stripeRequest(env, `/subscriptions/${objectId(session.subscription)}`);
+          await syncSubscription(env, subscription, session.client_reference_id || session.metadata?.account_id);
+        } else {
+          await syncSubscription(env, {
+            id: objectId(session.subscription),
+            customer: session.customer,
+            status: session.payment_status === "paid" ? "active" : "incomplete",
+            metadata: {}
+          }, session.client_reference_id || session.metadata?.account_id);
+        }
+      }
+    } else if (event.type.startsWith("customer.subscription.")) {
+      await syncSubscription(env, event.data.object);
+    } else if (event.type === "invoice.paid" || event.type === "invoice.payment_failed") {
+      const invoice = event.data.object;
+      const subscriptionId = objectId(invoice.subscription || invoice.parent?.subscription_details?.subscription);
+      if (subscriptionId) {
+        await syncSubscription(env, {
+          id: subscriptionId,
+          customer: invoice.customer,
+          status: event.type === "invoice.paid" ? "active" : "past_due",
+          metadata: {}
+        });
+      }
+    }
+    await env.BILLING_DB.prepare(
+      "INSERT OR IGNORE INTO stripe_events (event_id, event_type, received_at) VALUES (?, ?, ?)"
+    ).bind(event.id, event.type, Math.floor(Date.now() / 1e3)).run();
+    return json({ received: true });
+  } catch (error) {
+    console.error("stripe webhook error", error);
+    return json({ error: "Webhook processing failed." }, { status: 500 });
+  }
+}
+__name(onRequestPost7, "onRequestPost7");
+__name2(onRequestPost7, "onRequestPost7");
+__name22(onRequestPost7, "onRequestPost");
+var MODELS = Object.freeze({
+  "gemma-3-4b-it-q4f16_1-MLC": {
+    repo: "mlc-ai/gemma-3-4b-it-q4f16_1-MLC",
+    revision: "af1fe173321285b526dd3dd9b9d8f5000f324baf",
+    library: "https://huggingface.co/Phreak87/gemma3-4b-it-q4f16_1-MLC-wasm/resolve/eb69d439a177714feeda310e04edfd1e6ce10932/gemma3-4b.wasm"
+  },
+  "Qwen3-1.7B-q4f32_1-MLC": {
+    repo: "mlc-ai/Qwen3-1.7B-q4f32_1-MLC",
+    revision: "bddd4d584cabe19113f7e4ff46fd9e73b4d3dc89",
+    library: "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/025bcaf3780fa8254f5e5efd3bfea0a5397248f4/web-llm-models/v0_2_84/base/Qwen3-1.7B-q4f32_1_cs1k-webgpu.wasm"
+  },
+  "Qwen3-4B-q4f32_1-MLC": {
+    repo: "mlc-ai/Qwen3-4B-q4f32_1-MLC",
+    revision: "b7e4eb1ba80728187fb5df44055cc1a7c32310e0",
+    library: "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/025bcaf3780fa8254f5e5efd3bfea0a5397248f4/web-llm-models/v0_2_84/base/Qwen3-4B-q4f32_1_cs1k-webgpu.wasm"
+  },
+  "Llama-3.2-3B-Instruct-q4f32_1-MLC": {
+    repo: "mlc-ai/Llama-3.2-3B-Instruct-q4f32_1-MLC",
+    revision: "6083cfdaaf08d2dd4872d7f5b87fb0242aa7d75c",
+    library: "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/025bcaf3780fa8254f5e5efd3bfea0a5397248f4/web-llm-models/v0_2_84/base/Llama-3.2-3B-Instruct-q4f32_1_cs1k-webgpu.wasm"
+  }
+});
+var IMMUTABLE_CACHE = "public, max-age=31536000, immutable";
+function json2(body, status = 400) {
+  return Response.json(body, {
+    status,
+    headers: {
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff"
+    }
+  });
+}
+__name(json2, "json2");
+__name2(json2, "json2");
+__name22(json2, "json");
+function copyRequestHeaders(request) {
+  const headers = new Headers();
+  for (const name of ["range", "if-none-match", "if-modified-since"]) {
+    const value = request.headers.get(name);
+    if (value) headers.set(name, value);
+  }
+  return headers;
+}
+__name(copyRequestHeaders, "copyRequestHeaders");
+__name2(copyRequestHeaders, "copyRequestHeaders");
+__name22(copyRequestHeaders, "copyRequestHeaders");
+function copyResponseHeaders(upstream) {
+  const headers = new Headers();
+  for (const name of [
+    "content-type",
+    "content-length",
+    "content-range",
+    "accept-ranges",
+    "etag",
+    "last-modified"
+  ]) {
+    const value = upstream.headers.get(name);
+    if (value) headers.set(name, value);
+  }
+  headers.set("cache-control", IMMUTABLE_CACHE);
+  headers.set("access-control-allow-origin", "*");
+  headers.set("cross-origin-resource-policy", "cross-origin");
+  headers.set("x-content-type-options", "nosniff");
+  return headers;
+}
+__name(copyResponseHeaders, "copyResponseHeaders");
+__name2(copyResponseHeaders, "copyResponseHeaders");
+__name22(copyResponseHeaders, "copyResponseHeaders");
+function resolveUpstream(pathname) {
+  const prefix = "/api/local-model/";
+  if (!pathname.startsWith(prefix)) return null;
+  const parts = pathname.slice(prefix.length).split("/").map(decodeURIComponent);
+  const [kind, modelId, ...rest] = parts;
+  const model = MODELS[modelId];
+  if (!model) return null;
+  if (kind === "lib" && rest.length === 0) return model.library;
+  if (kind === "model" && rest.length >= 3 && rest[0] === "resolve" && rest[1] === "main" && rest.slice(2).every((part) => part && part !== "." && part !== ".." && !part.includes("/") && !part.includes("\\"))) {
+    const safePath = rest.slice(2).map(encodeURIComponent).join("/");
+    return `https://huggingface.co/${model.repo}/resolve/${model.revision}/${safePath}`;
+  }
+  return null;
+}
+__name(resolveUpstream, "resolveUpstream");
+__name2(resolveUpstream, "resolveUpstream");
+__name22(resolveUpstream, "resolveUpstream");
+async function onRequest(context) {
+  const { request } = context;
+  if (request.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, HEAD, OPTIONS",
+        "access-control-allow-headers": "range, if-none-match, if-modified-since",
+        "access-control-max-age": "86400"
+      }
+    });
+  }
+  if (!["GET", "HEAD"].includes(request.method)) {
+    return json2({ error: "Method not allowed." }, 405);
+  }
+  let upstreamUrl;
+  try {
+    upstreamUrl = resolveUpstream(new URL(request.url).pathname);
+  } catch {
+    return json2({ error: "Invalid model path." });
+  }
+  if (!upstreamUrl) return json2({ error: "Unknown model asset." }, 404);
+  const upstream = await fetch(upstreamUrl, {
+    method: request.method,
+    headers: copyRequestHeaders(request),
+    redirect: "follow"
+  });
+  if (!upstream.ok && upstream.status !== 304 && upstream.status !== 206) {
+    return json2({ error: "Model asset is unavailable." }, upstream.status === 404 ? 404 : 502);
+  }
+  return new Response(request.method === "HEAD" ? null : upstream.body, {
+    status: upstream.status,
+    headers: copyResponseHeaders(upstream)
+  });
+}
+__name(onRequest, "onRequest");
+__name2(onRequest, "onRequest");
+__name22(onRequest, "onRequest");
+var MODEL = "@cf/qwen/qwen3-30b-a3b-fp8";
+var ROLE_CONTRACTS = Object.freeze({
+  sales: Object.freeze({
+    userRole: "\u55B6\u696D\u62C5\u5F53\u8005\u30FB\u63D0\u6848\u8005",
+    aiRole: "\u898B\u8FBC\u307F\u9867\u5BA2\u307E\u305F\u306F\u65E2\u5B58\u9867\u5BA2",
+    speakerRole: "sales_counterpart",
+    forbidden: "\u55B6\u696D\u62C5\u5F53\u8005\u3068\u3057\u3066\u5546\u54C1\u3092\u58F2\u308B\u3001\u63D0\u6848\u3059\u308B\u3001\u5229\u7528\u8005\u306E\u55B6\u696D\u6D3B\u52D5\u3092\u30D2\u30A2\u30EA\u30F3\u30B0\u3059\u308B",
+    fallback: "\u3042\u308A\u304C\u3068\u3046\u3054\u3056\u3044\u307E\u3059\u3002\u307E\u305A\u3001\u3069\u306E\u3088\u3046\u306A\u3054\u63D0\u6848\u304B\u6982\u8981\u3092\u4F3A\u3048\u307E\u3059\u304B\u3002",
+    reversedPatterns: [
+      /(?:迴ｾ蝨ｨ|譛霑・縺ｮ蝟ｶ讌ｭ豢ｻ蜍票^縲ゑｼ・ｼ歉*(?:隱ｲ鬘芸謾ｹ蝟・/,
+      /(?:蝟ｶ讌ｭ豢ｻ蜍怖蝟ｶ讌ｭ縺ｮ騾ｲ繧∵婿)[^縲ゑｼ・ｼ歉*(?:謨吶∴縺ｦ|閨槭°縺帙※)/,
+      /縺疲署譯医＆縺帙※|蠑顔､ｾ(?:縺ｮ蝠・刀|繧ｵ繝ｼ繝薙せ)|蝠・刀繧偵＃邏ｹ莉弓繝偵い繝ｪ繝ｳ繧ｰ縺輔○縺ｦ/
+    ]
+  }),
+  manager: Object.freeze({
+    userRole: "\u4E0A\u53F8\u30FB\u7BA1\u7406\u8077",
+    aiRole: "\u9762\u8AC7\u3092\u53D7\u3051\u308B\u90E8\u4E0B\u30FB\u793E\u54E1",
+    speakerRole: "manager_counterpart",
+    forbidden: "\u4E0A\u53F8\u3068\u3057\u3066\u5229\u7528\u8005\u3092\u9762\u8AC7\u30FB\u8A55\u4FA1\u30FB\u6307\u5C0E\u3057\u305F\u308A\u3001\u5229\u7528\u8005\u3078\u696D\u52D9\u76EE\u6A19\u3092\u8A2D\u5B9A\u3057\u305F\u308A\u3059\u308B",
+    fallback: "\u5B9F\u306F\u6700\u8FD1\u3001\u4ED5\u4E8B\u306E\u512A\u5148\u9806\u4F4D\u306E\u4ED8\u3051\u65B9\u306B\u5C11\u3057\u60A9\u3093\u3067\u3044\u307E\u3059\u3002",
+    reversedPatterns: [
+      /荳雁昇縺ｨ縺励※|邂｡逅・・縺ｨ縺励※|隧穂ｾ｡縺励∪縺處謖・ｰ弱＠縺ｾ縺・,
+      /(?:譛霑代・莉穂ｺ弓莉穂ｺ倶ｸ・縺ｧ蝗ｰ縺｣縺ｦ縺・ｋ縺薙→[^縲ゑｼ・ｼ歉*(?:縺ゅｊ縺ｾ縺吶°|謨吶∴縺ｦ)/,
+      /縺ゅ↑縺溘・逶ｮ讓兌^縲ゑｼ・ｼ歉*(?:謨吶∴縺ｦ|閨槭°縺帙※)/,
+      /(?:谺｡縺ｮ陦悟虚|莉雁ｾ後・(?:蜈ｷ菴鍋噪縺ｪ)?蜿悶ｊ邨・∩|逶ｮ讓處蜆ｪ蜈磯・ｽ・.{0,18}(?:謨ｴ逅・遒ｺ隱鋼豎ｺ繧－閠・∴).{0,12}(?:縺励∪縺励ｇ縺・縺励※縺・″縺ｾ縺励ｇ縺・縺ｾ縺帙ｓ縺・/,
+      /(?:縺ｧ縺ｯ|縺昴ｌ縺ｧ縺ｯ).{0,16}(?:蜿悶ｊ邨・∩|陦悟虚|逶ｮ讓・.{0,18}(?:謨ｴ逅・豎ｺ繧－閠・∴)(?:縺励∪縺励ｇ縺・縺ｾ縺帙ｓ縺・/
+    ]
+  }),
+  interview: Object.freeze({
+    userRole: "\u9762\u63A5\u5B98\u30FB\u63A1\u7528\u62C5\u5F53\u8005",
+    aiRole: "\u5FDC\u52DF\u8005\u30FB\u5019\u88DC\u8005",
+    speakerRole: "interview_counterpart",
+    forbidden: "\u9762\u63A5\u5B98\u3068\u3057\u3066\u5229\u7528\u8005\u3092\u8CEA\u554F\u30FB\u9078\u8003\u30FB\u8A55\u4FA1\u3059\u308B",
+    fallback: "\u306F\u3044\u3002\u3069\u306E\u7D4C\u9A13\u304B\u3089\u304A\u8A71\u3057\u3059\u308C\u3070\u3088\u3044\u3067\u3057\u3087\u3046\u304B\u3002",
+    reversedPatterns: [
+      /髱｢謗･繧貞ｧ九ａ(?:縺ｾ縺處縺ｾ縺励ｇ縺・/,
+      /(?:縺薙ｌ縺ｾ縺ｧ縺ｮ)?(?:邨梧ｭｴ|閨ｷ豁ｴ|邨碁ｨ・[^縲ゑｼ・ｼ歉*(?:謨吶∴縺ｦ|閨槭°縺帙※)/,
+      /蠢玲悍蜍墓ｩ歇^縲ゑｼ・ｼ歉*(?:謨吶∴縺ｦ|閨槭°縺帙※)/
+    ]
+  }),
+  support: Object.freeze({
+    userRole: "\u554F\u3044\u5408\u308F\u305B\u30FB\u30AF\u30EC\u30FC\u30E0\u5BFE\u5FDC\u62C5\u5F53\u8005",
+    aiRole: "\u56F0\u308A\u3054\u3068\u3084\u4E0D\u6E80\u3092\u62B1\u3048\u305F\u9867\u5BA2",
+    speakerRole: "support_counterpart",
+    forbidden: "\u4F01\u696D\u306E\u5BFE\u5FDC\u62C5\u5F53\u8005\u3068\u3057\u3066\u8B1D\u7F6A\u30FB\u8ABF\u67FB\u30FB\u8FD4\u91D1\u30FB\u4EA4\u63DB\u30FB\u4FEE\u7406\u3092\u7D04\u675F\u3059\u308B",
+    fallback: "\u56F0\u3063\u3066\u3044\u308B\u306E\u306F\u3001\u307E\u3060\u72B6\u6CC1\u306E\u8AAC\u660E\u3092\u53D7\u3051\u3089\u308C\u3066\u3044\u306A\u3044\u70B9\u3067\u3059\u3002",
+    reversedPatterns: [
+      /縺・?:荳堺ｾｿ|霑ｷ諠・繧偵♀縺九￠[^縲ゑｼ・ｼ歉*逕ｳ縺苓ｨｳ/,
+      /(?:霑秘≡|莠､謠斈菫ｮ逅・[^縲ゑｼ・ｼ歉*(?:縺・◆縺励∪縺處蟇ｾ蠢懊＠縺ｾ縺處謇ｿ繧翫∪縺・/,
+      /遒ｺ隱阪＞縺溘＠縺ｾ縺吶・縺ｧ|隱ｿ譟ｻ縺・◆縺励∪縺吶・縺ｧ/
+    ]
+  }),
+  newhire: Object.freeze({
+    userRole: "\u65B0\u5165\u793E\u54E1\u30FB\u82E5\u624B\u793E\u54E1",
+    aiRole: "\u6307\u793A\u30FB\u5831\u544A\u3092\u53D7\u3051\u308B\u4E0A\u53F8\u30FB\u5148\u8F29\u3001\u307E\u305F\u306F\u793E\u5185\u5916\u306E\u76F8\u624B\u5F79",
+    speakerRole: "newhire_counterpart",
+    forbidden: "\u65B0\u5165\u793E\u54E1\u3068\u3057\u3066\u5229\u7528\u8005\u306E\u4EE3\u308F\u308A\u306B\u5831\u544A\u30FB\u5FA9\u5531\u30FB\u8CEA\u554F\u30FB\u96FB\u8A71\u5BFE\u5FDC\u3092\u884C\u3046\u3001\u307E\u305F\u306F\u30B3\u30FC\u30C1\u3068\u3057\u3066\u6A21\u7BC4\u56DE\u7B54\u3092\u4EE3\u5F01\u3059\u308B",
+    fallback: "\u306F\u3044\u3001\u5185\u5BB9\u3092\u78BA\u8A8D\u3057\u307E\u3059\u3002\u307E\u305A\u3001\u4ECA\u56DE\u306E\u7528\u4EF6\u3068\u73FE\u5728\u306E\u72B6\u6CC1\u304B\u3089\u805E\u304B\u305B\u3066\u304F\u3060\u3055\u3044\u3002",
+    reversedPatterns: [
+      /(?:蝣ｱ蜻掛騾｣邨｡|逶ｸ隲・縺輔○縺ｦ縺・◆縺縺阪∪縺・,
+      /(?:遘－閾ｪ蛻・.{0,12}(?:譁ｰ蜈･遉ｾ蜩｡|譁ｰ莠ｺ)/,
+      /(?:謖・､ｺ繧貞ｾｩ蜚ｱ|遒ｺ隱阪＆縺帙※縺上□縺輔＞).{0,20}(?:譛滄剞|逶ｮ逧л螳梧・)/
+    ]
+  })
+});
+function roleContract(category) {
+  return ROLE_CONTRACTS[category] || ROLE_CONTRACTS.sales;
+}
+__name(roleContract, "roleContract");
+__name2(roleContract, "roleContract");
+__name22(roleContract, "roleContract");
+function looksRoleReversed(category, reply) {
+  const text = sanitizeText(reply, 300);
+  const selfRoleClaims = {
+    sales: [/(?:遘－縺薙■繧榎蠖鍋､ｾ|蠑顔､ｾ).{0,20}(?:謠先｡・蝠・刀|繧ｵ繝ｼ繝薙せ).{0,12}(?:縺励∪縺處縺・◆縺励∪縺處邏ｹ莉・/],
+    manager: [/(?:遘－縺薙■繧・.{0,12}(?:荳雁昇|邂｡逅・・)/, /(?:隧穂ｾ｡|謖・ｰ旨逶ｮ讓吶ｒ險ｭ螳・.{0,12}(?:縺励∪縺處縺励∪縺励ｇ縺・/],
+    interview: [/(?:遘－縺薙■繧・.{0,12}(?:髱｢謗･螳・謗｡逕ｨ諡・ｽ・/, /(?:雉ｪ蝠楯驕ｸ閠ポ隧穂ｾ｡).{0,12}(?:縺励∪縺處蟋九ａ縺ｾ縺・/],
+    support: [/(?:遘－縺薙■繧榎蠖鍋､ｾ|蠑顔､ｾ).{0,20}(?:隰晉ｽｪ|隱ｿ譟ｻ|霑秘≡|莠､謠斈菫ｮ逅・蟇ｾ蠢・.{0,12}(?:縺励∪縺處縺・◆縺励∪縺處謇ｿ繧翫∪縺・/],
+    newhire: [/(?:遘－閾ｪ蛻・.{0,16}(?:譁ｰ蜈･遉ｾ蜩｡|譁ｰ莠ｺ)/, /(?:蝣ｱ蜻掛逶ｸ隲・縺輔○縺ｦ縺上□縺輔＞/]
+  };
+  return roleContract(category).reversedPatterns.some((pattern) => pattern.test(text)) || (selfRoleClaims[category] || []).some((pattern) => pattern.test(text));
+}
+__name(looksRoleReversed, "looksRoleReversed");
+__name2(looksRoleReversed, "looksRoleReversed");
+__name22(looksRoleReversed, "looksRoleReversed");
+var HEADERS = {
+  "content-type": "application/json; charset=utf-8",
+  "cache-control": "no-store",
+  "x-content-type-options": "nosniff",
+  "access-control-allow-origin": "*"
+};
+async function onRequestGet3(context) {
+  return Response.json({
+    ok: true,
+    service: "AI Business Roleplay Studio API",
+    aiConfigured: Boolean(context.env.AI),
+    model: context.env.AI ? MODEL : null
+  }, { headers: HEADERS });
+}
+__name(onRequestGet3, "onRequestGet3");
+__name2(onRequestGet3, "onRequestGet3");
+__name22(onRequestGet3, "onRequestGet");
+async function onRequestOptions() {
+  return new Response(null, {
