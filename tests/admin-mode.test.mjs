@@ -15,11 +15,12 @@ test('administrator account gets a protected Premium mode menu', () => {
   assert.match(worker, /verifyDeveloperPreviewCommand\(body\.command, expectedPassword\)/);
   assert.match(worker, /const developerAvailable = isDeveloperUser\(user, env\)/);
   assert.match(worker, /configured: developerConfigured/);
-  assert.match(html, /id="adminMenuButton"/);
+  assert.doesNotMatch(html, /id="adminMenuButton"/);
+  assert.ok(html.indexOf('id="developerPreviewPanel"') > html.indexOf('id="screen-settings"'));
+  assert.match(app, /focusDeveloperPreviewPanel\(\)\{showScreen\('settings'\)/);
   assert.match(html, /管理者メニュー/);
   assert.match(html, /管理者パスワード/);
   assert.match(html, /管理者Premium/);
-  assert.match(app, /menuButton\.hidden=billingState\.loading\|\|!preview\.available/);
   assert.match(app, /ADMIN_MODE_PASSWORD.+実行中のWorkerに反映されていません/);
 });
 

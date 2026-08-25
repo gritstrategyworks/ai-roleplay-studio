@@ -10,7 +10,7 @@ const [html, manifest, worker] = await Promise.all([
 
 test('marketing copy positions the product as practical dialogue training', () => {
   const head = html.match(/<head>[\s\S]*?<\/head>/)?.[0] || '';
-  const hero = html.match(/<div class="hero">[\s\S]*?<\/div>\s*<section id="developerPreviewPanel"/)?.[0] || '';
+  const hero = html.match(/<div class="hero">[\s\S]*?<section class="advisor-home-card"/)?.[0] || '';
   assert.doesNotMatch(head, /音声ロープレ|音声で実践|音声で会話/);
   assert.doesNotMatch(hero, /AI音声|声で話/);
   assert.match(hero, /AI実践ロールプレイ/);
@@ -22,5 +22,5 @@ test('microphone and read-aloud features remain available', () => {
   assert.match(html, /id="micButton"/);
   assert.match(html, /id="speechSwitch"/);
   assert.match(html, /ハンズフリーを開始/);
-  assert.match(worker, /v1-51-counterpart-boundary/);
+  assert.match(worker, /v1-61-settings-admin-newhire-free/);
 });
