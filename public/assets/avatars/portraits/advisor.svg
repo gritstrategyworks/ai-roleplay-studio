@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 720" role="img" aria-labelledby="title description">
+  <title id="title">AIビジネス対話アドバイザー</title>
+  <desc id="description">オレンジ色のジャケットを着た、親しみやすいAIアドバイザーのイラスト</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff8ef"/>
+      <stop offset="0.52" stop-color="#f3f8fc"/>
+      <stop offset="1" stop-color="#e6f2f4"/>
+    </linearGradient>
+    <linearGradient id="jacket" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#ff9d57"/>
+      <stop offset="1" stop-color="#de681f"/>
+    </linearGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#263a50"/>
+      <stop offset="1" stop-color="#0b1727"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#13273e" flood-opacity="0.2"/>
+    </filter>
+    <clipPath id="portraitClip"><rect x="32" y="32" width="576" height="656" rx="76"/></clipPath>
+  </defs>
+  <rect x="32" y="32" width="576" height="656" rx="76" fill="url(#background)"/>
+  <g clip-path="url(#portraitClip)">
+    <circle cx="102" cy="150" r="126" fill="#ff8b38" opacity="0.12"/>
+    <circle cx="565" cy="545" r="168" fill="#19a58f" opacity="0.10"/>
+    <path d="M70 574c82-76 155-108 250-108 96 0 176 34 250 108v146H70z" fill="#dae7ee" opacity="0.75"/>
+    <g filter="url(#shadow)">
+      <path d="M139 717c7-133 54-218 137-249l44 33 44-33c83 31 130 116 137 249z" fill="url(#jacket)"/>
+      <path d="M276 468l44 33-49 85-42-83zM364 468l-44 33 49 85 42-83z" fill="#fff"/>
+      <path d="M301 509h38l13 118-32 45-32-45z" fill="#17334d"/>
+      <path d="M251 360h138v116c-19 38-46 57-69 57s-50-19-69-57z" fill="#edb18e"/>
+      <ellipse cx="320" cy="309" rx="138" ry="162" fill="#f3bd99"/>
+      <path d="M182 300c1-118 57-190 145-190 89 0 144 70 137 179-25-16-42-44-50-83-49 33-111 51-194 54-11 28-18 57-21 89-12-8-18-24-17-49z" fill="url(#hair)"/>
+      <path d="M203 275c32-103 92-139 176-133-70-24-135-1-169 54-17 28-25 61-24 99z" fill="#354b62" opacity="0.85"/>
+      <path d="M218 289c-25-7-38 9-33 41 5 31 22 47 45 42zM422 289c25-7 38 9 33 41-5 31-22 47-45 42z" fill="#efb58f"/>
+      <path d="M248 296c20-14 43-15 65-2" fill="none" stroke="#24394e" stroke-width="9" stroke-linecap="round"/>
+      <path d="M327 294c22-13 45-12 65 2" fill="none" stroke="#24394e" stroke-width="9" stroke-linecap="round"/>
+      <ellipse cx="279" cy="319" rx="10" ry="13" fill="#17283a"/>
+      <ellipse cx="361" cy="319" rx="10" ry="13" fill="#17283a"/>
+      <circle cx="282" cy="315" r="3" fill="#fff"/>
+      <circle cx="364" cy="315" r="3" fill="#fff"/>
+      <path d="M320 325c-5 18-10 35-14 47 10 6 20 6 30 0" fill="none" stroke="#cf886d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M274 399c29 25 63 25 92 0" fill="none" stroke="#a54f4d" stroke-width="8" stroke-linecap="round"/>
+      <path d="M291 402c19 8 39 8 58 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+      <circle cx="232" cy="360" r="18" fill="#ec907e" opacity="0.22"/>
+      <circle cx="408" cy="360" r="18" fill="#ec907e" opacity="0.22"/>
+    </g>
+    <g transform="translate(454 112)">
+      <circle r="54" fill="#fff" stroke="#ff8b38" stroke-width="6"/>
+      <path d="M-24-15c0-11 9-20 20-20h20c11 0 20 9 20 20v14c0 11-9 20-20 20H7L-9 34V19h-1c-8 0-14-6-14-14z" fill="#ff8b38"/>
+      <path d="M-8-10h28M-8 1h20" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+    </g>
+  </g>
+  <rect x="32" y="32" width="576" height="656" rx="76" fill="none" stroke="#fff" stroke-width="8" opacity="0.85"/>
+</svg>
