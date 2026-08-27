@@ -7,7 +7,7 @@
   const MAX_HISTORY_MESSAGES = 8;
   const MAX_QUESTION_LENGTH = 800;
   const SUBMIT_COOLDOWN_MS = 3000;
-  const ADVISOR_AVATAR = 'assets/avatars/portraits/advisor.svg';
+  const ADVISOR_AVATAR = 'assets/avatars/portraits/advisor-announcer.webp';
   const EXAMPLES = [
     '上司に進捗が遅れていることをどう報告すればよい？',
     '曖昧な指示を失礼なく確認したい',

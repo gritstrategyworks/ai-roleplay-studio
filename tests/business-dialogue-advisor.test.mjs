@@ -65,14 +65,14 @@ test('every AI reply can prepare a real existing roleplay scenario', () => {
 });
 
 test('dedicated avatar and mobile advisor layout are production assets', async () => {
-  const avatar = await stat(new URL('../public/assets/avatars/portraits/advisor.svg', import.meta.url));
-  assert.ok(avatar.size > 3_000);
-  assert.match(html, /assets\/avatars\/portraits\/advisor\.svg/);
+  const avatar = await stat(new URL('../public/assets/avatars/portraits/advisor-announcer.webp', import.meta.url));
+  assert.ok(avatar.size > 15_000);
+  assert.match(html, /assets\/avatars\/portraits\/advisor-announcer\.webp/);
   assert.match(styles, /@media\(max-width:650px\)[^{]*\{\.advisor-page-header/);
   assert.match(styles, /\.advisor-composer\{position:sticky/);
-  assert.match(auth, /advisor\.js\?v=1\.61/);
-  assert.match(serviceWorker, /advisor\.js\?v=1\.61/);
-  assert.match(serviceWorker, /assets\/avatars\/portraits\/advisor\.svg/);
+  assert.match(auth, /advisor\.js\?v=1\.62/);
+  assert.match(serviceWorker, /advisor\.js\?v=1\.62/);
+  assert.match(serviceWorker, /assets\/avatars\/portraits\/advisor-announcer\.webp/);
 });
 
 test('operator email and shared VOICEVOX lecture credit remain visible', () => {

@@ -1,6 +1,6 @@
-const CACHE='ai-roleplay-studio-v1-61-settings-admin-newhire-free';
+const CACHE='ai-roleplay-studio-v1-62-advisor-announcer';
 const BASE=new URL('./',self.location.href);
-const CORE=['index.html','styles.css?v=1.61','auth.css?v=1.61','auth.js?v=1.61','app.js?v=1.61','advisor.js?v=1.61','scenario-design.js?v=1.61','manifest.webmanifest','robots.txt','sitemap.xml','assets/icon.svg','assets/og-image.png','assets/avatars/portraits/advisor.svg'].map(path=>new URL(path,BASE).href);
+const CORE=['index.html','styles.css?v=1.62','auth.css?v=1.62','auth.js?v=1.62','app.js?v=1.62','advisor.js?v=1.62','scenario-design.js?v=1.62','manifest.webmanifest','robots.txt','sitemap.xml','assets/icon.svg','assets/og-image.png','assets/avatars/portraits/advisor-announcer.webp'].map(path=>new URL(path,BASE).href);
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',event=>{
