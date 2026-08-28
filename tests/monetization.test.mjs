@@ -10,12 +10,15 @@ const [html, app, css, serviceWorker, config] = await Promise.all([
   readFile(new URL('../public/monetization.json', import.meta.url), 'utf8').then(JSON.parse)
 ]);
 
-test('AdSense is removed and the free-plan native placement is available', () => {
+test('Ninja AdMax is configured for the free-plan placement', () => {
   assert.doesNotMatch(html, /pagead2\.googlesyndication\.com|adsbygoogle|google-adsense-account|ca-pub-/);
   assert.match(html, /id="freeMonetizationPlacement"/);
-  assert.match(css, /\.monetization-card/);
+  assert.match(css, /\.admax-card/);
   assert.equal(config.enabled, true);
-  assert.equal(config.kind, 'house');
+  assert.equal(config.kind, 'admax');
+  assert.equal(config.home.admaxId, 'admax-banner-c8a625c8-b327-4357-a173-3098f9e0c81f');
+  assert.match(app, /https:\/\/adm\.shinobi\.jp\/st\/t\.js/);
+  assert.doesNotMatch(app, /adm\.shinobi\.jp\/s\/b71b8cdc712059daf201c73e64f1aaef/);
 });
 
 test('monetization is visible only after free-plan state is known', () => {
@@ -30,5 +33,5 @@ test('external sponsor and affiliate links are safely marked', () => {
 
 test('monetization configuration is shipped in the PWA cache', () => {
   assert.match(serviceWorker, /monetization\.json/);
-  assert.match(serviceWorker, /v1-63-native-monetization/);
+  assert.match(serviceWorker, /v1-64-ninja-admax/);
 });

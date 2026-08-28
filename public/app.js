@@ -123,6 +123,7 @@ let billingState = { loading:true, premium:false, subscriptionPremium:false, sta
 const APP_SHARE_URL='https://roleplay.gritstrategyworks.com/';
 const FREE_LECTURE_IDS=new Set(['1.1','1.2','5.1','5.2']);
 let monetizationConfig=null;
+let admaxSdkPromise=null;
 let billingActionPending = false;
 let apiAvailable = false;
 let recognition = null;
@@ -443,11 +444,32 @@ function monetizationActionElement(cta){
   button.onclick=cta.action==='checkout'?startCheckout:()=>showInformation('pricing');
   return button;
 }
-function renderMonetizationPlacement(){
+function loadAdmaxSdk(){
+  if(admaxSdkPromise)return admaxSdkPromise;
+  admaxSdkPromise=new Promise((resolve,reject)=>{
+    const existing=document.getElementById('ninja-admax-sdk');
+    if(existing){existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',reject,{once:true});return}
+    const script=document.createElement('script');script.id='ninja-admax-sdk';script.src='https://adm.shinobi.jp/st/t.js';script.async=true;script.referrerPolicy='strict-origin-when-cross-origin';script.onload=resolve;script.onerror=reject;document.head.append(script);
+  });
+  return admaxSdkPromise;
+}
+function renderAdmaxPlacement(placement,offer){
+  const admaxId=String(offer.admaxId||''),type=String(offer.type||'b');
+  if(!/^admax-banner-[a-z0-9-]+$/i.test(admaxId)||type!=='b'){placement.hidden=true;placement.replaceChildren();return}
+  const campaign=String(monetizationConfig.campaignId||admaxId);
+  if(placement.dataset.campaign===campaign&&placement.querySelector('.admax-ads'))return;
+  const card=document.createElement('article');card.className='admax-card';
+  const disclosure=document.createElement('span');disclosure.className='admax-disclosure';disclosure.textContent=offer.disclosure||'広告';
+  const slot=document.createElement('div');slot.className='admax-ads';slot.dataset.admaxId=admaxId;slot.style.display='inline-block';slot.style.width='300px';slot.style.height='250px';
+  card.append(disclosure,slot);placement.replaceChildren(card);placement.dataset.campaign=campaign;
+  window.admaxads=window.admaxads||[];window.admaxads.push({admax_id:admaxId,type});
+  loadAdmaxSdk().catch(error=>{console.warn('Ninja AdMax SDK unavailable',error);card.classList.add('is-unavailable')});
+}function renderMonetizationPlacement(){
   const placement=document.getElementById('freeMonetizationPlacement');if(!placement)return;
   const offer=monetizationConfig?.home,show=Boolean(monetizationConfig?.enabled&&offer&&!billingState.loading&&!billingState.premium);
   placement.hidden=!show;
-  if(!show){placement.replaceChildren();return}
+  if(!show){placement.replaceChildren();delete placement.dataset.campaign;return}
+  if(monetizationConfig.kind==='admax'){renderAdmaxPlacement(placement,offer);return}
   const kind=['house','sponsor','affiliate'].includes(monetizationConfig.kind)?monetizationConfig.kind:'house';
   const card=document.createElement('article');card.className=`monetization-card is-${kind}`;
   const copy=document.createElement('div'),disclosure=document.createElement('span'),eyebrow=document.createElement('div'),title=document.createElement('h2'),description=document.createElement('p');
