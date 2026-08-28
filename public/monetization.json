@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "campaignId": "premium-direct-2026-08",
+  "kind": "house",
+  "home": {
+    "eyebrow": "FREE PLAN",
+    "title": "練習を、次の成果につなげる。",
+    "description": "Premiumなら、10・15分のロープレ、全20講義、項目別スコアと詳しい改善提案を利用できます。",
+    "benefits": [
+      "長時間ロープレ",
+      "全20講義",
+      "詳細フィードバック"
+    ],
+    "cta": {
+      "label": "料金と機能を見る",
+      "action": "pricing"
+    }
+  }
+}

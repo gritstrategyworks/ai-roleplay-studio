@@ -122,7 +122,7 @@ const EMPTY_DEVELOPER_PREVIEW={available:false,configured:false,mode:'actual',ex
 let billingState = { loading:true, premium:false, subscriptionPremium:false, status:'free', currentPeriodEnd:null, canManage:false, billingAvailable:false, developerPreview:{...EMPTY_DEVELOPER_PREVIEW} };
 const APP_SHARE_URL='https://roleplay.gritstrategyworks.com/';
 const FREE_LECTURE_IDS=new Set(['1.1','1.2','5.1','5.2']);
-const ADSENSE_SLOT_ID=''; // AdSense承認後に作成したレスポンシブ広告ユニットIDを設定する。
+let monetizationConfig=null;
 let billingActionPending = false;
 let apiAvailable = false;
 let recognition = null;
@@ -389,7 +389,7 @@ function renderBilling(){
   }
   refreshPremiumAccessUI();
   renderLectures();
-  renderAdPlacement();
+  renderMonetizationPlacement();
   renderDeveloperPreviewPanel();
 }
 function hasPremiumFeatures(){return !billingState.loading&&billingState.premium}
@@ -431,13 +431,44 @@ async function shareApp(){
   if(navigator.share){try{await navigator.share({title:'AIビジネスロールプレイスタジオ',text:'AIで仕事の対話力を練習できるロールプレイアプリです。',url:APP_SHARE_URL});return}catch(error){if(error?.name==='AbortError')return}}
   await copyShareLink();
 }
-function renderAdPlacement(){
-  const placement=document.getElementById('freeAdPlacement');if(!placement)return;
-  const show=Boolean(ADSENSE_SLOT_ID&&!billingState.loading&&!billingState.premium);
+function monetizationDisclosure(kind){return kind==='sponsor'?'スポンサー':kind==='affiliate'?'PR':'無料プランのご案内'}
+function safeOfferUrl(value){try{const url=new URL(String(value||''),location.origin);return ['https:','http:'].includes(url.protocol)?url.href:''}catch{return''}}
+function monetizationActionElement(cta){
+  if(!cta?.label)return null;
+  if(cta.action==='external'){
+    const href=safeOfferUrl(cta.href);if(!href)return null;
+    const link=document.createElement('a');link.className='primary-btn monetization-cta';link.href=href;link.target='_blank';link.rel='noopener noreferrer sponsored';link.textContent=cta.label;return link;
+  }
+  const button=document.createElement('button');button.className='primary-btn monetization-cta';button.type='button';button.textContent=cta.label;
+  button.onclick=cta.action==='checkout'?startCheckout:()=>showInformation('pricing');
+  return button;
+}
+function renderMonetizationPlacement(){
+  const placement=document.getElementById('freeMonetizationPlacement');if(!placement)return;
+  const offer=monetizationConfig?.home,show=Boolean(monetizationConfig?.enabled&&offer&&!billingState.loading&&!billingState.premium);
   placement.hidden=!show;
-  if(!show||placement.dataset.loaded==='true')return;
-  placement.innerHTML=`<span class="ad-label">広告</span><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5840457424714744" data-ad-slot="${ADSENSE_SLOT_ID}" data-ad-format="auto" data-full-width-responsive="true"></ins>`;
-  try{(window.adsbygoogle=window.adsbygoogle||[]).push({});placement.dataset.loaded='true'}catch(error){console.warn('AdSense slot could not be initialized',error)}
+  if(!show){placement.replaceChildren();return}
+  const kind=['house','sponsor','affiliate'].includes(monetizationConfig.kind)?monetizationConfig.kind:'house';
+  const card=document.createElement('article');card.className=`monetization-card is-${kind}`;
+  const copy=document.createElement('div'),disclosure=document.createElement('span'),eyebrow=document.createElement('div'),title=document.createElement('h2'),description=document.createElement('p');
+  disclosure.className='monetization-disclosure';disclosure.textContent=monetizationDisclosure(kind);
+  eyebrow.className='eyebrow';eyebrow.textContent=offer.eyebrow||'RECOMMENDED';
+  title.textContent=offer.title||'';description.textContent=offer.description||'';
+  copy.className='monetization-copy';copy.append(disclosure,eyebrow,title,description);
+  const benefits=document.createElement('ul');benefits.className='monetization-benefits';
+  for(const benefit of Array.isArray(offer.benefits)?offer.benefits.slice(0,4):[]){const item=document.createElement('li');item.textContent=String(benefit);benefits.append(item)}
+  const action=monetizationActionElement(offer.cta);
+  card.append(copy);if(benefits.childElementCount)card.append(benefits);if(action)card.append(action);
+  placement.replaceChildren(card);placement.dataset.campaign=String(monetizationConfig.campaignId||'');
+}
+async function loadMonetizationConfig(){
+  try{
+    const response=await fetch('/monetization.json',{cache:'no-store'});
+    if(!response.ok)throw new Error('HTTP '+response.status);
+    const config=await response.json();
+    monetizationConfig=config&&typeof config==='object'?config:null;
+  }catch(error){console.warn('Monetization configuration unavailable',error);monetizationConfig=null}
+  renderMonetizationPlacement();
 }
 function renderDeveloperPreviewPanel(){
   const panel=document.getElementById('developerPreviewPanel');if(!panel)return;
@@ -605,7 +636,7 @@ async function probeAPI(){const endpoint=getApiEndpoint();if(!settings.preferAI|
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._timer);el._timer=setTimeout(()=>el.classList.remove('show'),2500)}
 function wait(ms){return new Promise(r=>setTimeout(r,ms))}
 
-function init(){setupSpeechRecognition();loadVoices();refreshKokoroVoiceSelects();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();renderKokoroStatus();probeAPI();initBilling();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).catch(()=>{})}
+function init(){setupSpeechRecognition();loadVoices();refreshKokoroVoiceSelects();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();renderKokoroStatus();probeAPI();loadMonetizationConfig();initBilling();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).catch(()=>{})}
 
 
 
