@@ -36,5 +36,5 @@ test('worker enforces an atomic five-per-day JST quota per account or guest cook
   assert.match(worker, /modules: \[onRequestGetAdvisor\]/);
   assert.match(worker, /code: "daily_limit_reached"/);
   assert.match(migration, /CREATE TABLE IF NOT EXISTS advisor_daily_usage/);
-  assert.match(serviceWorker, /v1-65-advisor-daily-limit/);
+  assert.match(serviceWorker, /v1-66-admax-banner-fix/);
 });

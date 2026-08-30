@@ -16,14 +16,18 @@ test('Ninja AdMax is configured for the free-plan placement', () => {
   assert.match(css, /\.admax-card/);
   assert.equal(config.enabled, true);
   assert.equal(config.kind, 'admax');
-  assert.equal(config.home.admaxId, 'admax-banner-c8a625c8-b327-4357-a173-3098f9e0c81f');
+  assert.equal(config.home.admaxId, 'b71b8cdc712059daf201c73e64f1aaef');
+  assert.equal(config.home.type, 'banner');
   assert.match(app, /https:\/\/adm\.shinobi\.jp\/st\/t\.js/);
-  assert.doesNotMatch(app, /adm\.shinobi\.jp\/s\/b71b8cdc712059daf201c73e64f1aaef/);
+  assert.match(app, /\[a-f0-9\]\{32\}/);
+  assert.doesNotMatch(app, /admax-banner-c8a625c8-b327-4357-a173-3098f9e0c81f/);
 });
 
 test('monetization is visible only after free-plan state is known', () => {
   assert.match(app, /monetizationConfig\?\.enabled&&offer&&!billingState\.loading&&!billingState\.premium/);
   assert.match(app, /renderMonetizationPlacement\(\)/);
+  const activeInit = app.slice(app.lastIndexOf('init=function()'), app.lastIndexOf('init();'));
+  assert.match(activeInit, /loadMonetizationConfig\(\);initBilling\(\)/);
 });
 
 test('external sponsor and affiliate links are safely marked', () => {
@@ -33,5 +37,5 @@ test('external sponsor and affiliate links are safely marked', () => {
 
 test('monetization configuration is shipped in the PWA cache', () => {
   assert.match(serviceWorker, /monetization\.json/);
-  assert.match(serviceWorker, /v1-65-advisor-daily-limit/);
+  assert.match(serviceWorker, /v1-66-admax-banner-fix/);
 });

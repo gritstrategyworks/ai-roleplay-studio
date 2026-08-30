@@ -454,8 +454,8 @@ function loadAdmaxSdk(){
   return admaxSdkPromise;
 }
 function renderAdmaxPlacement(placement,offer){
-  const admaxId=String(offer.admaxId||''),type=String(offer.type||'b');
-  if(!/^admax-banner-[a-z0-9-]+$/i.test(admaxId)||type!=='b'){placement.hidden=true;placement.replaceChildren();return}
+  const admaxId=String(offer.admaxId||''),type=String(offer.type||'banner');
+  if(!/^[a-f0-9]{32}$/i.test(admaxId)||!['banner','switch'].includes(type)){placement.hidden=true;placement.replaceChildren();return}
   const campaign=String(monetizationConfig.campaignId||admaxId);
   if(placement.dataset.campaign===campaign&&placement.querySelector('.admax-ads'))return;
   const card=document.createElement('article');card.className='admax-card';
@@ -891,5 +891,5 @@ function openPracticeMenu(){
 }
 document.getElementById('navStart').onclick=openPracticeMenu;
 renderSetup=function(){renderSetupModeBase();upgradeAdvancedDatalistInputs();renderAIModeSettings();refreshPremiumAccessUI()};
-init=function(){setupSpeechRecognition();loadVoices();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();initLectureFeature();setupMobileComposer();syncRoleplayViewport();window.addEventListener('resize',syncRoleplayViewport,{passive:true});window.visualViewport?.addEventListener('resize',syncRoleplayViewport,{passive:true});window.visualViewport?.addEventListener('scroll',syncRoleplayViewport,{passive:true});probeAPI();initBilling();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).catch(()=>{})};
+init=function(){setupSpeechRecognition();loadVoices();if('speechSynthesis'in window)window.speechSynthesis.onvoiceschanged=loadVoices;renderHome();renderSettings();initLectureFeature();setupMobileComposer();syncRoleplayViewport();window.addEventListener('resize',syncRoleplayViewport,{passive:true});window.visualViewport?.addEventListener('resize',syncRoleplayViewport,{passive:true});window.visualViewport?.addEventListener('scroll',syncRoleplayViewport,{passive:true});probeAPI();loadMonetizationConfig();initBilling();AVATARS.slice(0,3).forEach(a=>preloadAvatar(a.id));if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).catch(()=>{})};
 init();
