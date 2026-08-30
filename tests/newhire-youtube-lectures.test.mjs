@@ -31,7 +31,7 @@ test('lecture modal is YouTube-only and bundled new-hire media is absent', async
 });
 
 
-test('free users can watch the first two new-hire lessons', () => {
-  assert.match(app, /FREE_LECTURE_IDS=new Set\(\['1\.1','1\.2','5\.1','5\.2'\]\)/);
+test('free users can watch the first two lessons in every category', () => {
+  assert.match(app, /FREE_LECTURE_IDS=new Set\(\['1\.1','1\.2','2\.1','2\.2','3\.1','3\.2','4\.1','4\.2','5\.1','5\.2'\]\)/);
   assert.match(app, /FREE_LECTURE_IDS\.has\(id\)\|\|hasPremiumFeatures\(\)/);
 });

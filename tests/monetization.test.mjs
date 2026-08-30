@@ -33,5 +33,5 @@ test('external sponsor and affiliate links are safely marked', () => {
 
 test('monetization configuration is shipped in the PWA cache', () => {
   assert.match(serviceWorker, /monetization\.json/);
-  assert.match(serviceWorker, /v1-64-ninja-admax/);
+  assert.match(serviceWorker, /v1-65-advisor-daily-limit/);
 });

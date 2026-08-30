@@ -1835,16 +1835,70 @@ function sanitizeAdvisorReply(value) {
     }
   };
 }
+var ADVISOR_FREE_DAILY_LIMIT = 5;
+function advisorJstWindow(nowMs = Date.now()) {
+  const shifted = new Date(nowMs + 9 * 60 * 60 * 1000);
+  const usageDate = shifted.toISOString().slice(0, 10);
+  const resetAt = Math.floor((Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate() + 1) - 9 * 60 * 60 * 1000) / 1000);
+  return { usageDate, resetAt };
+}
+async function advisorActorId(context) {
+  if (context.data?.auth?.guest) {
+    const guestToken = readGuestToken(context.request);
+    return guestToken ? "guest:" + await hashSessionToken(guestToken) : "";
+  }
+  return sanitizeText(context.data?.user?.id, 180);
+}
+async function ensureAdvisorUsageTable(database) {
+  await database.prepare("CREATE TABLE IF NOT EXISTS advisor_daily_usage (actor_id TEXT NOT NULL, usage_date TEXT NOT NULL, used_count INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL, PRIMARY KEY (actor_id, usage_date))").run();
+}
+function advisorQuotaPayload(premium, used, resetAt) {
+  const normalizedUsed = premium ? 0 : Math.max(0, Number(used || 0));
+  return { premium, limit: premium ? null : ADVISOR_FREE_DAILY_LIMIT, used: premium ? null : normalizedUsed, remaining: premium ? null : Math.max(0, ADVISOR_FREE_DAILY_LIMIT - normalizedUsed), resetAt };
+}
+async function getAdvisorQuotaStatus(context) {
+  const premium = await contextHasPremiumAccess(context);
+  const { usageDate, resetAt } = advisorJstWindow();
+  if (premium) return advisorQuotaPayload(true, 0, resetAt);
+  const database = context.env.BILLING_DB;
+  const actorId = await advisorActorId(context);
+  if (!database || !actorId) throw new Error("Advisor quota storage is unavailable.");
+  await ensureAdvisorUsageTable(database);
+  const row = await database.prepare("SELECT used_count FROM advisor_daily_usage WHERE actor_id = ? AND usage_date = ?").bind(actorId, usageDate).first();
+  return advisorQuotaPayload(false, row?.used_count, resetAt);
+}
+async function consumeAdvisorDailyQuota(context) {
+  const premium = await contextHasPremiumAccess(context);
+  const { usageDate, resetAt } = advisorJstWindow();
+  if (premium) return { limited: false, quota: advisorQuotaPayload(true, 0, resetAt) };
+  const database = context.env.BILLING_DB;
+  const actorId = await advisorActorId(context);
+  if (!database || !actorId) throw new Error("Advisor quota storage is unavailable.");
+  await ensureAdvisorUsageTable(database);
+  const now = Math.floor(Date.now() / 1000);
+  const row = await database.prepare(`
+    INSERT INTO advisor_daily_usage (actor_id, usage_date, used_count, updated_at)
+    VALUES (?, ?, 1, ?)
+    ON CONFLICT(actor_id, usage_date) DO UPDATE SET
+      used_count = advisor_daily_usage.used_count + 1,
+      updated_at = excluded.updated_at
+    WHERE advisor_daily_usage.used_count < ?
+    RETURNING used_count
+  `).bind(actorId, usageDate, now, ADVISOR_FREE_DAILY_LIMIT).first();
+  if (row) return { limited: false, quota: advisorQuotaPayload(false, row.used_count, resetAt) };
+  const current = await database.prepare("SELECT used_count FROM advisor_daily_usage WHERE actor_id = ? AND usage_date = ?").bind(actorId, usageDate).first();
+  return { limited: true, quota: advisorQuotaPayload(false, current?.used_count || ADVISOR_FREE_DAILY_LIMIT, resetAt) };
+}
 async function enforceAdvisorRateLimit(context, requestId) {
   const database = context.env.BILLING_DB;
-  const actorId = sanitizeText(context.data?.user?.id, 180);
+  const actorId = await advisorActorId(context);
   if (!database || !actorId) return null;
   try {
     await database.prepare("CREATE TABLE IF NOT EXISTS advisor_request_limits (actor_id TEXT PRIMARY KEY, request_id TEXT NOT NULL, requested_at INTEGER NOT NULL)").run();
     const previous = await database.prepare("SELECT request_id, requested_at FROM advisor_request_limits WHERE actor_id = ?").bind(actorId).first();
     const now = Math.floor(Date.now() / 1000);
     if (previous?.request_id === requestId && requestId) {
-      return Response.json({ error: "同じ相談がすでに送信されています。", code: "duplicate_request" }, { status: 409, headers: HEADERS });
+      return Response.json({ error: "同じ相談内容がすでに送信されています。", code: "duplicate_request" }, { status: 409, headers: HEADERS });
     }
     if (previous && now - Number(previous.requested_at || 0) < 3) {
       return Response.json({ error: "連続送信を防ぐため、少し待ってからお試しください。", code: "rate_limited" }, { status: 429, headers: { ...HEADERS, "retry-after": "3" } });
@@ -1902,6 +1956,14 @@ JSONだけを返す。adviceは2〜4文、exampleは自然な会話例、points�
   });
   return sanitizeAdvisorReply(parseAdvisorModelResponse(output));
 }
+async function onRequestGetAdvisor(context) {
+  try {
+    return Response.json({ quota: await getAdvisorQuotaStatus(context) }, { headers: HEADERS });
+  } catch (error) {
+    console.error("advisor quota status error", error);
+    return Response.json({ error: "本日の相談回数を確認できませんでした。", code: "advisor_quota_unavailable" }, { status: 503, headers: HEADERS });
+  }
+}
 async function onRequestPostAdvisor(context) {
   try {
     if (!context.env.AI) return Response.json({ error: "AIアドバイザーは現在利用できません。", code: "ai_unavailable" }, { status: 503, headers: HEADERS });
@@ -1909,7 +1971,10 @@ async function onRequestPostAdvisor(context) {
     if (Array.from(data.question).length < 3) return Response.json({ error: "相談内容を3文字以上で入力してください。", code: "invalid_question" }, { status: 400, headers: HEADERS });
     const rateLimitResponse = await enforceAdvisorRateLimit(context, data.requestId);
     if (rateLimitResponse) return rateLimitResponse;
-    return Response.json(await createAdvisorReply(context.env.AI, data), { headers: HEADERS });
+    const usage = await consumeAdvisorDailyQuota(context);
+    if (usage.limited) return Response.json({ error: "本日の無料相談5回を使い切りました。日本時間の午前0時に回数が戻ります。", code: "daily_limit_reached", quota: usage.quota }, { status: 429, headers: HEADERS });
+    const reply = await createAdvisorReply(context.env.AI, data);
+    return Response.json({ ...reply, quota: usage.quota }, { headers: HEADERS });
   } catch (error) {
     console.error("advisor api error", error);
     return Response.json({ error: "AIアドバイザーから回答を取得できませんでした。", code: "advisor_failed" }, { status: 500, headers: HEADERS });
@@ -2057,6 +2122,13 @@ var routes = [
     method: "OPTIONS",
     middlewares: [],
     modules: [onRequestOptions]
+  },
+  {
+    routePath: "/api/advisor",
+    mountPath: "/api",
+    method: "GET",
+    middlewares: [],
+    modules: [onRequestGetAdvisor]
   },
   {
     routePath: "/api/advisor",

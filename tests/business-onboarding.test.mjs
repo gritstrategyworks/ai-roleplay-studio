@@ -34,7 +34,7 @@ test('logged-out page explains the three-step service and sample score', () => {
 test('plan comparisons reflect enforced limits and reuse existing actions', () => {
   assert.match(html, /ロープレ時間[\s\S]*5分[\s\S]*5分・10分・15分/);
   assert.match(html, /詳細設定[\s\S]*利用不可[\s\S]*利用可能/);
-  assert.match(html, /営業・新入社員 各2本[\s\S]*全20本/);
+  assert.match(html, /全5テーマ 各2本[\s\S]*全20本/);
   assert.match(html, /data-auth-guest-cta/);
   assert.match(html, /data-auth-premium-cta/);
   assert.match(html, /onclick="startCheckout\(\)"/);

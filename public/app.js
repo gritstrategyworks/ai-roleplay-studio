@@ -121,7 +121,7 @@ let settings = loadSettings();
 const EMPTY_DEVELOPER_PREVIEW={available:false,configured:false,mode:'actual',expiresAt:null};
 let billingState = { loading:true, premium:false, subscriptionPremium:false, status:'free', currentPeriodEnd:null, canManage:false, billingAvailable:false, developerPreview:{...EMPTY_DEVELOPER_PREVIEW} };
 const APP_SHARE_URL='https://roleplay.gritstrategyworks.com/';
-const FREE_LECTURE_IDS=new Set(['1.1','1.2','5.1','5.2']);
+const FREE_LECTURE_IDS=new Set(['1.1','1.2','2.1','2.2','3.1','3.2','4.1','4.2','5.1','5.2']);
 let monetizationConfig=null;
 let admaxSdkPromise=null;
 let billingActionPending = false;
@@ -846,7 +846,7 @@ function renderLectures(){
 }
 function openLecture(id){
   const lecture=LECTURES.find(item=>item.id===id);if(!lecture)return;activeLectureId=id;
-  if(!canAccessLecture(id)){activeLectureId='';return requestPremiumFeature('この講義はPremiumで視聴できます','営業と新入社員の入門講義は各2本無料です。Premiumでは全20講義を利用できます。')}
+  if(!canAccessLecture(id)){activeLectureId='';return requestPremiumFeature('この講義はPremiumで視聴できます','全5テーマの入門講義は各2本無料。Premiumでは全20講義を利用できます。')}
   document.getElementById('lectureModalCategory').textContent=`${LECTURE_CATEGORIES[lecture.category].icon} ${LECTURE_CATEGORIES[lecture.category].label}・LESSON ${lecture.id}`;
   document.getElementById('lectureModalTitle').textContent=lecture.title;document.getElementById('lectureModalDescription').textContent=lecture.description;
   const iframe=document.getElementById('lecturePlayer'),sourceNote=document.getElementById('lectureSourceNote'),practiceButton=document.getElementById('lecturePracticeButton');
@@ -859,7 +859,7 @@ function updateLectureWatchedButton(){const button=document.getElementById('lect
 function toggleActiveLectureWatched(){if(!activeLectureId)return;const watched=loadWatchedLectures();if(watched.has(activeLectureId))watched.delete(activeLectureId);else watched.add(activeLectureId);saveWatchedLectures(watched);updateLectureWatchedButton();renderLectures()}
 function startActiveLecturePractice(){if(activeLectureId)startLecturePractice(activeLectureId)}
 function startLecturePractice(id){
-  const lecture=LECTURES.find(item=>item.id===id);if(!lecture)return;if(lecture.practice===false)return toast('この講義のロープレシナリオは今後追加予定です');if(!canAccessLecture(id))return requestPremiumFeature('この講義連動ロープレはPremium機能です','営業と新入社員の入門講義は各2本無料です。Premiumでは全20講義の内容に合わせたロープレを始められます。');const watched=loadWatchedLectures();watched.add(id);saveWatchedLectures(watched);closeLectureModal();startSetup(lecture.category);
+  const lecture=LECTURES.find(item=>item.id===id);if(!lecture)return;if(lecture.practice===false)return toast('この講義のロープレシナリオは今後追加予定です');if(!canAccessLecture(id))return requestPremiumFeature('この講義連動ロープレはPremium機能です','全5テーマの入門講義は各2本無料。Premiumでは全20講義の内容に合わせたロープレを始められます。');const watched=loadWatchedLectures();watched.add(id);saveWatchedLectures(watched);closeLectureModal();startSetup(lecture.category);
   const scene=document.getElementById('dealSceneSelect'),goal=document.getElementById('roleplayGoalSelect');if(scene&&[...scene.options].some(option=>option.value===lecture.scene))scene.value=lecture.scene;if(goal&&[...goal.options].some(option=>option.value===lecture.goal))goal.value=lecture.goal;updateSetupDraft();toast(`「${lecture.title}」に合う設定を選びました`);
 }
 function initLectureFeature(){

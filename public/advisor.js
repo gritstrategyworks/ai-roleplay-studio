@@ -32,6 +32,8 @@
 
   let advisorMessages = loadMessages();
   let advisorBusy = false;
+  let advisorQuota = { loading: true, premium: false, limit: 5, used: 0, remaining: 5, resetAt: null };
+  let advisorQuotaRequest = null;
   let lastSubmitted = { text: '', at: 0 };
 
   function cleanText(value, max = 800) {
@@ -134,14 +136,55 @@
     container.innerHTML = EXAMPLES.map((example) => `<button type="button" class="advisor-chip" data-advisor-example="${escapeHtml(example)}">${escapeHtml(example)}</button>`).join('');
   }
 
+  function applyAdvisorQuota(value) {
+    if (!value || typeof value !== 'object') return;
+    const premium = Boolean(value.premium);
+    const limit = premium ? null : Math.max(1, Number(value.limit || 5));
+    const used = premium ? null : Math.max(0, Number(value.used || 0));
+    const remaining = premium ? null : Math.max(0, Math.min(limit, Number(value.remaining ?? limit - used)));
+    advisorQuota = { loading: false, premium, limit, used, remaining, resetAt: Number(value.resetAt || 0) || null };
+    renderAdvisorQuota();
+    updateComposer();
+  }
+
+  function renderAdvisorQuota() {
+    const panel = document.getElementById('advisorQuota');
+    const label = document.getElementById('advisorQuotaLabel');
+    const upgrade = document.getElementById('advisorQuotaUpgrade');
+    if (!panel || !label) return;
+    panel.classList.toggle('is-premium', advisorQuota.premium);
+    panel.classList.toggle('is-exhausted', !advisorQuota.loading && !advisorQuota.premium && advisorQuota.remaining <= 0);
+    if (advisorQuota.loading) label.textContent = '本日の相談回数を確認しています…';
+    else if (advisorQuota.premium) label.textContent = 'Premium：AIアドバイザーを無制限で利用できます';
+    else label.textContent = `本日の無料相談：残り${advisorQuota.remaining}/${advisorQuota.limit}回（日本時間0時にリセット）`;
+    if (upgrade) upgrade.hidden = advisorQuota.premium;
+  }
+
+  async function loadAdvisorQuota(force = false) {
+    if (advisorQuotaRequest && !force) return advisorQuotaRequest;
+    advisorQuotaRequest = fetch('/api/advisor', { method: 'GET', credentials: 'same-origin', cache: 'no-store' })
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || '本日の相談回数を確認できませんでした。');
+        applyAdvisorQuota(data.quota);
+      })
+      .catch((error) => {
+        console.warn('Advisor quota unavailable', error);
+        advisorQuota = { ...advisorQuota, loading: false };
+        renderAdvisorQuota();
+      })
+      .finally(() => { advisorQuotaRequest = null; });
+    return advisorQuotaRequest;
+  }
   function updateComposer() {
     const input = document.getElementById('advisorInput');
     const count = document.getElementById('advisorCharCount');
     const button = document.getElementById('advisorSubmit');
     if (count && input) count.textContent = `${Array.from(input.value).length}/${MAX_QUESTION_LENGTH}`;
     if (button) {
-      button.disabled = advisorBusy || !input?.value.trim();
-      button.textContent = advisorBusy ? '回答を作成中…' : 'AIに相談する';
+      const quotaExhausted = !advisorQuota.loading && !advisorQuota.premium && advisorQuota.remaining <= 0;
+      button.disabled = advisorBusy || quotaExhausted || !input?.value.trim();
+      button.textContent = advisorBusy ? '回答を作成中…' : (!advisorQuota.loading && !advisorQuota.premium && advisorQuota.remaining <= 0 ? '本日の上限に達しました' : 'AIに相談する');
     }
   }
 
@@ -150,6 +193,7 @@
     renderExampleChips();
     renderMessages();
     updateComposer();
+    loadAdvisorQuota(true).catch(() => {});
     setTimeout(() => document.getElementById('advisorInput')?.focus(), 80);
   }
 
@@ -170,6 +214,11 @@
     const question = cleanText(input?.value, MAX_QUESTION_LENGTH);
     const now = Date.now();
     if (!question || advisorBusy) return;
+    if (!advisorQuota.loading && !advisorQuota.premium && advisorQuota.remaining <= 0) {
+      globalThis.toast?.('本日の無料相談5回を使い切りました。日本時間の午前0時に回数が戻ります。');
+      renderAdvisorQuota();
+      return;
+    }
     if (question === lastSubmitted.text && now - lastSubmitted.at < 10000) {
       globalThis.toast?.('同じ相談を送信済みです。少し待ってからお試しください。');
       return;
@@ -194,6 +243,7 @@
         body: JSON.stringify({ question, history: buildHistory(), requestId: requestId() })
       });
       const data = await response.json().catch(() => ({}));
+      if (data.quota) applyAdvisorQuota(data.quota);
       if (!response.ok) {
         const error = new Error(data.error || 'AIアドバイザーから回答を取得できませんでした。');
         error.code = data.code || '';
@@ -202,7 +252,9 @@
       advisorMessages.push({ role: 'assistant', payload: normalizeAdvisorReply(data) });
       saveMessages();
     } catch (error) {
-      const detail = error?.code === 'rate_limited'
+      const detail = error?.code === 'daily_limit_reached'
+        ? '本日の無料相談5回を使い切りました。日本時間の午前0時に回数が戻ります。Premiumでは回数制限なく利用できます。'
+        : error?.code === 'rate_limited'
         ? '短時間に複数の相談が送信されました。数秒待ってから、もう一度お試しください。'
         : '現在、回答を取得できませんでした。入力内容は残っていますので、少し待ってからもう一度送信してください。';
       advisorMessages.push({ role: 'assistant', payload: { advice: detail, example: '', points: [], avoid: '', followUp: '', roleplay: null } });
@@ -211,6 +263,7 @@
       advisorBusy = false;
       renderMessages();
       updateComposer();
+      loadAdvisorQuota(true).catch(() => {});
     }
   }
 
@@ -257,4 +310,6 @@
   renderExampleChips();
   renderMessages();
   updateComposer();
+  renderAdvisorQuota();
+  loadAdvisorQuota().catch(() => {});
 })();

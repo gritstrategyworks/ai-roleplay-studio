@@ -39,8 +39,8 @@
   <title>AIビジネスロールプレイスタジオ｜営業・1on1・採用面接をAIと実践</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=1.64">
-  <link rel="stylesheet" href="auth.css?v=1.64">
+  <link rel="stylesheet" href="styles.css?v=1.65">
+  <link rel="stylesheet" href="auth.css?v=1.65">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -66,7 +66,7 @@
     <section class="auth-intro">
       <div class="auth-brand"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 8.2A4.2 4.2 0 0 1 10.2 4h3.6A4.2 4.2 0 0 1 18 8.2v3.1a4.2 4.2 0 0 1-4.2 4.2h-1.3L9 19v-3.5A4.2 4.2 0 0 1 6 11.3V8.2Z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M9 9h6M9 12h4" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span><span>AI BUSINESS ROLEPLAY STUDIO</span></div>
       <div><div class="eyebrow">AI実践ロールプレイ</div><h1>対話力を、<br>会話で磨く。</h1><p>アカウントで継続利用することも、ログインせずゲストとしてすぐ試すこともできます。</p></div>
-      <ul class="auth-features"><li>基本設定と6種類のアバター</li><li>待ち時間を抑えたオンラインAI会話</li><li>営業・新入社員の入門講義各2本は無料、全講義と詳細設定はPremium</li></ul>
+      <ul class="auth-features"><li>基本設定と6種類のアバター</li><li>待ち時間を抑えたオンラインAI会話</li><li>全5テーマの入門講義各2本は無料、全講義と詳細設定はPremium</li></ul>
     </section>
     <section class="auth-card">
       <div id="authLoading" class="auth-loading"><span class="auth-spinner"></span><strong id="authLoadingText">ログイン状態を確認しています</strong><p>安全な接続を準備しています。</p></div>
@@ -126,11 +126,11 @@
       <div class="auth-showcase-heading"><span class="eyebrow">PLANS</span><h2 id="authPlanTitle">無料で始めて、必要に応じてPremiumへ</h2><p>まずは登録なしで体験できます。継続利用や詳細な分析が必要になったときにアップグレードできます。</p></div>
       <div class="plan-comparison-table" role="table" aria-label="無料版とPremium版の比較">
         <div class="plan-comparison-row plan-comparison-head" role="row"><span role="columnheader">機能</span><span role="columnheader">無料版</span><span role="columnheader">Premium</span></div>
-        <div class="plan-comparison-row" role="row"><strong role="cell">AIロールプレイ</strong><span role="cell">利用可能</span><span role="cell">利用可能</span></div><div class="plan-comparison-row" role="row"><strong role="cell">AI対話アドバイザー</strong><span role="cell">利用可能</span><span role="cell">利用可能</span></div>
+        <div class="plan-comparison-row" role="row"><strong role="cell">AIロールプレイ</strong><span role="cell">利用可能</span><span role="cell">利用可能</span></div><div class="plan-comparison-row" role="row"><strong role="cell">AI対話アドバイザー</strong><span role="cell">1日5回</span><span role="cell">無制限</span></div>
         <div class="plan-comparison-row" role="row"><strong role="cell">ロープレ時間</strong><span role="cell">5分</span><span role="cell">5分・10分・15分</span></div>
         <div class="plan-comparison-row" role="row"><strong role="cell">基本設定</strong><span role="cell">利用可能</span><span role="cell">利用可能</span></div>
         <div class="plan-comparison-row" role="row"><strong role="cell">詳細設定</strong><span role="cell">利用不可</span><span role="cell">利用可能</span></div>
-        <div class="plan-comparison-row" role="row"><strong role="cell">レクチャー動画</strong><span role="cell">営業・新入社員 各2本</span><span role="cell">全20本</span></div>
+        <div class="plan-comparison-row" role="row"><strong role="cell">レクチャー動画</strong><span role="cell">全5テーマ 各2本</span><span role="cell">全20本</span></div>
         <div class="plan-comparison-row" role="row"><strong role="cell">基本採点</strong><span role="cell">利用可能</span><span role="cell">利用可能</span></div>
         <div class="plan-comparison-row" role="row"><strong role="cell">項目別スコア・詳細分析</strong><span role="cell">制限あり</span><span role="cell">利用可能</span></div>
         <div class="plan-comparison-row" role="row"><strong role="cell">おすすめ情報</strong><span role="cell">表示あり</span><span role="cell">表示なし</span></div>
@@ -186,7 +186,7 @@
 
       <section class="lecture-home-banner" aria-label="レクチャー動画">
         <div class="lecture-home-icon" aria-hidden="true">▶</div>
-        <div><div class="eyebrow">LECTURE</div><h2>5分で学んで、すぐ実践。</h2><p>営業と新入社員の入門講義は各2本無料。Premiumでは全20講義を視聴できます。</p></div>
+        <div><div class="eyebrow">LECTURE</div><h2>5分で学んで、すぐ実践。</h2><p>全5テーマの入門講義は各2本無料。Premiumでは全20講義を視聴できます。</p></div>
         <button class="primary-btn" type="button" onclick="showScreen('lectures')">レクチャー一覧へ</button>
       </section>
 
@@ -215,7 +215,7 @@
         <form id="advisorForm" class="advisor-composer">
           <label for="advisorInput">相談したい場面を入力してください</label>
           <textarea id="advisorInput" rows="4" maxlength="800" placeholder="例：明日の会議に間に合わない見込みです。上司へどの順番で報告すればよいですか？"></textarea>
-          <div class="advisor-composer-footer"><span id="advisorCharCount">0/800</span><button id="advisorSubmit" class="primary-btn" type="submit">AIに相談する</button></div>
+          <div id="advisorQuota" class="advisor-quota" role="status"><span id="advisorQuotaLabel">本日の相談回数を確認しています…</span><button id="advisorQuotaUpgrade" type="button" onclick="showInformation('pricing')">Premiumなら無制限</button></div><div class="advisor-composer-footer"><span id="advisorCharCount">0/800</span><button id="advisorSubmit" class="primary-btn" type="submit">AIに相談する</button></div>
           <p>入力内容は回答生成のために送信されます。個人名・顧客名などの機密情報は入力しないでください。法務・医療・人事上の重要判断は、社内の担当部署や専門家にも確認してください。</p>
         </form>
       </div>
@@ -224,7 +224,7 @@
     <section id="screen-lectures" class="screen">
       <div class="page-header"><button class="back-btn" type="button" aria-label="戻る" onclick="showScreen('home')">←</button><div><div class="eyebrow">LECTURE</div><h2 style="margin-bottom:0">レクチャー動画</h2></div></div>
       <section class="lecture-hero">
-        <div><span class="lecture-hero-kicker">学ぶ → 試す → 振り返る</span><h2>短い講義を、ロープレの成果につなげる。</h2><p>営業と新入社員の入門講義は各2本無料です。Premiumでは全20講義を視聴し、その内容に合った設定でロープレを始められます。</p></div>
+        <div><span class="lecture-hero-kicker">学ぶ → 試す → 振り返る</span><h2>短い講義を、ロープレの成果につなげる。</h2><p>全5テーマの入門講義は各2本無料。Premiumでは全20講義を視聴し、その内容に合った設定でロープレを始められます。</p></div>
         <div class="lecture-progress-card"><strong><span id="lectureWatchedCount">0</span><small>/20</small></strong><span>視聴済み</span><div class="lecture-progress-track"><i id="lectureProgressBar"></i></div></div>
       </section>
       <nav id="lectureCategoryTabs" class="lecture-category-tabs" aria-label="レクチャーカテゴリー"></nav>
@@ -326,7 +326,7 @@
           <button class="info-link" data-info="contact" onclick="showInformation('contact')">問い合わせ先</button>
         </nav>
         <div class="info-content">
-          <article id="info-pricing" class="info-section"><div class="status-banner success"><strong>Premiumプラン申込み受付中</strong><span>Stripeの安全な決済画面でお申し込みいただけます。</span></div><h3>無料で始めて、必要に応じてPremiumへ</h3><p>無料版でも基本のロールプレイと採点を利用できます。より長い練習、詳細設定、詳しい分析、全レクチャーが必要な場合はPremiumをご利用ください。</p><div class="plan-comparison-table info-plan-table" role="table" aria-label="無料版とPremium版の比較"><div class="plan-comparison-row plan-comparison-head" role="row"><span role="columnheader">機能</span><span role="columnheader">無料版</span><span role="columnheader">Premium</span></div><div class="plan-comparison-row" role="row"><strong role="cell">AIロールプレイ</strong><span role="cell">利用可能</span><span role="cell">利用可能</span></div><div class="plan-comparison-row" role="row"><strong role="cell">AI対話アドバイザー</strong><span role="cell">利用可能</span><span role="cell">利用可能</span></div><div class="plan-comparison-row" role="row"><strong role="cell">ロープレ時間</strong><span role="cell">5分</span><span role="cell">5分・10分・15分</span></div><div class="plan-comparison-row" role="row"><strong role="cell">基本設定</strong><span role="cell">利用可能</span><span role="cell">利用可能</span></div><div class="plan-comparison-row" role="row"><strong role="cell">詳細設定</strong><span role="cell">利用不可</span><span role="cell">利用可能</span></div><div class="plan-comparison-row" role="row"><strong role="cell">レクチャー動画</strong><span role="cell">営業・新入社員 各2本</span><span role="cell">全20本</span></div><div class="plan-comparison-row" role="row"><strong role="cell">基本採点</strong><span role="cell">利用可能</span><span role="cell">利用可能</span></div><div class="plan-comparison-row" role="row"><strong role="cell">項目別スコア・詳細分析</strong><span role="cell">制限あり</span><span role="cell">利用可能</span></div><div class="plan-comparison-row" role="row"><strong role="cell">おすすめ情報</strong><span role="cell">表示あり</span><span role="cell">表示なし</span></div><div class="plan-comparison-row plan-comparison-price" role="row"><strong role="cell">料金</strong><span role="cell"><b>0円</b></span><span role="cell"><b>月額980円</b></span></div></div><div class="plan-comparison-actions"><button class="ghost-btn" type="button" onclick="showScreen('home')">無料版でロープレを始める</button><button class="primary-btn" type="button" onclick="startCheckout()">月額980円で始める</button></div><p class="legal-warning">Premiumは申込み時に初回決済が行われ、以後1か月ごとに自動更新されます。次回更新日前まで、設定画面の「契約・支払いを管理」からいつでも解約できます。</p></article>
+          <article id="info-pricing" class="info-section"><div class="status-banner success"><strong>Premiumプラン申込み受付中</strong><span>Stripeの安全な決済画面でお申し込みいただけます。</span></div><h3>無料で始めて、必要に応じてPremiumへ</h3><p>無料版でも基本のロールプレイと採点を利用できます。より長い練習、詳細設定、詳しい分析、全レクチャーが必要な場合はPremiumをご利用ください。</p><div class="plan-comparison-table info-plan-table" role="table" aria-label="無料版とPremium版の比較"><div class="plan-comparison-row plan-comparison-head" role="row"><span role="columnheader">機能</span><span role="columnheader">無料版</span><span role="columnheader">Premium</span></div><div class="plan-comparison-row" role="row"><strong role="cell">AIロールプレイ</strong><span role="cell">利用可能</span><span role="cell">利用可能</span></div><div class="plan-comparison-row" role="row"><strong role="cell">AI対話アドバイザー</strong><span role="cell">1日5回</span><span role="cell">無制限</span></div><div class="plan-comparison-row" role="row"><strong role="cell">ロープレ時間</strong><span role="cell">5分</span><span role="cell">5分・10分・15分</span></div><div class="plan-comparison-row" role="row"><strong role="cell">基本設定</strong><span role="cell">利用可能</span><span role="cell">利用可能</span></div><div class="plan-comparison-row" role="row"><strong role="cell">詳細設定</strong><span role="cell">利用不可</span><span role="cell">利用可能</span></div><div class="plan-comparison-row" role="row"><strong role="cell">レクチャー動画</strong><span role="cell">全5テーマ 各2本</span><span role="cell">全20本</span></div><div class="plan-comparison-row" role="row"><strong role="cell">基本採点</strong><span role="cell">利用可能</span><span role="cell">利用可能</span></div><div class="plan-comparison-row" role="row"><strong role="cell">項目別スコア・詳細分析</strong><span role="cell">制限あり</span><span role="cell">利用可能</span></div><div class="plan-comparison-row" role="row"><strong role="cell">おすすめ情報</strong><span role="cell">表示あり</span><span role="cell">表示なし</span></div><div class="plan-comparison-row plan-comparison-price" role="row"><strong role="cell">料金</strong><span role="cell"><b>0円</b></span><span role="cell"><b>月額980円</b></span></div></div><div class="plan-comparison-actions"><button class="ghost-btn" type="button" onclick="showScreen('home')">無料版でロープレを始める</button><button class="primary-btn" type="button" onclick="startCheckout()">月額980円で始める</button></div><p class="legal-warning">Premiumは申込み時に初回決済が行われ、以後1か月ごとに自動更新されます。次回更新日前まで、設定画面の「契約・支払いを管理」からいつでも解約できます。</p></article>
 <article id="info-operator" class="info-section" hidden><h3>運営者</h3><dl class="legal-list"><div><dt>運営者名</dt><dd>gritstrategyworks@gmail.com</dd></div><div><dt>サービス名</dt><dd>AIビジネスロールプレイスタジオ</dd></div><div><dt>有料プラン</dt><dd>AIビジネスロールプレイスタジオ Premium・月額980円（税込）</dd></div><div><dt>提供状況</dt><dd>申込み受付中</dd></div><div><dt>問い合わせ先</dt><dd><a href="mailto:gritstrategyworks@gmail.com">gritstrategyworks@gmail.com</a></dd></div><div><dt>講義音声</dt><dd>VOICEVOX:四国めたん</dd></div></dl><p>販売事業者の氏名、運営責任者、所在地、電話番号は、法令に基づく請求があった場合に遅滞なく開示します。</p></article>
 <article id="info-commerce" class="info-section" hidden><h3>特定商取引法に基づく表記</h3><dl class="legal-list"><div><dt>販売事業者</dt><dd>gritstrategyworks@gmail.com</dd></div><div><dt>運営責任者・所在地・電話番号</dt><dd>請求があった場合、法令に基づき遅滞なく開示します。</dd></div><div><dt>問い合わせ先</dt><dd><a href="mailto:gritstrategyworks@gmail.com">gritstrategyworks@gmail.com</a></dd></div><div><dt>販売価格</dt><dd>AIビジネスロールプレイスタジオ Premium：月額980円（税込）</dd></div><div><dt>商品代金以外の負担</dt><dd>インターネット接続・通信に必要な費用は利用者負担です。</dd></div><div><dt>支払方法・支払時期</dt><dd>Stripeの決済画面に表示される支払方法。申込み時に初回決済し、以後1か月ごとに自動更新します。</dd></div><div><dt>サービス提供時期</dt><dd>決済完了と契約状態の確認後、プレミアム機能を利用できます。</dd></div><div><dt>解約</dt><dd>設定画面からStripeの契約管理画面を開き、次回更新日前までいつでも解約できます。解約後も支払済み期間の終了まで利用できます。</dd></div><div><dt>返金</dt><dd>デジタルサービスの性質上、利用者都合による日割り返金は行いません。重複決済、サービスを提供できなかった場合、または法令上必要な場合は確認のうえ対応します。</dd></div></dl><p class="reference-links"><a href="https://www.no-trouble.caa.go.jp/what/mailorder/advertising.html" target="_blank" rel="noopener">消費者庁・特定商取引法ガイド</a></p></article>
 <article id="info-terms" class="info-section" hidden><h3>利用規約</h3><p class="policy-date">改定日：2026年8月15日</p><h4>1. 適用</h4><p>本規約は、gritstrategyworks@gmail.comが提供するAIビジネスロールプレイスタジオの利用条件を定めます。利用者は本規約に同意して本サービスを利用します。</p><h4>2. アカウント</h4><p>利用者は正確な情報でアカウントを作成し、パスワードとログイン端末を適切に管理します。第三者による不正利用を確認した場合は速やかにログアウトしてください。</p><h4>3. サービスの性質</h4><p>本サービスは対話練習を支援するもので、AIの応答・採点は参考情報です。正確性、完全性、特定目的への適合を保証するものではなく、採用・人事評価・契約・苦情処理などの最終判断は利用者が行います。</p><h4>4. 有料プラン</h4><p>Premiumは月額980円（税込）の1か月ごとの自動更新です。利用者が次回更新日前に解約しない限り契約は更新されます。価格や内容を変更する場合は、適用前にサイト上で案内します。</p><h4>5. 禁止事項</h4><p>法令違反、第三者の権利侵害、個人情報・機密情報の不適切な入力、サービスへの不正アクセス、過度な負荷、解析・転用による妨害を禁止します。</p><h4>6. 知的財産</h4><p>本サービスのプログラム、デザイン、画像等の権利は運営者または正当な権利者に帰属します。利用者が入力する内容の権利は利用者に留保されます。</p><h4>7. 変更・停止</h4><p>保守、障害、仕様改善、法令対応等によりサービス内容を変更または停止することがあります。重要な変更はサイト上で告知します。</p><h4>8. 準拠法</h4><p>本規約は日本法に準拠します。紛争が生じた場合は、法令に従い管轄裁判所を定めます。</p></article>
@@ -428,6 +428,6 @@
   </div>
 </div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-box"><div class="spinner"></div><strong>会話を振り返っています</strong><p style="color:#b9c7d9;font-size:13px">評価と改善ポイントを作成中です</p></div></div>
-<script src="auth.js?v=1.64" defer></script>
+<script src="auth.js?v=1.65" defer></script>
 </body>
 </html>
