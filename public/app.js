@@ -456,7 +456,7 @@ function loadAdmaxSdk(){
 function renderAdmaxPlacement(placement,offer){
   const admaxId=String(offer.admaxId||''),type=String(offer.type||'banner');
   if(!/^[a-f0-9]{32}$/i.test(admaxId)||!['banner','switch'].includes(type)){placement.hidden=true;placement.replaceChildren();return}
-  const campaign=String(monetizationConfig.campaignId||admaxId);
+  const campaign=`${String(monetizationConfig.campaignId||'ninja-admax')}:${admaxId}`;
   if(placement.dataset.campaign===campaign&&placement.querySelector('.admax-ads'))return;
   const card=document.createElement('article');card.className='admax-card';
   const disclosure=document.createElement('span');disclosure.className='admax-disclosure';disclosure.textContent=offer.disclosure||'広告';
@@ -464,9 +464,14 @@ function renderAdmaxPlacement(placement,offer){
   card.append(disclosure,slot);placement.replaceChildren(card);placement.dataset.campaign=campaign;
   window.admaxads=window.admaxads||[];window.admaxads.push({admax_id:admaxId,type});
   loadAdmaxSdk().catch(error=>{console.warn('Ninja AdMax SDK unavailable',error);card.classList.add('is-unavailable')});
+}function isMobileAdmaxClient(){
+  const userAgent=String(navigator.userAgent||'');
+  return navigator.userAgentData?.mobile===true||/Android|iPhone|iPod|Windows Phone|Mobile/i.test(userAgent)||globalThis.matchMedia?.('(max-width: 760px)').matches===true;
+}function selectedMonetizationOffer(){
+  return monetizationConfig?.kind==='admax'&&isMobileAdmaxClient()&&monetizationConfig?.mobile?monetizationConfig.mobile:monetizationConfig?.home;
 }function renderMonetizationPlacement(){
   const placement=document.getElementById('freeMonetizationPlacement');if(!placement)return;
-  const offer=monetizationConfig?.home,show=Boolean(monetizationConfig?.enabled&&offer&&!billingState.loading&&!billingState.premium);
+  const offer=selectedMonetizationOffer(),show=Boolean(monetizationConfig?.enabled&&offer&&!billingState.loading&&!billingState.premium);
   placement.hidden=!show;
   if(!show){placement.replaceChildren();delete placement.dataset.campaign;return}
   if(monetizationConfig.kind==='admax'){renderAdmaxPlacement(placement,offer);return}

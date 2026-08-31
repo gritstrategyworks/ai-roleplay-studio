@@ -18,9 +18,20 @@ test('Ninja AdMax is configured for the free-plan placement', () => {
   assert.equal(config.kind, 'admax');
   assert.equal(config.home.admaxId, 'b71b8cdc712059daf201c73e64f1aaef');
   assert.equal(config.home.type, 'banner');
+  assert.equal(config.mobile.admaxId, 'ce5551353ed1fa48a1a8327260f1973c');
+  assert.equal(config.mobile.type, 'banner');
   assert.match(app, /https:\/\/adm\.shinobi\.jp\/st\/t\.js/);
   assert.match(app, /\[a-f0-9\]\{32\}/);
   assert.doesNotMatch(app, /admax-banner-c8a625c8-b327-4357-a173-3098f9e0c81f/);
+});
+
+test('Ninja AdMax selects smartphone and PC placements separately', () => {
+  assert.match(app, /function isMobileAdmaxClient/);
+  assert.match(app, /navigator\.userAgentData\?\.mobile===true/);
+  assert.match(app, /Android\|iPhone\|iPod\|Windows Phone\|Mobile/);
+  assert.match(app, /function selectedMonetizationOffer/);
+  assert.match(app, /monetizationConfig\?\.mobile/);
+  assert.match(app, /campaign=.*admaxId/);
 });
 
 test('monetization is visible only after free-plan state is known', () => {
@@ -37,5 +48,5 @@ test('external sponsor and affiliate links are safely marked', () => {
 
 test('monetization configuration is shipped in the PWA cache', () => {
   assert.match(serviceWorker, /monetization\.json/);
-  assert.match(serviceWorker, /v1-66-admax-banner-fix/);
+  assert.match(serviceWorker, /v1-67-mobile-admax/);
 });

@@ -9,5 +9,13 @@
     "width": 300,
     "height": 250,
     "disclosure": "広告"
+  },
+  "mobile": {
+    "provider": "ninja-admax",
+    "admaxId": "ce5551353ed1fa48a1a8327260f1973c",
+    "type": "banner",
+    "width": 300,
+    "height": 250,
+    "disclosure": "\u5e83\u544a"
   }
 }
